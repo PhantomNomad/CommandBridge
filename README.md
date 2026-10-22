@@ -10,7 +10,7 @@ The application is intended for municipal government operations in Alberta, Cana
 - Assign users to ICS roles and incident positions
 - Maintain incident personnel, check-in, contact, and resource information
 - Create and manage operational ICS forms, including modules for:
-  - ICS 201, 202, 203, 204, 205, 205A, 206, 207, 208, 209, 210, 211, 213, 214, 215A, 218, and 230
+  - ICS 201, 202, 203, 204, 205, 205A, 206, 207, 208, 209, 210, 211, 213, 213RR, 214, 215A, 218, and 230
 - Produce PDF outputs for supported forms
 - Maintain audit records of application activity
 - Manage organization, role, lookup, resource catalogue, and form-permission settings
