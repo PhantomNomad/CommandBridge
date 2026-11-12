@@ -1,0 +1,11 @@
+# Command Bridge Check-In Gateway access rules (generated into the virtual host by install.sh).
+# __APP_DIR__ is the public/ folder; application code, config and database files live outside it.
+<Directory __APP_DIR__>
+    Options -Indexes -MultiViews +FollowSymLinks
+    AllowOverride None
+    Require all granted
+    DirectoryIndex index.php
+</Directory>
+<FilesMatch "(?i)\.(env|ini|sql|md|log|bak|sh|dist|example|lock)$">
+    Require all denied
+</FilesMatch>

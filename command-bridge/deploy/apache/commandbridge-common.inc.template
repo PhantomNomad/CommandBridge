@@ -1,0 +1,25 @@
+# Command Bridge access rules, shared by the HTTP and HTTPS virtual hosts.
+# __APP_DIR__ is replaced by install.sh. AllowOverride is None: .htaccess is not used.
+<Directory __APP_DIR__>
+    Options -Indexes -MultiViews +FollowSymLinks
+    AllowOverride None
+    Require all granted
+    DirectoryIndex index.php
+</Directory>
+
+# Never served directly.
+<Directory __APP_DIR__/includes>
+    Require all denied
+</Directory>
+<Directory __APP_DIR__/bin>
+    Require all denied
+</Directory>
+<Directory __APP_DIR__/storage>
+    Require all denied
+</Directory>
+<Directory __APP_DIR__/vendor>
+    Require all denied
+</Directory>
+<FilesMatch "(?i)\.(env|ini|sql|md|log|bak|sh|dist|example|json|lock)$">
+    Require all denied
+</FilesMatch>

@@ -1,0 +1,11 @@
+[Unit]
+Description=Run the Command Bridge Check-In Gateway dispatcher every minute
+
+[Timer]
+OnBootSec=30s
+OnUnitActiveSec=60s
+Unit=commandbridge-gateway-dispatch.service
+Persistent=true
+
+[Install]
+WantedBy=timers.target

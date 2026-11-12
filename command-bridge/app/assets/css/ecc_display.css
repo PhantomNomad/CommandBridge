@@ -1,0 +1,122 @@
+:root {
+  color-scheme: dark;
+  --ecc-navy: #093b63;
+  --ecc-blue: #1477b8;
+  --ecc-bg: #0e1720;
+  --ecc-surface: #182633;
+  --ecc-border: #355064;
+  --ecc-text: #f5f8fa;
+  --ecc-muted: #b9c8d4;
+  --ecc-success: #16774c;
+  --ecc-warning: #bd7714;
+  --ecc-danger: #b52c35;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { min-height: 100%; background: var(--ecc-bg); color: var(--ecc-text); font-family: Arial, Helvetica, sans-serif; }
+.ecc-shell { min-height: 100vh; height: 100dvh; display: flex; flex-direction: column; }
+.ecc-header { display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: 18px 28px; background: var(--ecc-navy); border-bottom: 3px solid var(--ecc-blue); }
+.ecc-app-name { font-size: 1rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #c9e9ff; }
+.ecc-incident { margin-top: 4px; font-size: clamp(1.45rem, 3vw, 2.45rem); font-weight: 700; }
+.ecc-op { margin-top: 6px; font-size: 1rem; color: var(--ecc-muted); }
+.ecc-header-weather { margin-left: auto; min-width: 150px; text-align: right; }
+.ecc-header-weather-label { display: block; color: var(--ecc-muted); font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.ecc-header-weather-value { display: block; margin-top: 3px; font-size: clamp(1rem, 1.8vw, 1.35rem); font-weight: 700; white-space: nowrap; }
+.ecc-clock { min-width: 190px; text-align: right; font-size: clamp(1rem, 2vw, 1.5rem); font-weight: 700; color: #fff; }
+.ecc-clock::before { content: 'Last update time'; display: block; margin-bottom: 3px; color: var(--ecc-muted); font-size: .58em; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.ecc-tabs { display: flex; align-items: stretch; gap: 8px; padding: 12px 20px; background: #101e29; border-bottom: 1px solid var(--ecc-border); overflow-x: auto; }
+.ecc-tab { flex: 1 0 max-content; min-height: 58px; padding: 10px 20px; color: #fff; background: #263d4e; border: 2px solid #41627a; border-radius: 4px; font: inherit; font-size: clamp(1rem, 1.7vw, 1.35rem); font-weight: 700; cursor: pointer; }
+.ecc-tab:focus-visible { outline: 4px solid #ffd34e; outline-offset: 2px; }
+.ecc-tab.is-active { background: var(--ecc-blue); border-color: #7bd2ff; }
+.ecc-pane { flex: 1; min-height: 0; padding: 22px 28px; overflow: auto; }
+.ecc-pane[hidden] { display: none !important; }
+.ecc-pane-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin-bottom: 20px; }
+.ecc-pane-heading h1 { margin: 0; font-size: clamp(1.55rem, 3vw, 2.5rem); }
+.ecc-pane-heading span { color: var(--ecc-muted); font-size: clamp(.95rem, 1.5vw, 1.2rem); }
+.ecc-resource-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }
+.ecc-resource-card, .ecc-meeting-card, .ecc-source-card, .ecc-announcement, .ecc-empty { background: var(--ecc-surface); border: 1px solid var(--ecc-border); border-radius: 6px; }
+.ecc-resource-card { position: relative; overflow: hidden; min-height: 160px; padding: 56px 18px 18px; }
+.ecc-resource-status { position: absolute; top: 0; right: 0; left: 0; padding: 10px 14px; background: #506474; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.ecc-resource-status.status-available, .ecc-resource-status.status-received { background: var(--ecc-success); }
+.ecc-resource-status.status-assigned, .ecc-resource-status.status-demob-pending { background: var(--ecc-warning); }
+.ecc-resource-status.status-out-of-service, .ecc-resource-status.status-released { background: var(--ecc-danger); }
+.ecc-resource-card h2, .ecc-meeting-card h2, .ecc-source-card h2, .ecc-announcement h2 { margin: 0 0 12px; font-size: clamp(1.2rem, 2vw, 1.75rem); }
+.ecc-resource-card p, .ecc-meeting-card p, .ecc-source-card p, .ecc-announcement p { margin: 0; line-height: 1.45; }
+.ecc-resource-card p span { display: block; margin-bottom: 4px; color: var(--ecc-muted); font-size: .88rem; text-transform: uppercase; letter-spacing: .06em; }
+.ecc-meeting-list { display: grid; gap: 14px; }
+.ecc-meeting-card { display: grid; grid-template-columns: minmax(155px, .8fr) minmax(240px, 2fr) minmax(125px, .6fr); gap: 16px; align-items: center; padding: 18px; }
+.ecc-meeting-card time { font-size: clamp(1.15rem, 2vw, 1.8rem); font-weight: 700; color: #bfe8ff; }
+.ecc-meeting-status { text-align: right; color: var(--ecc-muted); font-weight: 700; text-transform: uppercase; }
+.ecc-announcement { max-width: 1100px; padding: 30px; border-left: 12px solid var(--ecc-blue); font-size: clamp(1.2rem, 2vw, 1.65rem); }
+.ecc-announcement.level-priority { border-left-color: var(--ecc-warning); }
+.ecc-announcement.level-critical { border-left-color: var(--ecc-danger); background: #411f25; }
+.ecc-empty { max-width: 850px; padding: 30px; color: var(--ecc-muted); font-size: clamp(1.1rem, 2vw, 1.5rem); }
+.ecc-source-pane { display: flex; flex-direction: column; min-height: 0; }
+.ecc-source-pane .ecc-pane-heading { flex: 0 0 auto; }
+.ecc-source-pane > .ecc-source-card { flex: 1; min-height: 0; width: 100%; }
+.ecc-source-card { display: flex; flex-direction: column; padding: 16px; min-height: 0; }
+.ecc-map-pane { overflow: hidden; }
+.ecc-map-card { overflow: hidden; }
+.ecc-map-panel, .ecc-road-closures { flex: 1; min-height: 0; border: 1px solid var(--ecc-border); background: #0b1218; }
+.ecc-map-panel { display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.ecc-map-image { display: block; max-width: 100%; max-height: 100%; width: 100%; height: 100%; object-fit: contain; }
+.ecc-road-closures { overflow: auto; padding: 16px; white-space: normal; font-size: clamp(1.05rem, 1.8vw, 1.45rem); line-height: 1.45; }
+.ecc-display-portrait .ecc-header { padding: 14px 18px; }
+.ecc-display-portrait .ecc-tabs { padding: 10px; gap: 6px; }
+.ecc-display-portrait .ecc-tab { min-height: 62px; padding: 8px 12px; font-size: .95rem; }
+.ecc-display-portrait .ecc-pane { padding: 16px; }
+.ecc-display-portrait .ecc-resource-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.ecc-display-portrait .ecc-source-pane > .ecc-source-card { min-height: 0; }
+/* Keep a portrait map within the remaining viewport, regardless of image dimensions. */
+.ecc-display-portrait .ecc-map-pane { min-height: 0; overflow: hidden; }
+.ecc-display-portrait .ecc-map-pane > .ecc-map-card { flex: 1 1 0; height: 0; min-height: 0; }
+.ecc-display-portrait .ecc-map-card .ecc-map-panel { width: 100%; height: 100%; min-height: 0; }
+.ecc-display-portrait .ecc-map-image { width: auto; height: auto; max-width: 100%; max-height: 100%; object-fit: contain; }
+@media (max-width: 720px) {
+  .ecc-header { padding: 12px 14px; gap: 12px; }
+  .ecc-header-weather { min-width: 0; }
+  .ecc-header-weather-label { font-size: .62rem; }
+  .ecc-header-weather-value { font-size: .9rem; }
+  .ecc-clock { min-width: 0; font-size: .95rem; }
+  .ecc-tabs { padding: 8px; }
+  .ecc-tab { min-height: 52px; }
+  .ecc-pane { padding: 16px; }
+  .ecc-meeting-card { grid-template-columns: 1fr; gap: 8px; }
+  .ecc-meeting-status { text-align: left; }
+  .ecc-resource-grid, .ecc-display-portrait .ecc-resource-grid { grid-template-columns: 1fr; }
+  .ecc-source-pane > .ecc-source-card { min-height: 0; }
+}
+/* OpenWeather panel */
+.ecc-weather-card { overflow: hidden; }
+.ecc-weather-panel { flex: 1; min-height: 0; display: flex; }
+.ecc-weather-loading, .ecc-weather-error { margin: auto !important; color: var(--ecc-muted); text-align: center; }
+.ecc-weather-content { width: 100%; display: flex; flex-direction: column; gap: 12px; }
+.ecc-weather-current { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; min-height: 102px; padding: 10px 0; }
+.ecc-weather-location { color: #bfe8ff; font-size: clamp(1rem, 1.5vw, 1.4rem); font-weight: 700; }
+.ecc-weather-condition { margin-top: 5px; color: var(--ecc-muted); text-transform: capitalize; font-size: .95rem; }
+.ecc-weather-current-icon { width: 82px; height: 82px; object-fit: contain; }
+.ecc-weather-temperature { font-size: clamp(2.8rem, 5.2vw, 5.5rem); font-weight: 800; line-height: 1; }
+.ecc-weather-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--ecc-border); border-bottom: 1px solid var(--ecc-border); }
+.ecc-weather-metric { padding: 9px 6px; text-align: center; border-right: 1px solid var(--ecc-border); }
+.ecc-weather-metric:last-child { border-right: 0; }
+.ecc-weather-metric span { display: block; color: var(--ecc-muted); font-size: .7rem; text-transform: uppercase; letter-spacing: .04em; }
+.ecc-weather-metric strong { display: block; margin-top: 4px; font-size: .95rem; }
+.ecc-weather-forecast { margin-top: auto; }
+.ecc-weather-forecast-title { margin-bottom: 8px; color: var(--ecc-muted); font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; }
+.ecc-weather-hours { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.ecc-weather-hour { display: flex; flex-direction: column; align-items: center; min-width: 0; padding: 6px 2px; background: rgba(15, 40, 61, .55); text-align: center; font-size: .7rem; }
+.ecc-weather-hour > span { color: var(--ecc-muted); white-space: nowrap; }
+.ecc-weather-hour strong { margin-top: 1px; font-size: .9rem; }
+.ecc-weather-hour-icon { width: 34px; height: 34px; object-fit: contain; }
+.ecc-display-portrait .ecc-weather-card { min-height: 590px; }
+.ecc-display-portrait .ecc-weather-current { min-height: 125px; }
+.ecc-display-portrait .ecc-weather-current-icon { width: 105px; height: 105px; }
+.ecc-display-portrait .ecc-weather-hours { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
+.ecc-display-portrait .ecc-weather-hour { padding: 9px 4px; font-size: .85rem; }
+.ecc-display-portrait .ecc-weather-hour-icon { width: 42px; height: 42px; }
+@media (max-width: 720px) {
+  .ecc-weather-current { grid-template-columns: 1fr auto; }
+  .ecc-weather-temperature { grid-column: 1 / -1; }
+  .ecc-weather-current-icon { width: 70px; height: 70px; }
+  .ecc-weather-hours, .ecc-display-portrait .ecc-weather-hours { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}

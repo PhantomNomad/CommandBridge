@@ -1,0 +1,18 @@
+# Secrets and local configuration
+db.env
+*.env
+!*.env.example
+# Command Bridge runtime data (the default branding logo is kept)
+command-bridge/app/storage/uploads/*
+!command-bridge/app/storage/uploads/index.html
+command-bridge/app/storage/branding/*
+!command-bridge/app/storage/branding/index.html
+!command-bridge/app/storage/branding/org-logo-8cb09c61de6e81e74ded6a26.png
+command-bridge/app/.well-known/
+checkin-gateway/public/.well-known/
+# Build output and editors
+*.zip
+*.log
+.DS_Store
+.idea/
+.vscode/

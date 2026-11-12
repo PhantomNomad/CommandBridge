@@ -1,0 +1,19 @@
+name: lint
+on: [push, pull_request]
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+      - name: PHP syntax
+        run: |
+          find command-bridge/app checkin-gateway/app checkin-gateway/public checkin-gateway/bin -name '*.php' -not -path '*/vendor/*' -print0 | xargs -0 -n1 php -l > /dev/null
+      - name: Shell syntax
+        run: |
+          for f in command-bridge/install.sh command-bridge/update.sh command-bridge/deploy/lib/ui.sh \
+                   checkin-gateway/install.sh checkin-gateway/update.sh checkin-gateway/deploy/lib/ui.sh; do bash -n "$f"; done
+      - name: Forms manifest
+        run: python3 command-bridge/tools/forms_manifest.py verify

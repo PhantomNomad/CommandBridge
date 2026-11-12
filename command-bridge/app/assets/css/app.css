@@ -1,0 +1,695 @@
+body{margin:0;font-family:Arial,sans-serif;background:#f4f6f8;color:#1f2933}
+.app{display:flex;min-height:100vh}
+.sidebar{width:240px;background:#12324a;color:#fff;padding:20px;box-sizing:border-box}
+.sidebar .brand{font-size:24px;font-weight:bold;margin-bottom:20px}
+.sidebar nav a{display:block;color:#fff;text-decoration:none;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.1)}
+.content{flex:1;padding:24px;box-sizing:border-box}
+.topbar{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px}
+.muted{color:#52606d;font-size:14px}
+.userbox{background:#fff;padding:10px 12px;border-radius:4px;border:1px solid #d9e2ec}
+.card{background:#fff;border:1px solid #d9e2ec;border-radius:6px;padding:20px;margin-bottom:20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+label{display:block;font-weight:bold;margin-top:12px}
+input,select,textarea{width:100%;padding:10px;margin-top:6px;box-sizing:border-box;border:1px solid #bcccdc;border-radius:4px}
+button,.btn{display:inline-block;background:#0b69a3;color:#fff;padding:10px 14px;border:0;border-radius:4px;text-decoration:none;cursor:pointer}
+.btn-secondary{background:#486581}
+table{width:100%;border-collapse:collapse;background:#fff}
+th,td{padding:10px;border:1px solid #d9e2ec;text-align:left;vertical-align:top}
+.flash{padding:12px 14px;border-radius:4px;margin-bottom:16px}
+.flash.success{background:#e3f9e5;border:1px solid #7bd88f}
+.flash.error{background:#ffe3e3;border:1px solid #ff9b9b}
+.small{font-size:12px;color:#52606d}
+
+.checkbox-row{display:flex;align-items:center;gap:8px;font-weight:bold}
+.checkbox-row input{width:auto;margin:0}
+.checkbox-cell{display:flex;flex-direction:column;justify-content:flex-end}
+.actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.actions form{margin:0}
+.danger-link{color:#ffd5d5!important}
+
+textarea{min-height:120px}
+.print-sheet{max-width:1100px;margin:0 auto}
+.print-card{border-color:#000}
+.print-form-header{display:flex;justify-content:space-between;gap:24px;align-items:flex-start}
+.print-section{margin-top:20px}
+.print-section h3{margin:0 0 8px 0}
+.print-box{border:1px solid #222;min-height:60px;padding:12px;white-space:pre-wrap}
+.attachment-print-block{border:1px solid #222;padding:12px;margin-bottom:16px;page-break-inside:avoid}
+.attachment-meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.attachment-image{max-width:100%;max-height:900px;display:block;margin:0 auto}
+.attachment-pdf{width:100%;height:900px;border:1px solid #bcccdc}
+.attachment-text{white-space:pre-wrap;background:#fff;border:1px solid #bcccdc;padding:12px;max-height:none;overflow:visible}
+@media print{
+  .sidebar,.topbar,.flash,.no-print{display:none!important}
+  .content{padding:0}
+  body{background:#fff}
+  .card{border:0;margin:0 0 12px 0;padding:0}
+  .print-card{padding:0}
+  a[href]:after{content:''}
+}
+
+.repeatable-table input,.repeatable-table textarea{margin-top:0}
+.repeatable-table textarea{min-height:70px}
+.repeatable-table .btn{padding:8px 10px}
+@media print{
+  .repeatable-table .btn{display:none!important}
+}
+
+
+.topbar-main{display:flex;flex-direction:column;gap:10px}
+.incident-banner-label{font-size:12px;font-weight:bold;color:#52606d;text-transform:uppercase;letter-spacing:.04em}
+.incident-banner-name{font-size:28px;font-weight:bold;line-height:1.2}
+.incident-banner-number{font-size:20px;font-weight:normal;color:#52606d}
+.page-context{font-size:13px;color:#52606d}
+.op-period-switcher{display:flex;flex-direction:column;gap:6px;max-width:560px}
+.op-period-switcher label{margin-top:0;font-size:13px}
+.op-period-switcher select{margin-top:0}
+.dashboard-row{display:flex;gap:16px;align-items:flex-start;margin-bottom:20px}
+.dashboard-main-card{flex:1 1 75%}
+.dashboard-side-card{flex:0 0 25%;min-width:280px}
+.meeting-list{display:flex;flex-direction:column;gap:12px}
+.meeting-list-item{padding-bottom:12px;border-bottom:1px solid #d9e2ec}
+.meeting-list-item:last-child{padding-bottom:0;border-bottom:0}
+.meeting-time{font-size:12px;color:#52606d}
+.meeting-title{font-weight:bold;margin-top:2px}
+.meeting-meta{font-size:13px;color:#52606d;margin-top:2px}
+.inline-form{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
+.inline-form label{margin-top:0}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(240px,1fr));gap:16px}
+.form-grid .full-width{grid-column:1/-1}
+.table-actions{display:flex;gap:8px;flex-wrap:wrap}
+.status-pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#e8f1f8;color:#12324a;font-size:12px;font-weight:bold}
+@media (max-width: 1024px){
+  .dashboard-row{flex-direction:column}
+  .dashboard-side-card{flex:1 1 auto;min-width:0}
+}
+@media (max-width: 640px){
+  .topbar{flex-direction:column;gap:12px}
+  .userbox{align-self:flex-start}
+  .form-grid{grid-template-columns:1fr}
+}
+
+
+.dashboard-current-time{font-size:14px;font-weight:bold;color:#12324a;margin-bottom:8px}
+.next-meeting{background:#f0f7ff;border:1px solid #9ec5fe;border-radius:6px;padding:12px}
+.next-meeting-badge{display:inline-block;margin-bottom:6px;padding:3px 8px;border-radius:999px;background:#0b5ed7;color:#fff;font-size:11px;font-weight:bold;text-transform:uppercase;letter-spacing:.03em}
+
+.notification-toast-container{position:fixed;right:18px;bottom:18px;z-index:9999;display:flex;flex-direction:column;gap:10px;max-width:380px}
+.notification-toast{background:#12324a;color:#fff;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.25);padding:14px}
+.notification-toast-title{font-weight:bold;margin-bottom:4px}
+.notification-toast-body{font-size:14px;margin-bottom:10px}
+.notification-toast-actions{display:flex;gap:8px}
+.notification-toast .btn{background:#fff;color:#12324a;text-decoration:none;padding:6px 10px;border-radius:4px;border:0}
+.notification-toast .btn-secondary{background:#d9e2ec}
+.btn-small{font-size:12px}
+.priority-urgent{color:#b42318;font-weight:bold}.priority-routine{color:#12324a}.priority-low{color:#52606d}
+.timeline{border-left:3px solid #d9e2ec;margin-left:8px;padding-left:14px}.timeline-item{margin-bottom:10px}
+
+/* ICS 213RR workflow/fulfillment UI fixes */
+.form-actions.rr-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.form-actions .btn{min-height:38px;display:inline-flex;align-items:center;justify-content:center}.card-header .btn.primary, table .btn.small, table .btn-small{color:#fff}.span-2{grid-column:1/-1}
+
+/* ICS 213RR action button sizing consistency */
+.form-actions.rr-actions{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+.form-actions.rr-actions .btn,
+.form-actions.rr-actions button,
+.form-actions.rr-actions a.btn{
+  min-height:38px;
+  height:auto;
+  box-sizing:border-box;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:9px 14px;
+  line-height:18px;
+  font-size:14px;
+  white-space:nowrap;
+  flex:0 0 auto;
+  vertical-align:middle;
+}
+.form-actions.rr-actions .btn.primary{
+  color:#fff;
+}
+
+
+/* ICS 213RR fulfillment page button sizing */
+.form-actions.rr-actions.fulfillment-actions{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  justify-content:flex-start;
+  flex-wrap:wrap;
+}
+.form-actions.rr-actions.fulfillment-actions .btn,
+.form-actions.rr-actions.fulfillment-actions button,
+.form-actions.rr-actions.fulfillment-actions a.btn{
+  width:auto;
+  max-width:max-content;
+  min-height:38px;
+  height:38px;
+  padding:9px 14px;
+  line-height:18px;
+  font-size:14px;
+  box-sizing:border-box;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  flex:0 0 auto;
+  align-self:flex-start;
+}
+
+
+/* ICS 213RR new/edit form button sizing */
+.form-grid .form-actions{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  justify-content:flex-start;
+  flex-wrap:wrap;
+}
+.form-grid .form-actions .btn,
+.form-grid .form-actions button,
+.form-grid .form-actions a.btn{
+  width:auto;
+  max-width:max-content;
+  min-height:38px;
+  height:38px;
+  padding:9px 14px;
+  line-height:18px;
+  font-size:14px;
+  box-sizing:border-box;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  flex:0 0 auto;
+  align-self:flex-start;
+}
+
+.info-panel {
+  border: 1px solid #d9e2ec;
+  background: #f8fafc;
+  padding: 12px 14px;
+  margin: 12px 0;
+}
+.info-panel h3 {
+  margin-top: 0;
+}
+
+
+/* Keep action button text readable. */
+.btn,
+button,
+input[type="submit"],
+input[type="button"],
+a.btn,
+.btn:visited,
+a.btn:visited {
+  color: #ffffff !important;
+}
+
+.btn:hover,
+button:hover,
+input[type="submit"]:hover,
+input[type="button"]:hover,
+a.btn:hover,
+.btn:focus,
+button:focus,
+input[type="submit"]:focus,
+input[type="button"]:focus,
+a.btn:focus {
+  color: #ffffff !important;
+}
+
+/* Step 2: keep checkbox text on the same line as the control. */
+.checkbox-inline {
+  display: flex !important;
+  align-items: center;
+  gap: 0.5rem;
+}
+.checkbox-inline input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+}
+.checkbox-inline span {
+  display: inline;
+}
+
+
+/* Step 2a: left-justified checkbox row for Resources Unit tracking. */
+.checkbox-row,
+.tracking-checkbox {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 0.5rem !important;
+  margin-top: 12px !important;
+  text-align: left !important;
+  width: 100% !important;
+}
+.checkbox-row input[type="checkbox"],
+.tracking-checkbox input[type="checkbox"] {
+  width: auto !important;
+  margin: 0 !important;
+  flex: 0 0 auto !important;
+}
+.checkbox-row label,
+.tracking-checkbox label {
+  display: inline !important;
+  margin: 0 !important;
+  font-weight: bold !important;
+  width: auto !important;
+}
+
+
+/* Step 5 UI: keep the left navigation a fixed, readable width.
+   Wide operational tables should scroll inside the content area instead
+   of compressing the sidebar. */
+.app{
+  align-items:stretch;
+}
+.sidebar{
+  width:260px;
+  flex:0 0 260px;
+  min-width:260px;
+  max-width:260px;
+  overflow-wrap:normal;
+}
+.sidebar .brand{
+  font-size:22px;
+  line-height:1.15;
+}
+.sidebar nav a{
+  font-size:13.5px;
+  line-height:1.25;
+  padding:8px 0;
+  white-space:normal;
+}
+.content{
+  flex:1 1 auto;
+  min-width:0;
+  overflow-x:auto;
+}
+
+/* Finance/Admin queue: compact enough for the wider status table without
+   dropping below a readable size. */
+.finance-queue-card{
+  font-size:13px;
+}
+.finance-table-wrap{
+  width:100%;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+}
+.finance-queue-table{
+  min-width:1180px;
+  font-size:12.5px;
+}
+.finance-queue-table th,
+.finance-queue-table td{
+  padding:7px 8px;
+}
+.finance-queue-table .finance-action-form{
+  gap:6px !important;
+  min-width:220px !important;
+}
+.finance-queue-table .finance-action-form select,
+.finance-queue-table .finance-action-form input{
+  padding:7px;
+  font-size:12.5px;
+}
+.finance-queue-table .finance-action-form button{
+  padding:7px 10px;
+  font-size:12.5px;
+}
+@media (max-width: 900px){
+  .app{display:block}
+  .sidebar{
+    width:auto;
+    max-width:none;
+    min-width:0;
+    flex:none;
+  }
+}
+
+/* ICS 211-CAN check-in form layout */
+.ics211-card{
+  font-size:13.5px;
+}
+.ics211-title-row{
+  display:flex;
+  gap:18px;
+  align-items:flex-start;
+  justify-content:space-between;
+}
+.ics211-status{
+  min-width:280px;
+  background:#f7f9fc;
+  border:1px solid #d8e0ea;
+  padding:10px 12px;
+}
+.ics211-section-title{
+  margin:18px 0 10px;
+  padding:6px 8px;
+  background:#23374d;
+  color:#fff;
+  font-weight:700;
+  letter-spacing:.02em;
+  text-transform:uppercase;
+  font-size:12px;
+}
+.ics211-radio-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px 18px;
+  margin:8px 0 12px;
+}
+.ics211-radio-row label{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  width:auto;
+  margin:0;
+  font-weight:600;
+}
+.ics211-radio-row input[type="radio"]{
+  width:auto;
+  margin:0;
+}
+.inline-fields{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.inline-fields input{
+  max-width:90px;
+}
+.ics211-table-wrap{
+  width:100%;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+}
+.ics211-table{
+  min-width:1550px;
+  font-size:12px;
+}
+.ics211-table th,
+.ics211-table td{
+  padding:6px 7px;
+  vertical-align:top;
+}
+.muted{
+  color:#607086;
+  font-size:.78em;
+}
+@media (max-width: 900px){
+  .ics211-title-row{display:block}
+  .ics211-status{min-width:0;margin-top:10px}
+}
+
+.nav-spacer{display:block;height:14px;border-bottom:0!important}
+.userbox-link{color:#1f2933;text-decoration:none}
+.userbox-link:hover{text-decoration:underline}
+
+
+/* Branding */
+.sidebar{width:260px;flex:0 0 260px;min-width:260px;max-width:260px}
+.content{min-width:0;overflow-x:auto}
+.brand-with-logos{display:grid;grid-template-columns:42px 1fr 42px;gap:10px;align-items:center;margin-bottom:20px}
+.brand-logo{max-width:42px;max-height:42px;object-fit:contain;background:rgba(255,255,255,.95);border-radius:6px;padding:3px;box-sizing:border-box}
+.brand-text{min-width:0}
+.sidebar .brand .brand-title{font-size:18px;font-weight:700;line-height:1.15;white-space:normal}
+.sidebar .brand .brand-subtitle{font-size:11px;font-weight:400;line-height:1.2;color:rgba(255,255,255,.82);margin-top:3px}
+.userbox-link{text-decoration:none;color:inherit}
+.userbox-link:hover{text-decoration:underline}
+
+
+/* ICS 202 complete form layout fix */
+.ics202-form label{
+  display:block !important;
+  width:auto !important;
+  margin-top:12px !important;
+  font-weight:bold !important;
+  color:#1f2933 !important;
+  text-transform:none !important;
+  letter-spacing:normal !important;
+  font-size:14px !important;
+}
+.ics202-form input,
+.ics202-form select,
+.ics202-form textarea{
+  width:100% !important;
+}
+.ics202-form input[type="checkbox"]{
+  width:auto !important;
+  margin:0 8px 0 0 !important;
+}
+.ics202-form fieldset{
+  margin-top:16px;
+  border:1px solid #d9e2ec;
+  border-radius:6px;
+  padding:12px 14px;
+}
+.ics202-form legend{
+  font-weight:bold;
+  padding:0 6px;
+}
+.ics202-check-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:8px 16px;
+  margin-top:8px;
+}
+.ics202-check-grid label,
+.ics202-checkbox-label{
+  display:flex !important;
+  align-items:center !important;
+  gap:8px !important;
+  margin-top:6px !important;
+}
+
+
+/* Sidebar footer administration links */
+.sidebar{
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+}
+.sidebar nav{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+}
+.nav-footer{
+  margin-top:auto;
+  padding-top:14px;
+  border-top:1px solid rgba(255,255,255,.25);
+}
+.nav-footer a:first-child{
+  margin-top:0;
+}
+
+
+/* Global button sizing consistency
+   Keep action buttons visually aligned across all form pages, including mixed
+   <button>, submit inputs, and <a class="btn"> controls. */
+button,
+.btn,
+a.btn,
+input[type="submit"],
+input[type="button"],
+input[type="reset"]{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  min-height:38px !important;
+  height:38px !important;
+  padding:9px 14px !important;
+  line-height:18px !important;
+  font-size:14px !important;
+  font-family:Arial,sans-serif !important;
+  font-weight:normal !important;
+  box-sizing:border-box !important;
+  border-radius:4px !important;
+  border:0 !important;
+  text-decoration:none !important;
+  white-space:nowrap !important;
+  vertical-align:middle !important;
+  cursor:pointer !important;
+}
+
+button.small,
+.btn.small,
+.btn-small,
+a.btn-small,
+input[type="submit"].small,
+input[type="button"].small{
+  min-height:32px !important;
+  height:32px !important;
+  padding:6px 10px !important;
+  line-height:16px !important;
+  font-size:12px !important;
+}
+
+.actions,
+.form-actions,
+.card-actions,
+.button-row{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+
+.actions form,
+.form-actions form,
+.card-actions form,
+.button-row form{
+  margin:0;
+  display:inline-flex;
+}
+
+table button,
+table .btn,
+table a.btn,
+table input[type="submit"],
+table input[type="button"]{
+  min-height:32px !important;
+  height:32px !important;
+  padding:6px 10px !important;
+  line-height:16px !important;
+  font-size:12px !important;
+}
+
+/* Do not stretch buttons inside grid/form layouts unless a page explicitly opts in. */
+.grid button,
+.grid .btn,
+.grid input[type="submit"],
+.form-grid button,
+.form-grid .btn,
+.form-grid input[type="submit"]{
+  width:auto !important;
+  max-width:max-content !important;
+}
+
+/* Settings release 1.0.1.1 */
+.app-footer{padding:10px 22px;color:#4b5563;font-size:12px;text-align:center;background:#fff;border-top:1px solid #e5e7eb}
+
+
+/* External check-in location access management */
+.external-checkin-code-notice{
+  border-color:#0b69a3;
+  background:#f0f7ff;
+}
+.external-checkin-code-value{
+  display:inline-block;
+  margin:8px 0;
+  padding:12px 16px;
+  border:1px solid #0b69a3;
+  border-radius:4px;
+  background:#fff;
+  color:#102a43;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+  font-size:24px;
+  font-weight:700;
+  letter-spacing:.12em;
+}
+.external-checkin-access-cell{
+  min-width:300px;
+}
+.external-checkin-access-cell details{
+  min-width:280px;
+}
+.external-checkin-access-cell summary{
+  cursor:pointer;
+  color:#0b69a3;
+  font-weight:700;
+}
+.external-checkin-url-row{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.external-checkin-url-row input{
+  min-width:0;
+  margin-top:0;
+  font-size:12px;
+}
+.external-checkin-url-row button{
+  flex:0 0 auto;
+  white-space:nowrap;
+}
+.external-checkin-qr{
+  display:block;
+  width:220px;
+  max-width:100%;
+  height:auto;
+  margin:12px 0 8px;
+  border:1px solid #bcccdc;
+  background:#fff;
+  image-rendering:pixelated;
+}
+.external-checkin-qr-actions,
+.external-checkin-code-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+.external-checkin-code-actions{
+  margin-top:14px;
+  padding-top:12px;
+  border-top:1px solid #d9e2ec;
+}
+.external-checkin-code-actions .small{
+  flex-basis:100%;
+  margin:0;
+}
+.external-checkin-code-actions .inline-form{
+  margin:0;
+}
+@media (max-width:640px){
+  .external-checkin-url-row{
+    align-items:stretch;
+    flex-direction:column;
+  }
+  .external-checkin-url-row button{
+    align-self:flex-start;
+  }
+}
+
+
+.external-checkin-qr {
+    box-sizing: border-box;
+    padding: 10px;
+}
+
+.external-checkin-qr canvas,
+.external-checkin-qr img {
+    display: block;
+    width: 100% !important;
+    height: auto !important;
+}
+
+/* Fixed left menu: the sidebar stays in view while long pages scroll on the right.
+   If the menu itself is taller than the window it scrolls on its own. */
+@media (min-width: 901px){
+  .app{align-items:flex-start}
+  .sidebar{
+    position:sticky;
+    top:0;
+    align-self:flex-start;
+    height:100vh;
+    min-height:0;
+    overflow-y:auto;
+    overscroll-behavior:contain;
+  }
+  .content{align-self:stretch;min-height:100vh}
+}
+@media print{
+  .sidebar{position:static;height:auto;overflow:visible}
+}

@@ -1,0 +1,24 @@
+*{box-sizing:border-box}body{margin:0;background:#f4f7f8;color:#16212a;font:16px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}.container{max-width:760px;margin:auto;padding:28px 16px 48px}.eyebrow{text-transform:uppercase;letter-spacing:.08em;font-size:.78rem;font-weight:700;color:#386a83;margin:0}h1{font-size:1.75rem;margin:.15rem 0 1.2rem}h2{font-size:1.22rem;margin-top:0}.card,.notice{background:#fff;border:1px solid #d7e0e4;padding:18px;margin:16px 0;border-radius:6px}.notice{border-left:5px solid #386a83}.notice.error{border-left-color:#a93030}.notice.success{border-left-color:#24734b}.muted{color:#52626d}label{display:block;font-weight:650;margin:14px 0 4px}input,select,textarea,button{width:100%;font:inherit;padding:10px;border:1px solid #98aab3;border-radius:4px}textarea{min-height:92px;resize:vertical}button{cursor:pointer;background:#075b7a;border-color:#075b7a;color:#fff;font-weight:700;margin-top:16px}.secondary{background:#505e66;border-color:#505e66}.link{background:none;border:0;color:#075b7a;text-align:left;padding:0;width:auto;font-weight:600}@media (min-width:620px){form{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}form label:nth-of-type(1),form label:has(textarea),form button{grid-column:1/-1}}
+/* Check-in status: keep counts in one horizontal row, with scroll support on narrow screens. */
+.checkin-status{position:relative}
+.status-grid{display:flex;margin:0;border:1px solid #d7e0e4;border-radius:4px;overflow-x:auto;background:#f8fafb}
+.status-grid>div{flex:1 0 135px;padding:10px 12px}
+.status-grid>div+div{border-left:1px solid #d7e0e4}
+.status-grid dt{color:#52626d;font-size:.82rem;font-weight:700}
+.status-grid dd{margin:3px 0 0;font-size:1.65rem;font-weight:750;line-height:1.1}
+.status-updated{margin:12px 0 0}
+.status-refresh-prompt{position:fixed;right:16px;bottom:16px;z-index:20;width:min(440px,calc(100vw - 32px));padding:14px;background:#fff;border:1px solid #d7e0e4;border-radius:6px;box-shadow:0 4px 16px rgba(22,33,42,.18)}
+.status-refresh-prompt .status-change-notice{margin:0;padding:0;background:transparent;border:0}
+.status-refresh{margin:12px 0 0}
+
+/* Check-in status: one horizontal row, scrollable on narrow screens. */
+.checkin-status{position:relative}
+.status-grid{display:flex;flex-flow:row nowrap;margin:0;padding:0;overflow-x:auto;border:1px solid #d7e0e4;border-radius:4px;background:#f8fafb}
+.status-grid>div{display:block;flex:1 0 135px;margin:0;padding:10px 12px}
+.status-grid>div+div{border-left:1px solid #d7e0e4}
+.status-grid dt{color:#52626d;font-size:.82rem;font-weight:700}
+.status-grid dd{display:block;margin:3px 0 0;font-size:1.65rem;font-weight:750;line-height:1.1}
+.status-updated{margin:12px 0 0}
+.status-refresh-prompt{position:fixed;right:16px;bottom:16px;z-index:20;width:min(440px,calc(100vw - 32px));padding:14px;background:#fff;border:1px solid #d7e0e4;border-radius:6px;box-shadow:0 4px 16px rgba(22,33,42,.18)}
+.status-refresh-prompt .status-change-notice{margin:0;padding:0;background:transparent;border:0}
+.status-refresh{margin:12px 0 0}

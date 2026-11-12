@@ -1,0 +1,11 @@
+[Unit]
+Description=Run CommandBridge external check-in synchronization every minute
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=1min
+Persistent=true
+Unit=commandbridge-external-checkin-sync.service
+
+[Install]
+WantedBy=timers.target

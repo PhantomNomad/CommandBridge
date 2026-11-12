@@ -1,0 +1,15 @@
+[Unit]
+Description=CommandBridge external check-in push and pull synchronization worker
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=www-data
+Group=www-data
+WorkingDirectory=__APP_DIR__
+ExecStart=/usr/bin/php __APP_DIR__/bin/external_checkin_sync_worker.php --limit=25
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true

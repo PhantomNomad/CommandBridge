@@ -1,0 +1,16 @@
+[Unit]
+Description=Command Bridge Check-In Gateway outbound event dispatcher
+After=network-online.target mariadb.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=www-data
+Group=www-data
+Environment=CHECKIN_GATEWAY_ENV_PATH=/etc/commandbridge/checkin_gateway.env
+ExecStart=/usr/bin/php __APP_DIR__/bin/dispatch_events.php --limit=25
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=full
+ReadWritePaths=/var/lib/php/sessions
