@@ -29,6 +29,11 @@ function cb_email_config(): array {
         'graph_mailbox' => trim($get('email_graph_sender_mailbox')),
     ];
 }
+/** True when the SMTP host is this server itself, where an unauthenticated, unencrypted relay is acceptable. */
+function cb_email_host_is_local(string $host): bool {
+    $host = strtolower(trim($host, " []"));
+    return $host === 'localhost' || $host === '::1' || (bool)preg_match('/^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$/', $host);
+}
 function cb_email_error(string $message): array { error_log('Command Bridge email: ' . $message); return ['ok'=>false,'message'=>$message]; }
 function cb_email_clean(string $value): string { return trim(str_replace(["\r","\n"], '', $value)); }
 function cb_token(string $tenant, string $client, string $secret, string $scope): array {

@@ -30,3 +30,26 @@ ICS 211 uses `forms/ics211/Ics211TemplateFieldMap.php`, generated from field pos
 ICS203, 204, 205, 206, 208, 214 and 220 in `assets/pdf/official/` were encrypted (owner-password, AES-256 / R6), which
 pdftk-java cannot open. They were decrypted with `qpdf --decrypt` (fields unchanged). If a template is ever replaced,
 run `qpdf --decrypt` on it first.
+
+## In-app help
+
+Every page that calls `render_header()` gets a **? Help** button. It opens `app/help/topics/<page path>.md` in a side
+panel: `/admin/smtp.php` uses `help/topics/admin/smtp.md`, and `/forms/ics204/index.php` uses
+`help/topics/forms/ics204/index.md`. Pages named `help.php`, `pdf.php` or `pdf_preview.php` use their folder's
+`index.md`. To point a page at a different topic, pass it: `render_header('Title', 'admin/smtp')`.
+
+**Adding a page:** add its `.md` file in the same commit. The self-check (`bin/smoke_test.php --only=env`) fails when a
+page has no help file. A new file can start as a short summary ending with
+`> Detailed help for this page is still being written. See [all help topics](help:index).`; the self-check counts those.
+
+**Writing help** (Markdown subset, rendered by `includes/help.php`; raw HTML is shown as text):
+
+- `# Title` on the first line; `##` sections get anchors (`## Microsoft Graph` becomes `#microsoft-graph`).
+- Lists (`-`, `1.`), tables (`| a | b |`), code blocks (```` ``` ````), `inline code`, **bold**, *italic*.
+- `> Note text` for a note; start it with `**Warning:**` for a yellow warning.
+- Links: `[text](https://...)`, `[text](/admin/smtp.php)`, `[text](#section)`, and `[text](help:admin/smtp#microsoft-graph)`,
+  which opens another help topic in the panel.
+- A page can open help at a section from its own links: `<a href="..." data-help-open="admin/smtp#microsoft-graph">`.
+
+Write in plain words for the person using the page. Do not copy text from the ICS Canada forms; link to a form's own
+`help.php` instead.

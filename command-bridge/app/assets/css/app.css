@@ -693,3 +693,50 @@ table input[type="button"]{
 @media print{
   .sidebar{position:static;height:auto;overflow:visible}
 }
+
+/* ---------------------------------------------------------------- In-app help (includes/help.php, assets/js/help_panel.js) */
+.topbar-side{display:flex;align-items:flex-start;gap:10px}
+.btn.btn-help,a.btn.btn-help:visited{background:#1f5f99;color:#fff !important;font-weight:700 !important}
+.btn.btn-help:hover,.btn.btn-help:focus{background:#174a78;color:#fff !important}
+.btn.btn-help:focus-visible{outline:3px solid #9fb3c8;outline-offset:2px}
+.help-panel{position:fixed;top:0;right:0;bottom:0;width:440px;max-width:100vw;background:#fff;border-left:1px solid #bcccdc;
+  box-shadow:-6px 0 20px rgba(16,42,67,.15);z-index:2000;display:flex;flex-direction:column}
+.help-panel[hidden]{display:none}
+.help-panel-head{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid #d9e2ec;background:#f0f4f8}
+.help-panel-head h2{flex:1;margin:0;font-size:18px}
+.help-panel-newtab{font-size:13px;white-space:nowrap}
+/* The global button rules force white text, a fixed height and 14px type; the close button needs its own look. */
+.help-panel .help-panel-close{background:#fff;border:1px solid #bcccdc !important;color:#243b53 !important;
+  font-size:24px !important;font-weight:700 !important;line-height:1 !important;width:36px;height:36px !important;
+  min-height:36px !important;padding:0 !important;flex:none}
+.help-panel .help-panel-close:hover,.help-panel .help-panel-close:focus{background:#d9e2ec;color:#102a43 !important}
+.help-panel-body{flex:1;overflow-y:auto;padding:4px 18px 24px;outline:none}
+body.help-open .content{margin-right:440px}
+@media (max-width: 1100px){ body.help-open .content{margin-right:0} .help-panel{width:100vw} }
+.help-doc{line-height:1.5}
+.help-doc h1{font-size:22px;margin:16px 0 8px}
+.help-doc h2{font-size:18px;margin:22px 0 8px;padding-top:6px;border-top:1px solid #e4e7eb}
+.help-doc h3{font-size:16px;margin:18px 0 6px}
+.help-doc h4{font-size:14px;margin:14px 0 4px}
+.help-doc code{background:#f0f4f8;border:1px solid #d9e2ec;border-radius:3px;padding:0 4px;font-size:.92em}
+.help-doc pre{background:#102a43;color:#f0f4f8;border-radius:4px;padding:10px 12px;overflow-x:auto;font-size:13px}
+.help-doc pre code{background:none;border:0;padding:0;color:inherit}
+.help-doc ul,.help-doc ol{padding-left:22px}
+.help-doc li{margin:3px 0}
+.help-note{background:#eef6fc;border-left:4px solid #2680c2;padding:8px 12px;margin:12px 0;border-radius:3px}
+.help-warning{background:#fffbea;border-left-color:#de911d}
+.help-table-wrap{overflow-x:auto}
+.help-table{border-collapse:collapse;margin:10px 0;font-size:14px}
+.help-table th,.help-table td{border:1px solid #d9e2ec;padding:5px 8px;text-align:left;vertical-align:top}
+.help-table th{background:#f0f4f8}
+.help-highlight{background:#fff3c4;transition:background 1s}
+.help-loading{color:#627d98}
+.help-topic-list{columns:2 260px}
+.help-page{max-width:900px}
+.field-hint{display:block;font-size:13px;color:#52606d;font-weight:normal;margin-top:3px}
+.help-inline-link{font-size:13px;margin-left:6px}
+
+/* Sidebar logo block: lay out whichever logos are shown (ICS logo, organization logo, both or neither). */
+.sidebar .brand.brand-with-logos{display:flex;align-items:center;gap:10px}
+.brand-with-logos .brand-logo{flex:none;width:42px;height:42px}
+.brand-with-logos .brand-text{flex:1;min-width:0}

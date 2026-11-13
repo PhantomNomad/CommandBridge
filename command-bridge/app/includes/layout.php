@@ -73,8 +73,15 @@ function render_ics_official_blank_pdf_button(string $formCode): void {
     }
 }
 
-function render_header(string $title): void {
+/**
+ * @param string|null $helpTopic Help file for this page (see includes/help.php). Leave null to use the page's own path,
+ *                               e.g. /admin/smtp.php -> help/topics/admin/smtp.md.
+ */
+function render_header(string $title, ?string $helpTopic = null): void {
+    require_once __DIR__ . '/help.php';
     $user = current_user();
+    $helpTopic = ($helpTopic !== null && cb_help_topic_is_valid(explode('#', $helpTopic)[0])) ? $helpTopic : cb_help_topic_for_current_page();
+    $showHelp = $user || in_array(explode('#', $helpTopic)[0], CB_HELP_PUBLIC_TOPICS, true);
     $canManageUsers = current_user_can_manage_users();
     $branding = branding_settings();
     $incident = null;
@@ -181,6 +188,7 @@ function render_header(string $title): void {
           <a href="<?= e(app_url('/admin/system_information.php')) ?>">System Information</a>
         <?php endif; ?>
         <div class="nav-footer">
+          <a href="<?= e(cb_help_url('index')) ?>">Help topics</a>
           <a href="<?= e(app_url('/logout.php')) ?>">Logout</a>
         </div>
       <?php elseif ($user): ?>
@@ -203,6 +211,7 @@ function render_header(string $title): void {
         <a href="<?= e(app_url('/forms/finance/index.php')) ?>">FIN/Admin - 213RR Queue</a>
         <?php endif; ?>
         <div class="nav-footer">
+          <a href="<?= e(cb_help_url('index')) ?>">Help topics</a>
           <?php if (is_system_administrator()): ?><a href="<?= e(app_url('/admin/settings.php')) ?>">Settings</a><?php endif; ?>
           <a href="<?= e(app_url('/logout.php')) ?>">Logout</a>
         </div>
@@ -245,13 +254,19 @@ function render_header(string $title): void {
         <?php endif; ?>
         <div class="page-context"><?= e($title) ?></div>
       </div>
-      <?php if ($user): ?>
-        <div class="userbox">
-          <a class="userbox-link" href="<?= e(app_url('/account.php')) ?>" title="Change password or PIN">
-            <?= e($user['display_name']) ?><?= !empty($user['role_code']) ? ' - ' . e($user['role_code']) : '' ?>
-          </a>
-        </div>
-      <?php endif; ?>
+      <div class="topbar-side">
+        <?php if ($showHelp): ?>
+          <a class="btn btn-help no-print" href="<?= e(cb_help_url($helpTopic)) ?>" data-help-open="<?= e($helpTopic) ?>"
+             aria-controls="help-panel" title="Help for this page">? Help</a>
+        <?php endif; ?>
+        <?php if ($user): ?>
+          <div class="userbox">
+            <a class="userbox-link" href="<?= e(app_url('/account.php')) ?>" title="Change password or PIN">
+              <?= e($user['display_name']) ?><?= !empty($user['role_code']) ? ' - ' . e($user['role_code']) : '' ?>
+            </a>
+          </div>
+        <?php endif; ?>
+      </div>
     </header>
     <?php if ($user && $canManageUsers) { require_once __DIR__ . '/external_checkin_status.php'; echo external_checkin_sync_banner_html(); } ?>
     <?php foreach (get_flashes() as $flash): ?>
@@ -267,6 +282,17 @@ function render_footer(): void {
 <?php require_once __DIR__ . '/version.php'; ?>
 <div class="app-footer no-print" style="font-size:12px;opacity:.75">Command Bridge <?= e(CB_VERSION) ?> &middot; free software under the GNU AGPL-3.0<?php if (CB_SOURCE_URL !== ''): ?> &middot; <a href="<?= e(CB_SOURCE_URL) ?>" rel="noopener">source code</a><?php endif; ?></div>
 <?php require_once __DIR__ . '/signoff.php'; echo signoff_hidden_form_html(); ?>
+<?php require_once __DIR__ . '/help.php'; ?>
+<aside id="help-panel" class="help-panel no-print" hidden aria-labelledby="help-panel-title" role="complementary"
+       data-help-base="<?= e(app_url('/help/view.php')) ?>">
+  <div class="help-panel-head">
+    <h2 id="help-panel-title">Help</h2>
+    <a class="help-panel-newtab" href="<?= e(cb_help_url('index')) ?>" target="_blank" rel="noopener" title="Open this help in a new tab">Open in new tab</a>
+    <button type="button" class="help-panel-close" aria-label="Close help">&times;</button>
+  </div>
+  <div class="help-panel-body help-doc" tabindex="-1"></div>
+</aside>
+<script src="<?= e(app_url('/assets/js/help_panel.js')) ?>" defer></script>
 <?php
     ?>
 
