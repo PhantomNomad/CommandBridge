@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.9.0-beta.4
 
 * **In-app help.** Every page has a **? Help** button that opens help for that page in a side panel, so you can read
   it while filling in the form (or open it in a new tab). **Help topics** in the sidebar lists everything. Help is
@@ -16,7 +16,6 @@
     mail from this server, and the page shows a warning while such a setup is saved. Relays on this server
     (`localhost`) are unchanged. Sending is not affected, so existing setups keep working.
   - **A password or OAuth2 sign-in is refused with encryption "None"** unless the relay is on this server.
-
 * **Sign-out after 1 hour without activity** (was about 24 minutes, PHP's default, and not reliably enforced). The app
   now enforces the limit itself. It comes from `session.gc_maxlifetime`, which the installer sets to 3600, and
   `update.sh` adds to existing servers (an existing value is kept). The dashboard's automatic notification refresh
@@ -29,6 +28,9 @@
   expired, it simply reloads with a message. A page left over from before signing in again (for example another tab)
   shows *This page is out of date* with a link to reload it. JSON requests get `session_expired` / `page_expired`.
   The self-check (`--base-url`) tests the timed-out case.
+
+No database changes. Update with `update.sh`; it also adds the 1-hour sign-out setting to PHP (an existing value is kept).
+The Check-In Gateway is unchanged (0.9.0-beta.2).
 
 ## 0.9.0-beta.3
 
