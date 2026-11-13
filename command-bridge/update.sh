@@ -53,6 +53,21 @@ if [ -f "$ENVF" ] && ! grep -q '^APP_TIMEZONE=' "$ENVF"; then
     echo "APP_TIMEZONE=$TZ_NAME" >> "$ENVF"; echo "Added APP_TIMEZONE=$TZ_NAME to $ENVF (edit it if wrong)."
 fi
 
+# PHP: sign-out after 1 hour without activity. An existing value is kept, so a changed
+# timeout survives updates; installs without the Command Bridge PHP settings file get one with just this line.
+PHPVER="$(php -r 'echo PHP_MAJOR_VERSION . "." . PHP_MINOR_VERSION;' 2>/dev/null || true)"
+if [ -n "$PHPVER" ]; then
+    for sapi in apache2 cli; do
+        d="/etc/php/$PHPVER/$sapi/conf.d"; f="$d/90-commandbridge.ini"
+        [ -d "$d" ] || continue
+        if ! grep -qs '^session.gc_maxlifetime' "$f"; then
+            [ -f "$f" ] || echo "; Command Bridge" > "$f"
+            printf '%s\n%s\n' "; Sign-out after this many seconds without activity" "session.gc_maxlifetime = 3600" >> "$f"
+            echo "Set session.gc_maxlifetime = 3600 (1 hour) in $f"
+        fi
+    done
+fi
+
 ui_stage "Replacing application files"
 # 3. Code (keeps uploads, branding changes and database settings)
 rsync -a --delete --exclude 'storage/' --exclude 'db.env' --exclude '.well-known/' "$SRC_DIR/app/" "$APP_DIR/"

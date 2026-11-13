@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased
+
+* **Sign-out after 1 hour without activity** (was about 24 minutes, PHP's default, and not reliably enforced). The app
+  now enforces the limit itself. It comes from `session.gc_maxlifetime`, which the installer sets to 3600, and
+  `update.sh` adds to existing servers (an existing value is kept). The dashboard's automatic notification refresh
+  does not count as activity. When the hour is up, an open dashboard goes to the sign-in page instead of staying on
+  screen. The sign-in page says why. The self-check shows the current limit. See "Sign-out after inactivity" in
+  docs/INSTALL.md.
+* **Friendlier message when the sign-in timed out.** Submitting a form after the session expired showed only
+  "Invalid CSRF token". It now shows *Your session has timed out* (and that what was entered was not saved), with a
+  **Sign in again** button, and goes to the sign-in page by itself after 10 seconds. If the sign-in page itself had
+  expired, it simply reloads with a message. A page left over from before signing in again (for example another tab)
+  shows *This page is out of date* with a link to reload it. JSON requests get `session_expired` / `page_expired`.
+  The self-check (`--base-url`) tests the timed-out case.
+
 ## 0.9.0-beta.3
 
 **Check-In Gateway setup** (needs Check-In Gateway 0.9.0-beta.2 for the connection test)

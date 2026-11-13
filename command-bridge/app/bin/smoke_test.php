@@ -146,6 +146,9 @@ if ($want('env')) {
     @exec(escapeshellarg($pdftk) . ' --version 2>&1', $out, $rc);
     t_ok('pdftk runs', $rc === 0, $rc === 0 ? (string)($out[0] ?? '') : 'set COMMAND_BRIDGE_PDFTK_BIN or install pdftk-java');
     t_ok('Temp directory writable', is_writable(sys_get_temp_dir()), sys_get_temp_dir());
+    $idle = (int)ini_get('session.gc_maxlifetime');
+    t_info('Sign-out after inactivity: ' . intdiv(cb_session_idle_seconds(), 60) . ' minutes (session.gc_maxlifetime = ' . $idle
+        . ($idle < 300 ? ', below 5 minutes so 60 is used' : '') . '; set in /etc/php/<ver>/{apache2,cli}/conf.d/90-commandbridge.ini)');
 
     try {
         $configured = external_checkin_sync_is_configured();
@@ -508,6 +511,15 @@ if ($want('http')) {
         foreach (['x-content-type-options: nosniff', 'x-frame-options', 'referrer-policy'] as $h) { t_ok("security header: $h", str_contains($login['headers'], $h)); }
         t_ok('Content-Security-Policy header present (enforced or report-only)', str_contains($login['headers'], 'content-security-policy'));
         t_ok('session cookie is HttpOnly', !str_contains($login['headers'], 'set-cookie: ') || str_contains($login['headers'], 'httponly'));
+        // A form posted after the sign-in timed out gets a plain-language page that returns to sign-in, not "Invalid CSRF token".
+        $ch = curl_init($baseUrl . '/setup/setup_tsc.php?step=2');
+        curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_POST => true, CURLOPT_POSTFIELDS => 'csrf_token=expired',
+            CURLOPT_TIMEOUT => 15, CURLOPT_SSL_VERIFYPEER => !$insecure, CURLOPT_SSL_VERIFYHOST => $insecure ? 0 : 2]);
+        $expiredBody = (string)curl_exec($ch);
+        $expiredCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        t_ok('timed-out form shows the "session has timed out" page', $expiredCode === 403 && str_contains($expiredBody, 'session has timed out')
+            && str_contains($expiredBody, 'http-equiv="refresh"'), 'HTTP ' . $expiredCode);
         foreach (['/admin/sync_status.php', '/admin/signoff_settings.php', '/dashboard/index.php', '/forms/signoff.php'] as $p) {
             $r = $get($p);
             t_ok("$p is not readable without logging in", in_array($r['code'], [301, 302, 303, 307, 401, 403, 405], true), 'HTTP ' . $r['code']);
