@@ -391,6 +391,9 @@ INSERT INTO `meeting_types` VALUES
 (24,'PUBLIC_INFO','Public Information Meeting','Public information coordination meeting.',80,1,'2026-10-19 13:36:04','2026-10-19 13:36:04'),
 (25,'OTHER','Other Meeting','Other incident-related meeting.',90,1,'2026-10-19 13:36:04','2026-10-19 13:36:04');
 
+INSERT INTO `form_permissions` (`form_code`, `role_code`, `can_view`, `can_create`, `can_edit`, `can_submit_final`, `can_manage_permissions`, `is_active`) VALUES
+('ICS204', 'RESL', 1, 1, 1, 1, 0, 1);
+
 INSERT INTO `app_settings` (`setting_key`, `setting_value`) VALUES
 ('email_delivery_method', 'smtp_password'),
 ('email_oauth_scope', 'https://outlook.office365.com/.default'),

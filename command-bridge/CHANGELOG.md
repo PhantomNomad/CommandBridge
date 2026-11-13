@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.9.0-beta.2
+
+* **Fixed: ICS 204 could not be approved.** The Planning Section Chief approval step existed in the code but had no button,
+  and it was only processed for users with edit permission, which the standard permissions do not give Planning. A submitted
+  ICS 204 now shows an **Approve ICS 204 (Planning Section Chief)** button to the PSC (and TSC/Admin). Approval no longer
+  requires edit rights on the form (view access is enough), only works on a *submitted* form, records the approver and time,
+  and is written to the audit log. The approver's name and approval time now show on the approved form.
+* The Resources Unit Leader (RESL) now has ICS 204 view/edit/submit permission by default (new installs via `seed.sql`; existing installs via migration `0001_ics204_resl_permission.sql`, applied by `update.sh`), matching the on-screen help text.
+* Update with `update.sh`; the Check-In Gateway is unchanged (still 0.9.0-beta.1).
+
 ## 0.9.0-beta.1 - first public beta
 
 First public release. Earlier builds (1.0.2.x) were private; their history is folded into this baseline.

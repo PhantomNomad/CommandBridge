@@ -4,7 +4,7 @@ Command Bridge is free, self-hosted software for running an **Incident Command S
 operational periods, positions and chain of command, ICS Canada forms with sign-off and PDF export, resource tracking,
 and resource check-in. It is built on PHP 8, MariaDB and Apache and installs on a plain Debian server.
 
-> **Public beta - version 0.9.0-beta.1.** It is used operationally but has not had wide testing. Test your install,
+> **Public beta - version 0.9.0-beta.2 (Command Bridge; Check-In Gateway 0.9.0-beta.1).** It is used operationally but has not had wide testing. Test your install,
 > keep backups, and read [SECURITY.md](SECURITY.md) before putting real incident data in it.
 
 ## Two programs, two servers

@@ -6,7 +6,7 @@ Command Bridge is a self-hosted web application for running an Incident Command 
 incident and operational-period setup, positions and chain of command, ICS forms with sign-off and PDF export,
 resource tracking, check-in, and an Emergency Coordination Centre display.
 
-> **Status: public beta (0.9.0-beta.1).** It is used operationally but has not had wide testing.
+> **Status: public beta (0.9.0-beta.2).** It is used operationally but has not had wide testing.
 > Test your install, keep backups, and read [SECURITY.md](SECURITY.md) before putting real incident data in it.
 
 * PHP 8 + MariaDB on Apache, no framework, no cloud dependency
