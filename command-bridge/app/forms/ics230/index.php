@@ -314,10 +314,11 @@ render_header('ICS 230 - Daily Meeting Schedule');
         <div>
           <label>Status</label>
           <select name="meeting_status">
-            <?php foreach (['scheduled', 'tentative', 'completed', 'cancelled'] as $statusOption): ?>
-              <option value="<?= e($statusOption) ?>" <?= ((string)($editingMeeting['status'] ?? 'scheduled') === $statusOption) ? 'selected' : '' ?>><?= e(ucfirst($statusOption)) ?></option>
+            <?php foreach (['scheduled' => 'Scheduled', 'tentative' => 'Tentative', 'completed' => 'Completed (meeting was held)', 'cancelled' => 'Cancelled'] as $statusOption => $statusLabel): ?>
+              <option value="<?= e($statusOption) ?>" <?= ((string)($editingMeeting['status'] ?? 'scheduled') === $statusOption) ? 'selected' : '' ?>><?= e($statusLabel) ?></option>
             <?php endforeach; ?>
           </select>
+          <div class="small">Mark a meeting Completed once it has been held: only completed meetings show as &ldquo;Meeting held&rdquo; on everyone&rsquo;s ICS 214.</div>
         </div>
         <div>
           <label>Display Order</label>

@@ -9,10 +9,22 @@
       pane.hidden = !active;
     });
     if (history.replaceState) history.replaceState(null, '', `#${tabName}`);
+    // Meetings: start at the last meeting held so the upcoming ones are on screen.
+    if (tabName === 'meetings') {
+      const pane = panes.find((p) => p.dataset.eccPane === 'meetings');
+      const lastHeld = pane ? pane.querySelector('[data-ecc-last-held]') : null;
+      if (pane && lastHeld) {
+        pane.scrollTop = Math.max(0, lastHeld.getBoundingClientRect().top - pane.getBoundingClientRect().top + pane.scrollTop - 12);
+      }
+    }
   };
   tabs.forEach((tab) => tab.addEventListener('click', () => activate(tab.dataset.eccTab)));
   const requested = window.location.hash.replace('#', '');
   if (requested && tabs.some((tab) => tab.dataset.eccTab === requested)) activate(requested);
+  else {
+    const shown = panes.find((pane) => !pane.hidden && pane.dataset.eccPane === 'meetings');
+    if (shown) activate('meetings');
+  }
 
   const clock = document.querySelector('.ecc-clock');
   const updateClock = () => {

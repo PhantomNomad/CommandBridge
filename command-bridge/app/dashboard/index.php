@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 require_once dirname(__DIR__) . '/includes/layout.php';
+require_once dirname(__DIR__) . '/includes/meetings.php';
 require_login();
 
 $incident = active_incident();
@@ -21,7 +22,7 @@ if ($incidentId > 0 && $currentOperationalPeriodId > 0) {
         FROM operational_period_meetings m
         LEFT JOIN meeting_types mt ON mt.id = m.meeting_type_id
         WHERE m.incident_id = ? AND m.operational_period_id = ? AND m.deleted_at IS NULL
-          AND m.scheduled_at >= NOW()
+          AND m.scheduled_at >= NOW() AND LOWER(m.status) <> 'cancelled'
         ORDER BY m.scheduled_at ASC, m.display_order ASC, m.id ASC
     ");
     $stmt->execute([$incidentId, $currentOperationalPeriodId]);
@@ -57,6 +58,9 @@ function dashboard_get_notifications(int $incidentId): array {
             WHERE n.incident_id=? AND n.is_read=0 AND (n.user_id=? $roleSql)
               AND NOT (n.notification_type='account_locked' AND NOT EXISTS (
                     SELECT 1 FROM users lu WHERE lu.id=n.related_id AND lu.locked_until IS NOT NULL AND lu.locked_until > UTC_TIMESTAMP()))
+              AND NOT (n.notification_type='meeting_status_reminder' AND NOT EXISTS (
+                    SELECT 1 FROM operational_period_meetings om WHERE om.id=n.related_id AND om.deleted_at IS NULL
+                      AND LOWER(om.status) IN ('scheduled','tentative')))
             ORDER BY
               CASE LOWER(COALESCE(NULLIF(n.urgency,''), rr.priority_level, 'routine'))
                 WHEN 'urgent' THEN 1
@@ -101,9 +105,11 @@ function dashboard_get_current_op_form_statuses(int $incidentId, int $operationa
             WHERE fr.incident_id=?
               AND fr.operational_period_id=?
               AND fr.is_deleted=0
+              AND (UPPER(REPLACE(fr.form_type, ' ', ''))<>'ICS214' OR fr.prepared_by_user_id=?)
             ORDER BY fr.form_type ASC, fr.updated_at DESC, fr.id DESC
         ");
-        $stmt->execute([$incidentId, $operationalPeriodId]);
+        // ICS 214 logs are personal: show only your own here (everyone's are listed on forms/ics214/logs.php).
+        $stmt->execute([$incidentId, $operationalPeriodId, (int)(current_user()['id'] ?? 0)]);
         $records = $stmt->fetchAll();
 
         $hasBaseRecord = [];
@@ -171,6 +177,9 @@ function dashboard_form_status_label(string $status): string {
 }
 
 function dashboard_form_link(string $formType, int $recordId): string {
+    if (strtoupper(str_replace(' ', '', $formType)) === 'ICS214') {
+        return app_url('/forms/ics214/index.php') . ($recordId > 0 ? '?record_id=' . $recordId : '');
+    }
     $slug = strtolower(str_replace('ICS', 'ics', $formType));
     if ($slug === 'ics205a') { $slug = 'ics205a'; }
     return app_url('/forms/' . $slug . '/index.php');
@@ -233,6 +242,7 @@ function dashboard_get_213rr_action_items(int $incidentId): array {
 }
 
 function dashboard_render_notification_panels(int $incidentId): void {
+    cb_meeting_reminders_run($incidentId);
     $notifications = dashboard_get_notifications($incidentId);
     $actionItems = dashboard_get_213rr_action_items($incidentId);
     $currentOp = current_operational_period($incidentId);

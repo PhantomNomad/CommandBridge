@@ -873,10 +873,13 @@ CREATE TABLE `form_214_activity_log` (
   `activity_text` text NOT NULL,
   `source_type` enum('manual','system','meeting') NOT NULL DEFAULT 'manual',
   `source_id` int(11) DEFAULT NULL,
+  `added_by_user_id` int(11) DEFAULT NULL,
+  `added_by_name` varchar(255) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `idx_form_214_log_record` (`form_record_id`,`row_order`),
+  KEY `idx_form_214_log_added_by` (`added_by_user_id`),
   CONSTRAINT `fk_214_log_form` FOREIGN KEY (`form_record_id`) REFERENCES `form_records` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE TABLE `form_214_entries` (

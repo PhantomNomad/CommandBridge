@@ -246,7 +246,9 @@ function signoff_auto_assign(int $formRecordId): void
         $label = function_exists('ics_audit_form_label') ? ics_audit_form_label($code) : $code;
         audit_log($signerId ?: null, 'auto_approver', $code, $formRecordId, 'Approver for ' . $label . ' (record #' . $formRecordId . ') chosen automatically: user #' . $res['user_id'] . ' as ' . $res['position'] . ($res['self'] ? ' (self-approval: nobody ranks above)' : ''));
         if ($res['user_id'] !== $signerId) {
-            $link = app_url('/forms/' . strtolower($code) . '/index.php') . '?' . http_build_query(['incident_id' => $incidentId, 'op_id' => (int)$rec['operational_period_id']]);
+            $link = $code === 'ICS214'
+                ? app_url('/forms/ics214/index.php') . '?' . http_build_query(['record_id' => $formRecordId])
+                : app_url('/forms/' . strtolower($code) . '/index.php') . '?' . http_build_query(['incident_id' => $incidentId, 'op_id' => (int)$rec['operational_period_id']]);
             $body = (string)($state['creator']['signer_name'] ?? 'A user') . ' signed ' . $label . ' and it needs your approval.';
             $pdo->prepare("INSERT INTO notifications
                 (incident_id, user_id, role_code, form_record_id, notification_type, title, subject, body, link_url, related_table, related_id, urgency, is_read, created_at)
@@ -278,6 +280,15 @@ function signoff_render_panel(string $formCode, int $incidentId, int $opId, int 
     $perms = get_current_user_form_permissions($code, $incidentId);
     $canSign = $isTsc || !empty($perms['can_submit_final']);
     $canEdit = $isTsc || !empty($perms['can_edit']) || !empty($perms['can_create']);
+    $canReopenApproved = $canSign;
+    if ($code === 'ICS214') {
+        // Personal activity log: only its owner signs it; once approved it stays locked (a TSC administrator can reopen it).
+        require_once __DIR__ . '/ics214_log.php';
+        $logOwnerId = ics214_owner_of_record($formRecordId);
+        $canSign = $logOwnerId > 0 && $logOwnerId === $me;
+        $canEdit = $canSign || $isTsc;
+        $canReopenApproved = $isTsc;
+    }
     $creator = $state['creator'];
     $creatorId = (int)($creator['signer_user_id'] ?? 0);
     $approverId = (int)($rec['current_approver_user_id'] ?? 0);
@@ -302,7 +313,7 @@ function signoff_render_panel(string $formCode, int $incidentId, int $opId, int 
             if ($canSign) {
                 echo '<p>' . $btn('creator_sign', 'Sign and submit ' . ics_audit_form_label($code), 'btn-success', 'Sign and submit this form? It will be locked until it is returned for changes.') . '</p>';
             } else {
-                echo '<p class="small">You do not have permission to sign this form.</p>';
+                echo '<p class="small">' . ($code === 'ICS214' ? 'Only the owner of this activity log can sign it.' : 'You do not have permission to sign this form.') . '</p>';
             }
         } else {
             echo '<p class="small">Use the Submit button above to sign it. You will then be asked to name an approver.</p>';
@@ -344,7 +355,7 @@ function signoff_render_panel(string $formCode, int $incidentId, int $opId, int 
            . (!empty($creator['signed_at']) ? ' on ' . e((string)$creator['signed_at']) : '') . '</p>';
         echo '<p><strong>Approved by:</strong> ' . e((string)($ap['signer_name'] ?? ($rec['approver_name'] ?? ''))) . (!empty($ap['signer_position_title']) ? ' (' . e((string)$ap['signer_position_title']) . ')' : '')
            . (!empty($ap['signed_at']) ? ' on ' . e((string)$ap['signed_at']) : '') . '</p>';
-        if ($canSign) {
+        if ($canReopenApproved) {
             echo '<div style="margin-top:8px"><label for="signoff_reason">Reopen for changes (reason required)</label><br>'
                . '<input form="cb-signoff-form" type="text" id="signoff_reason" name="signoff_reason" maxlength="300" style="width:100%;max-width:560px" onkeydown="if(event.keyCode===13){event.preventDefault();}"> '
                . $btn('return', 'Reopen form', 'btn-outline-secondary', 'Reopen this approved form? Both signatures will be cleared.') . '</div>';

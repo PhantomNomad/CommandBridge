@@ -44,11 +44,23 @@ try {
     $perms = get_current_user_form_permissions($code, $incidentId);
     $canSign = $isTsc || !empty($perms['can_submit_final']);
     $canEdit = $isTsc || !empty($perms['can_edit']) || !empty($perms['can_create']);
+    $canReopenApproved = $canSign;
+    $isPersonalLog = $code === 'ICS214';
+    if ($isPersonalLog) {
+        // ICS 214 logs are personal: only the owner signs; once approved only a TSC administrator can reopen it.
+        require_once __DIR__ . '/../includes/ics214_log.php';
+        $logOwnerId = ics214_owner_of_record($recordId);
+        $canSign = $logOwnerId > 0 && $logOwnerId === $me;
+        $canEdit = $canSign || $isTsc;
+        $canReopenApproved = $isTsc;
+    }
     $creator = $state['creator'];
     $creatorId = (int)($creator['signer_user_id'] ?? 0);
     $approverId = (int)($rec['current_approver_user_id'] ?? 0);
     $label = ics_audit_form_label($code);
-    $link = app_url('/forms/' . strtolower($code) . '/index.php') . '?' . http_build_query(['incident_id' => $incidentId, 'op_id' => (int)$rec['operational_period_id']]);
+    $link = $isPersonalLog
+        ? app_url('/forms/ics214/index.php') . '?' . http_build_query(['record_id' => $recordId])
+        : app_url('/forms/' . strtolower($code) . '/index.php') . '?' . http_build_query(['incident_id' => $incidentId, 'op_id' => (int)$rec['operational_period_id']]);
 
     $notify = static function (int $userId, string $type, string $title, string $body, string $urgency = 'routine') use ($pdo, $incidentId, $recordId, $link): void {
         if ($userId <= 0) { return; }
@@ -64,6 +76,7 @@ try {
     if ($action === 'creator_sign') {
         if (!signoff_needs_creator_sign($code)) { throw new RuntimeException('Use the form\'s own Submit button for this form.'); }
         if ($status === 'submitted' || $status === 'approved') { throw new RuntimeException('This form is already signed.'); }
+        if ($isPersonalLog && !$canSign) { throw new RuntimeException('Only the owner of an ICS 214 activity log can sign it.'); }
         submit_form_record($recordId, $code, $incidentId, $me);   // throws if the user may not sign (also picks the approver)
         flash('success', $label . ' signed and submitted. Check the approver below.');
 
@@ -115,7 +128,7 @@ try {
         if ($status === 'submitted') {
             if (!($isTsc || $me === $approverId || $canEdit || ($creatorId > 0 && $creatorId === $me))) { throw new RuntimeException('You cannot return this form.'); }
         } elseif ($status === 'approved') {
-            if (!$canSign) { throw new RuntimeException('You cannot reopen an approved form.'); }
+            if (!$canReopenApproved) { throw new RuntimeException('You cannot reopen an approved form.'); }
         } else {
             throw new RuntimeException('This form is already open for editing.');
         }
