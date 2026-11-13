@@ -159,6 +159,23 @@ if ($want('env')) {
                 $hasForm ? ($viewers !== '' ? 'roles: ' . $viewers : 'no role has view permission') : "form code missing; run update.sh (migration 0002)");
         } catch (Throwable $e) { t_ok("$unitLabel permissions readable", false, $e->getMessage()); }
     }
+    // ICS 214: one log per person (migration 0003).
+    try {
+        $cols = table_columns('form_214_activity_log');
+        t_ok('ICS 214 entries record who added them (form_214_activity_log.added_by_user_id)', in_array('added_by_user_id', $cols, true) && in_array('added_by_name', $cols, true),
+            'columns missing; run update.sh (migration 0003)');
+        $st = $pdo->query("SELECT can_view, can_create, can_submit_final FROM form_permissions WHERE form_code = 'ICS214' AND role_code = 'ALL_AUTHENTICATED' AND is_active = 1");
+        $p214 = $st ? $st->fetch() : false;
+        t_ok('Every signed-in user can open and sign their own ICS 214 (ALL_AUTHENTICATED)', $p214 && (int)$p214['can_view'] === 1 && (int)$p214['can_submit_final'] === 1,
+            'permission row missing; run update.sh (migration 0003)');
+        $orphans = (int)$pdo->query("SELECT COUNT(*) FROM form_records fr LEFT JOIN form_214_headers h ON h.form_record_id = fr.id
+            WHERE UPPER(REPLACE(fr.form_type, ' ', '')) = 'ICS214' AND fr.is_deleted = 0 AND COALESCE(h.user_id, fr.prepared_by_user_id) IS NULL")->fetchColumn();
+        t_ok('Every ICS 214 log has an owner', $orphans === 0, $orphans . ' log(s) without a person');
+        foreach (['/includes/ics214_log.php', '/includes/meetings.php', '/forms/ics214/logs.php', '/audit/index.php'] as $rel) {
+            t_ok("File present: app$rel", is_file($appRoot . $rel));
+        }
+    } catch (Throwable $e) { t_ok('ICS 214 checks', false, $e->getMessage()); }
+
     $logoSetting = (string)get_app_setting('branding_logo_file', '');
     if ($logoSetting !== '' && branding_logo_file_if_present($logoSetting) === '') {
         t_info("The saved organization logo ($logoSetting) is missing from storage/branding; the default icon is shown. Upload the logo again in Organization & Branding.");

@@ -1654,6 +1654,8 @@ function ics_audit_register_form_post_hook(): void {
     $script = str_replace('\\', '/', (string)($_SERVER['SCRIPT_NAME'] ?? ''));
     if (!preg_match('#/forms/([a-z0-9_]+)/([a-z0-9_]+)\.php$#i', $script, $m)) { return; }
     if (in_array(strtolower($m[2]), ['pdf', 'print', 'blank', 'file', 'download', 'help'], true)) { return; }
+    // ICS 214 logs are per person and record their own audit entries (includes/ics214_log.php).
+    if (strtolower($m[1]) === 'ics214') { return; }
     $registered = true;
 
     $dir = strtolower($m[1]);
@@ -2420,7 +2422,13 @@ function create_form_closeout_notifications(int $incidentId, int $operationalPer
         $link = app_url('/forms/' . $slug . '/index.php');
         $targets = [];
         if (!empty($form['prepared_by_user_id'])) { $targets[] = (int)$form['prepared_by_user_id']; }
-        foreach (['IC','PSC','PLANNING_SECTION_CHIEF','TSC','ADMIN'] as $roleCode) {
+        // ICS 214 logs are personal (one per person): remind only the owner, not every command role for every person.
+        $isPersonalLog = strtoupper((string)$form['form_type']) === 'ICS214';
+        if ($isPersonalLog) {
+            $link = app_url('/forms/ics214/index.php') . '?record_id=' . $formId;
+            $body = 'Your ICS 214 activity log is still in ' . (string)$form['status'] . ' status for the current operational period. Please review it and sign it before the operational period ends.';
+        }
+        foreach ($isPersonalLog ? [] : ['IC','PSC','PLANNING_SECTION_CHIEF','TSC','ADMIN'] as $roleCode) {
             try {
                 $stmt = $pdo->prepare("
                     INSERT INTO notifications (incident_id, user_id, role_code, form_record_id, notification_type, title, subject, body, link_url, related_table, related_id, urgency, is_read, created_at)

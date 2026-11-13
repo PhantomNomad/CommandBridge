@@ -195,6 +195,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_user'])) {
         $auditMessage .= '; added initial position to operational period ' . $operationalPeriodAssignmentId;
     }
     audit_log((int)(current_user()['id'] ?? 0), 'create_user', 'user', $userId, $auditMessage);
+    if ($incidentId > 0) {
+        // Every person gets their own ICS 214 activity log from the moment their login is created.
+        require_once dirname(__DIR__) . '/includes/ics214_log.php';
+        ics214_start_log_for_new_user($incidentId, (int)$userId, (int)(current_user()['id'] ?? 0));
+    }
 
     $mailNote = '';
     if ($emailPin) {

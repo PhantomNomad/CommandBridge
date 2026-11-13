@@ -2,6 +2,37 @@
 
 ## Unreleased
 
+* **ICS 214 is now one activity log per person per operational period.** Before, everyone shared one ICS 214 that
+  showed every person's sign-ins and actions. Now:
+  - Each person's log starts when their login is created (Users & Roles), or the first time they open it, and shows
+    only their own sign-ins/sign-outs, account changes, form actions, and the meetings marked *Completed* on the ICS 230.
+  - Entries are added, never edited or deleted. Each shows who added it. To correct one, add another entry.
+  - **Who can open someone else's log:** the Incident Commander / Unified Command, TSC administrators and the person's
+    supervisor can read and add entries; the Documentation Unit Leader can only read. All of them can send the owner an
+    "update your log" request (notification + audit entry). Everyone else sees only their own.
+  - New page **ICS 214 - Activity Logs** (`forms/ics214/logs.php`) lists the logs you may open for the selected period.
+  - Only the owner can sign their log. Signing locks it; while waiting for approval it can be returned. **Once approved
+    it stays locked**; only a TSC administrator can reopen it.
+  - The PDF prints one person's log. Sign-off and approval notifications open the right person's log.
+  - The dashboard's form-status table shows only your own ICS 214, and the end-of-period reminder for an unsigned
+    ICS 214 goes only to its owner (not to IC/PSC/TSC for every person).
+  - **Form security change:** new permission row `ICS214` / `ALL_AUTHENTICATED` (view, create, edit, sign; no
+    permission management), so every signed-in user can open and sign their own log. The existing ICS214 rows for TSC,
+    IC, PSC, OSC and GENERAL_STAFF are unchanged.
+  - Database: migration `0003_ics214_per_person.sql` adds `form_214_activity_log.added_by_user_id` and `added_by_name`,
+    ties existing logs to the person who prepared them, and adds the permission row. `schema.sql` and `seed.sql` match.
+    The old shared log becomes the log of whoever created it.
+* **Meetings: "held" means marked Completed.** The ICS 214 used to show "Meeting held" for any meeting whose time had
+  passed, even cancelled ones. Now only meetings marked *Completed* on the ICS 230 count. An hour after a meeting's
+  start, if it is still Scheduled or Tentative, the chair, the IC/UC and the Planning Section Chief get a dashboard
+  reminder to mark it; the reminder disappears once the status changes. Cancelled meetings no longer show as upcoming
+  on the dashboard.
+* **ECC display: meetings start at the last meeting held.** The Meetings tab scrolls to the most recent Completed
+  meeting (labelled *Last meeting held*) so the upcoming meetings are on screen; older meetings are dimmed.
+* **Audit Log viewer** (`audit/index.php`), for TSC administrators and IC/UC holders: filter by person, category
+  (sign-ins, accounts, forms, settings/other), date range and text; show 25/50/100/250/All rows with paging; plain
+  sentences instead of raw action codes. No export. It is in the left menu for IC/UC, and Settings > Audit Log now
+  opens it (the old `admin/audit_log.php` redirects there).
 * **Fixed: the Resources Unit and Finance/Admin pages could only be opened by TSC administrators.** Their access comes
   from form codes `RESOURCES_UNIT` and `FINANCE_ADMIN`, which were missing from the `forms` table, and no role had
   permission (the Form Permissions page could not save them either). Migration `0002_resources_and_finance_unit_access.sql`

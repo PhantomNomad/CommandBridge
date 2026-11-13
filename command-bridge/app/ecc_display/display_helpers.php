@@ -219,15 +219,22 @@ function ecc_display_render_page(string $orientation): void {
   <section class="ecc-pane" data-ecc-pane="meetings" hidden>
     <div class="ecc-pane-heading"><h1>Meeting Schedule</h1><span>Current operational period</span></div>
     <?php if ($data['meetings']): ?>
+      <?php
+        // The last meeting marked completed stays visible at the top; older ones are dimmed above it.
+        $lastHeldIndex = -1;
+        foreach (array_values($data['meetings']) as $mi => $m) {
+            if (strtolower((string)($m['status'] ?? '')) === 'completed') { $lastHeldIndex = $mi; }
+        }
+      ?>
       <div class="ecc-meeting-list">
-        <?php foreach ($data['meetings'] as $meeting): ?>
-          <article class="ecc-meeting-card">
+        <?php foreach (array_values($data['meetings']) as $mi => $meeting): ?>
+          <article class="ecc-meeting-card<?= $mi < $lastHeldIndex ? ' is-earlier' : '' ?><?= $mi === $lastHeldIndex ? ' is-last-held' : '' ?>"<?= $mi === $lastHeldIndex ? ' data-ecc-last-held' : '' ?>>
             <time datetime="<?= e((string)($meeting['scheduled_at'] ?? '')) ?>"><?= e(date('D, M j · H:i', strtotime((string)($meeting['scheduled_at'] ?? '')) ?: time())) ?></time>
             <div>
               <h2><?= e((string)($meeting['display_title'] ?: 'Meeting')) ?></h2>
               <p><?= e((string)($meeting['location'] ?: 'Location to be confirmed')) ?></p>
             </div>
-            <div class="ecc-meeting-status"><?= e(ecc_display_status_label((string)($meeting['status'] ?? 'scheduled'))) ?></div>
+            <div class="ecc-meeting-status"><?= $mi === $lastHeldIndex ? 'Last meeting held' : e(ecc_display_status_label((string)($meeting['status'] ?? 'scheduled'))) ?></div>
           </article>
         <?php endforeach; ?>
       </div>

@@ -398,7 +398,8 @@ INSERT INTO `form_permissions` (`form_code`, `role_code`, `can_view`, `can_creat
 ('RESOURCES_UNIT', 'RESL', 1, 1, 1, 1, 0, 1),
 ('RESOURCES_UNIT', 'RESOURCE_UNIT', 1, 1, 1, 1, 0, 1),
 ('FINANCE_ADMIN', 'FSC', 1, 1, 1, 1, 0, 1),
-('FINANCE_ADMIN', 'FINANCE_ADMIN', 1, 1, 1, 1, 0, 1);
+('FINANCE_ADMIN', 'FINANCE_ADMIN', 1, 1, 1, 1, 0, 1),
+('ICS214', 'ALL_AUTHENTICATED', 1, 1, 1, 1, 0, 1);
 
 INSERT INTO `app_settings` (`setting_key`, `setting_value`) VALUES
 ('email_delivery_method', 'smtp_password'),

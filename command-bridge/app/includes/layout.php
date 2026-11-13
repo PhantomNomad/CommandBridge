@@ -183,7 +183,7 @@ function render_header(string $title, ?string $helpTopic = null): void {
           <a href="<?= e(app_url('/admin/settings_placeholder.php?area=security')) ?>">Security &amp; Sessions</a>
           <a href="<?= e(app_url('/admin/settings_placeholder.php?area=retention')) ?>">Retention &amp; Archive</a>
           <a href="<?= e(app_url('/admin/backup_restore.php')) ?>">Backup &amp; Restore</a>
-          <a href="<?= e(app_url('/admin/audit_log.php')) ?>">Audit Log</a>
+          <a href="<?= e(app_url('/audit/index.php')) ?>">Audit Log</a>
           <a href="<?= e(app_url('/admin/system_information.php')) ?>">System Information</a>
         <?php endif; ?>
         <div class="nav-footer">
@@ -208,6 +208,9 @@ function render_header(string $title, ?string $helpTopic = null): void {
         <?php endif; ?>
         <?php if (current_user_can_finance_view($activeIncidentId)): ?>
         <a href="<?= e(app_url('/forms/finance/index.php')) ?>">FIN/Admin - 213RR Queue</a>
+        <?php endif; ?>
+        <?php if (is_system_administrator() || ($activeIncidentId > 0 && array_intersect(['IC', 'UC'], array_map('strtoupper', get_user_role_codes((int)$activeIncidentId, (int)($user['id'] ?? 0)))))): ?>
+        <a href="<?= e(app_url('/audit/index.php')) ?>">Audit Log</a>
         <?php endif; ?>
         <div class="nav-footer">
           <a href="<?= e(cb_help_url('index')) ?>">Help topics</a>

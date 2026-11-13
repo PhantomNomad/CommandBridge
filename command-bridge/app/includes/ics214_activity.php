@@ -51,6 +51,10 @@ if (!function_exists('ics214_audit_sentence')) {
             case 'assign_user_to_operational_period': return "$actor assigned $t to an operational period" . $suffix;
             case 'enable_companion_checkin_access': return "$actor enabled Companion Check-In access for $t";
             case 'revoke_companion_checkin_access': return "$actor revoked Companion Check-In access for $t";
+            case 'ics214_log_started':
+            case 'ics214_entry_added':
+            case 'ics214_update_requested':
+                return $detail !== '' ? "$actor " . lcfirst($detail) : "$actor: " . str_replace('_', ' ', $action);
         }
 
         $isForm = str_starts_with(strtoupper($entity), 'ICS') || in_array(strtoupper($entity), ['FINANCE', 'RESOURCES', 'EXTERNAL_CHECKIN'], true);
@@ -74,12 +78,19 @@ if (!function_exists('ics214_audit_sentence')) {
 if (!function_exists('ics214_audit_rows')) {
     /**
      * @param array<string,mixed>|null $op operational period row (op_start / op_end) bounding the log
+     * @param int|null $ownerId only this person's own actions and account events about them (per-person ICS 214)
      * @return array<int, array{time: string, text: string, source: string, cat: string}>
      */
-    function ics214_audit_rows(PDO $pdo, int $incidentId, ?array $op = null): array
+    function ics214_audit_rows(PDO $pdo, int $incidentId, ?array $op = null, ?int $ownerId = null): array
     {
         $params = [$incidentId];
         $where = '(a.incident_id = ? OR a.incident_id IS NULL)';
+        if ($ownerId !== null) {
+            if ($ownerId <= 0) { return []; }
+            $where .= " AND (a.user_id = ? OR (a.entity_type = 'user' AND a.entity_id = ?))";
+            $params[] = $ownerId;
+            $params[] = $ownerId;
+        }
         $start = trim((string)($op['op_start'] ?? ''));
         $end = trim((string)($op['op_end'] ?? ''));
         if ($start !== '') { $where .= ' AND a.created_at >= ?'; $params[] = $start; }
