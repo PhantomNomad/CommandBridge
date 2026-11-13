@@ -3,18 +3,8 @@ declare(strict_types=1);
 require_once __DIR__ . '/security.php';
 
 
-if (session_status() !== PHP_SESSION_ACTIVE) {
-    if (session_status() !== PHP_SESSION_ACTIVE) {
-    session_set_cookie_params([
-        'lifetime' => 0,
-        'path' => '/',
-        'secure' => (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off'),
-        'httponly' => true,
-        'samesite' => 'Lax',
-    ]);
-    session_start();
-}
-}
+// Cookie settings and the inactivity sign-out live in security.php (cb_session_start).
+cb_session_start();
 
 if (!defined('APP_BASE_URL')) {
     define('APP_BASE_URL', '/');

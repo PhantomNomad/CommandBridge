@@ -238,6 +238,8 @@ post_max_size = 25M
 max_input_vars = 5000
 session.cookie_httponly = 1
 session.use_strict_mode = 1
+; Sign-out after this many seconds without activity (Command Bridge enforces it; Debian's clean-up uses it too)
+session.gc_maxlifetime = 3600
 PHPEOF
     done
 fi

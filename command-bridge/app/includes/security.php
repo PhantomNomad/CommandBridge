@@ -5,10 +5,59 @@ function security_log(Throwable $e, string $context = ''): void {
     error_log($prefix . get_class($e) . ': ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
 }
 
-function csrf_token(): string {
-    if (session_status() !== PHP_SESSION_ACTIVE) {
-        session_start();
+/**
+ * Sign-out after inactivity. The limit is PHP's session.gc_maxlifetime (set to 3600 = 1 hour in
+ * /etc/php/<ver>/{apache2,cli}/conf.d/90-commandbridge.ini by install.sh / update.sh), so one setting controls
+ * both this check and Debian's clean-up of old session files. Values under 5 minutes are ignored.
+ */
+function cb_session_idle_seconds(): int {
+    $seconds = (int)ini_get('session.gc_maxlifetime');
+    return $seconds >= 300 ? $seconds : 3600;
+}
+
+/** Background requests (the dashboard's notification refresh) do not count as activity. */
+function cb_session_is_background_request(): bool {
+    return !empty($_SERVER['HTTP_X_REQUESTED_WITH']);
+}
+
+/** Start the session with the app's cookie settings, then apply the inactivity limit. Safe to call repeatedly. */
+function cb_session_start(): void {
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        return;
     }
+    if (!headers_sent()) {
+        session_set_cookie_params([
+            'lifetime' => 0,
+            'path' => '/',
+            'secure' => (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off'),
+            'httponly' => true,
+            'samesite' => 'Lax',
+        ]);
+    }
+    session_start();
+    cb_session_enforce_idle();
+}
+
+function cb_session_enforce_idle(): void {
+    if (empty($_SESSION['user'])) {
+        return;
+    }
+    $now = time();
+    $last = (int)($_SESSION['last_activity'] ?? 0);
+    if ($last > 0 && $now - $last > cb_session_idle_seconds()) {
+        // Signed out: keep only the message for the sign-in page, and issue a new session ID.
+        $_SESSION = ['flash' => [['type' => 'error', 'message' => 'You were signed out after '
+            . intdiv(cb_session_idle_seconds(), 60) . ' minutes without activity. Please sign in again.']]];
+        session_regenerate_id(true);
+        return;
+    }
+    if ($last === 0 || !cb_session_is_background_request()) {
+        $_SESSION['last_activity'] = $now;
+    }
+}
+
+function csrf_token(): string {
+    cb_session_start();
     if (empty($_SESSION['csrf_token']) || !is_string($_SESSION['csrf_token'])) {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     }
@@ -21,9 +70,7 @@ function csrf_field(): string {
 }
 
 function verify_csrf_token(): void {
-    if (session_status() !== PHP_SESSION_ACTIVE) {
-        session_start();
-    }
+    cb_session_start();
     $submitted = $_POST['csrf_token'] ?? '';
     $expected = $_SESSION['csrf_token'] ?? '';
     if (!is_string($submitted) || !is_string($expected) || $submitted === '' || !hash_equals($expected, $submitted)) {
@@ -41,7 +88,7 @@ function csrf_failure_response(bool $sessionEnded): never {
     $loginUrl = $base . '/login.php';
     $page = basename((string)($_SERVER['SCRIPT_NAME'] ?? ''));
 
-    if ($sessionEnded) {
+    if ($sessionEnded && empty($_SESSION['flash'])) {   // the inactivity check may already have left a message
         $_SESSION['flash'][] = ['type' => 'error', 'message' => $page === 'login.php'
             ? 'The sign-in page had been open too long. Please sign in again.'
             : 'Your session timed out, so the page you submitted was not saved. Please sign in again.'];
@@ -81,7 +128,7 @@ function csrf_failure_response(bool $sessionEnded): never {
     header('Content-Type: text/html; charset=utf-8');
     if ($sessionEnded) {
         $title = 'Your session has timed out';
-        $body = '<p>You were signed out because the page was left open for a while. '
+        $body = '<p>You were signed out after ' . intdiv(cb_session_idle_seconds(), 60) . ' minutes without activity. '
             . '<strong>What you entered on that page was not saved.</strong></p>'
             . '<p><a class="button" href="' . $esc($loginUrl) . '">Sign in again</a></p>'
             . '<p class="muted">Taking you to the sign-in page in <span id="cb-countdown">' . $seconds . '</span> seconds&hellip;</p>';

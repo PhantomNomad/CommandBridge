@@ -458,6 +458,12 @@ render_header('Dashboard');
       const url = new URL(window.location.href);
       url.searchParams.set('partial', 'notifications');
       const response = await fetch(url.toString(), {headers: {'X-Requested-With': 'XMLHttpRequest'}, cache: 'no-store'});
+      if (response.status === 401) {
+        // Signed out for inactivity: leave the incident data and show the sign-in page with the reason.
+        const info = await response.json().catch(() => ({}));
+        window.location.href = info.login_url || '<?= e(app_url('/login.php')) ?>';
+        return;
+      }
       if (response.ok) wrap.innerHTML = await response.text();
     } catch (err) {}
   }

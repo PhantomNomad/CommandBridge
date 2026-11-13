@@ -9,6 +9,14 @@ function current_user(): ?array {
 
 function require_login(): void {
     if (!current_user()) {
+        // Background requests (the dashboard's notification refresh) get a 401 the page can act on, not the sign-in page's HTML.
+        if (cb_session_is_background_request()) {
+            http_response_code(401);
+            header('Content-Type: application/json; charset=utf-8');
+            header('Cache-Control: no-store');
+            echo json_encode(['ok' => false, 'error' => 'session_expired', 'login_url' => app_url('/login.php')], JSON_UNESCAPED_SLASHES);
+            exit;
+        }
         header('Location: ' . app_url('/login.php'));
         exit;
     }
@@ -133,6 +141,7 @@ function login_user(array $user): void {
         session_regenerate_id(true);
     }
     $_SESSION['auth_at'] = time();
+    $_SESSION['last_activity'] = time();
     $_SESSION['user'] = [
         'id' => $user['id'],
         'username' => $user['username'],

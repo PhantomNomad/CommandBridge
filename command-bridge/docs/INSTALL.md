@@ -38,6 +38,15 @@ For unattended installs see the variables listed at the top of `install.sh` (`CB
 | PHP settings | `/etc/php/<ver>/{apache2,cli}/conf.d/90-commandbridge.ini` |
 | Check-in sync (optional) | `/etc/commandbridge/external_checkin_sync.env`; systemd timer switched on only after a passing connection test; tools `tools/setup_checkin.sh` and `tools/rotate_checkin_secret.sh` |
 
+## Sign-out after inactivity
+
+Users are signed out after **60 minutes** without activity (clicking, saving or opening pages; the dashboard's automatic
+notification refresh does not count). A form submitted after that shows *Your session has timed out* and returns to the
+sign-in page. What was typed on that page is not saved.
+
+The limit is PHP's `session.gc_maxlifetime` in `/etc/php/<version>/apache2/conf.d/90-commandbridge.ini` (and the `cli`
+copy), in seconds. To change it, edit both files, then run `sudo systemctl reload apache2`. Updates keep your value.
+
 ## Self-signed certificates
 
 Browsers warn until the certificate is trusted. The certificate is `/etc/ssl/commandbridge/commandbridge.crt`
