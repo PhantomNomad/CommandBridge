@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+* **In-app help.** Every page has a **? Help** button that opens help for that page in a side panel, so you can read
+  it while filling in the form (or open it in a new tab). **Help topics** in the sidebar lists everything. Help is
+  written as Markdown files in `app/help/topics/`, one per page, and shown through the app only (signed-in users;
+  the sign-in page's help is public). The **Email Delivery** help is complete: which method to choose; step-by-step
+  Microsoft Graph (including limiting the app to one mailbox), SMTP OAuth2 for Microsoft 365, Google Workspace/Gmail
+  app passwords, hosting providers and local relays; and what each error message means. Every other page has a
+  short summary for now. The self-check fails if a page has no help file. See "In-app help" in docs/DEVELOPMENT.md.
+* **Email Delivery page:** hints under the fields, and a "How to set up" link for the chosen method.
+  - **Settings are now checked before saving**, so a rejected form no longer half-saves (previously an invalid sender
+    address was saved anyway). What you typed is kept when a check fails (never secrets).
+  - **"No authentication" to a relay on another server** now needs a tick box confirming that the relay only accepts
+    mail from this server, and the page shows a warning while such a setup is saved. Relays on this server
+    (`localhost`) are unchanged. Sending is not affected, so existing setups keep working.
+  - **A password or OAuth2 sign-in is refused with encryption "None"** unless the relay is on this server.
+
 * **Sign-out after 1 hour without activity** (was about 24 minutes, PHP's default, and not reliably enforced). The app
   now enforces the limit itself. It comes from `session.gc_maxlifetime`, which the installer sets to 3600, and
   `update.sh` adds to existing servers (an existing value is kept). The dashboard's automatic notification refresh

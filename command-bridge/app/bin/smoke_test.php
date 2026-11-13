@@ -146,6 +146,16 @@ if ($want('env')) {
     @exec(escapeshellarg($pdftk) . ' --version 2>&1', $out, $rc);
     t_ok('pdftk runs', $rc === 0, $rc === 0 ? (string)($out[0] ?? '') : 'set COMMAND_BRIDGE_PDFTK_BIN or install pdftk-java');
     t_ok('Temp directory writable', is_writable(sys_get_temp_dir()), sys_get_temp_dir());
+    require_once $appRoot . '/includes/help.php';
+    $helpExpected = cb_help_expected_topics();
+    $helpMissing = array_values(array_filter($helpExpected, static fn($t) => cb_help_topic_file($t) === null));
+    t_ok('Every page has a help file (app/help/topics/<page>.md)', $helpMissing === [], 'missing: ' . implode(', ', $helpMissing));
+    $helpStubs = 0;
+    foreach ($helpExpected as $t) {
+        $f = cb_help_topic_file($t);
+        if ($f !== null && str_contains((string)file_get_contents($f), 'still being written')) { $helpStubs++; }
+    }
+    t_info('Help: ' . (count($helpExpected) - $helpStubs) . ' of ' . count($helpExpected) . ' pages have full help; ' . $helpStubs . ' still have a summary only.');
     $idle = (int)ini_get('session.gc_maxlifetime');
     t_info('Sign-out after inactivity: ' . intdiv(cb_session_idle_seconds(), 60) . ' minutes (session.gc_maxlifetime = ' . $idle
         . ($idle < 300 ? ', below 5 minutes so 60 is used' : '') . '; set in /etc/php/<ver>/{apache2,cli}/conf.d/90-commandbridge.ini)');
@@ -524,7 +534,11 @@ if ($want('http')) {
             $r = $get($p);
             t_ok("$p is not readable without logging in", in_array($r['code'], [301, 302, 303, 307, 401, 403, 405], true), 'HTTP ' . $r['code']);
         }
-        foreach (['/db.env', '/db.env.example', '/includes/db.php', '/includes/helpers.php', '/bin/smoke_test.php', '/storage/', '/storage/uploads/', '/CHANGELOG.md', '/database/schema.sql'] as $p) {
+        $helpAnon = $get('/help/view.php?topic=admin/smtp');
+        t_ok('help for settings pages needs a sign-in', in_array($helpAnon['code'], [301, 302, 303, 401], true), 'HTTP ' . $helpAnon['code']);
+        $helpLogin = $get('/help/view.php?topic=login&panel=1');
+        t_ok('help for the sign-in page is readable without signing in', $helpLogin['code'] === 200 && str_contains($helpLogin['body'], 'help-doc'), 'HTTP ' . $helpLogin['code']);
+        foreach (['/db.env', '/db.env.example', '/help/topics/admin/smtp.md', '/includes/db.php', '/includes/helpers.php', '/bin/smoke_test.php', '/storage/', '/storage/uploads/', '/CHANGELOG.md', '/database/schema.sql'] as $p) {
             $r = $get($p);
             t_ok("$p is blocked", in_array($r['code'], [403, 404], true), 'HTTP ' . $r['code']);
             if (!in_array($r['code'], [403, 404], true)) { $blockedFail = true; }
