@@ -120,8 +120,7 @@ Keep both servers on the same release when upgrading.
 
 ## Official forms
 
-Command Bridge fills the ICS Canada form templates in `command-bridge/app/assets/pdf/official/`. They are redistributed with
-permission and are not covered by the AGPL. See [command-bridge/docs/FORMS.md](command-bridge/docs/FORMS.md) and
+Command Bridge fills the ICS Canada form templates in `command-bridge/app/assets/pdf/official/`. They are redistributed from ICS Canada (https://www.icscanada.ca) and are not covered by the AGPL. See [command-bridge/docs/FORMS.md](command-bridge/docs/FORMS.md) and
 [command-bridge/THIRD_PARTY.md](command-bridge/THIRD_PARTY.md).
 
 ## Licence
