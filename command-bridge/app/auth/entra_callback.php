@@ -50,5 +50,7 @@ if (!$user || empty($user['is_active'])) { http_response_code(403); echo 'Your M
 
 login_user($user);
 audit_log((int)$user['id'], 'login', 'user', (int)$user['id'], 'Successful Entra login: ' . $upn);
-header('Location: ' . app_url('/dashboard/index.php'));
+// index.php decides where to go: the new-incident setup for an administrator on a fresh
+// install (no incident yet), otherwise the dashboard.
+header('Location: ' . app_url('/index.php'));
 exit;

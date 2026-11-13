@@ -43,7 +43,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             login_throttle_record_success($pdo, $user, $ip);
             login_user($user);
             audit_log((int)$user['id'], 'login', 'user', (int)$user['id'], 'Successful login from ' . $ip);
-            header('Location: ' . app_url('/dashboard/index.php'));
+            // index.php decides where to go: the new-incident setup for an administrator on a fresh
+            // install (no incident yet), otherwise the dashboard.
+            header('Location: ' . app_url('/index.php'));
             exit;
         }
 

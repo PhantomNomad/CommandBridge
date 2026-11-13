@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+* **Fixed: a fresh install did not open the new-incident setup after the first login.** After signing in (password or
+  Microsoft), users were sent straight to the dashboard, skipping the check that sends an administrator with no incident
+  yet to *Set up incident*. Sign-in now goes through the start page, which picks the right destination.
+
 ## 0.9.0-beta.2
 
 * **Fixed: ICS 204 could not be approved.** The Planning Section Chief approval step existed in the code but had no button,
