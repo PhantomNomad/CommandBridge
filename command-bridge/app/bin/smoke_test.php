@@ -146,6 +146,23 @@ if ($want('env')) {
     @exec(escapeshellarg($pdftk) . ' --version 2>&1', $out, $rc);
     t_ok('pdftk runs', $rc === 0, $rc === 0 ? (string)($out[0] ?? '') : 'set COMMAND_BRIDGE_PDFTK_BIN or install pdftk-java');
     t_ok('Temp directory writable', is_writable(sys_get_temp_dir()), sys_get_temp_dir());
+    // The Resources Unit and Finance/Admin pages are controlled by these form codes (migration 0002).
+    foreach (['RESOURCES_UNIT' => 'Resources Unit page', 'FINANCE_ADMIN' => 'Finance/Admin queue'] as $unitCode => $unitLabel) {
+        try {
+            $st = $pdo->prepare('SELECT COUNT(*) FROM forms WHERE form_code = ? AND is_active = 1');
+            $st->execute([$unitCode]);
+            $hasForm = (int)$st->fetchColumn() > 0;
+            $st = $pdo->prepare('SELECT GROUP_CONCAT(role_code ORDER BY role_code) FROM form_permissions WHERE form_code = ? AND can_view = 1 AND is_active = 1');
+            $st->execute([$unitCode]);
+            $viewers = (string)$st->fetchColumn();
+            t_ok("$unitLabel can be opened by a unit role ($unitCode)", $hasForm && $viewers !== '',
+                $hasForm ? ($viewers !== '' ? 'roles: ' . $viewers : 'no role has view permission') : "form code missing; run update.sh (migration 0002)");
+        } catch (Throwable $e) { t_ok("$unitLabel permissions readable", false, $e->getMessage()); }
+    }
+    $logoSetting = (string)get_app_setting('branding_logo_file', '');
+    if ($logoSetting !== '' && branding_logo_file_if_present($logoSetting) === '') {
+        t_info("The saved organization logo ($logoSetting) is missing from storage/branding; the default icon is shown. Upload the logo again in Organization & Branding.");
+    }
     require_once $appRoot . '/includes/help.php';
     $helpExpected = cb_help_expected_topics();
     $helpMissing = array_values(array_filter($helpExpected, static fn($t) => cb_help_topic_file($t) === null));

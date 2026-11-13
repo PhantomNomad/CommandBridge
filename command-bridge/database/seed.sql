@@ -92,7 +92,9 @@ INSERT INTO `forms` VALUES
 (53,'ICS215A','ICS 215A - Incident Action Plan Safety Analysis',1,'read_only','Safety analysis.','2026-10-19 13:36:04','2026-10-19 13:36:04'),
 (54,'ICS218','ICS 218 - Support Vehicle / Equipment Inventory',1,'read_only','Support vehicle/equipment inventory.','2026-10-19 13:36:04','2026-10-19 13:36:04'),
 (55,'ICS230','ICS 230 - Daily Meeting Schedule',1,'read_only','Daily meeting schedule.','2026-10-19 13:36:04','2026-10-19 13:36:04'),
-(56,'EXTERNAL_CHECKIN','External Check-in',1,'hidden','Internal staging and controlled publication for the external check-in gateway.','2026-10-23 15:40:23','2026-10-23 15:40:23');
+(56,'EXTERNAL_CHECKIN','External Check-in',1,'hidden','Internal staging and controlled publication for the external check-in gateway.','2026-10-23 15:40:23','2026-10-23 15:40:23'),
+(57,'RESOURCES_UNIT','Resources Unit',1,'hidden','Resources Unit intake board (not an ICS form). Controls who can open the Resources Unit page.','2026-11-13 15:00:00','2026-11-13 15:00:00'),
+(58,'FINANCE_ADMIN','Finance/Admin Queue',1,'hidden','Finance/Admin 213RR queue (not an ICS form). Controls who can open the Finance/Admin queue.','2026-11-13 15:00:00','2026-11-13 15:00:00');
 
 INSERT INTO `form_permissions` VALUES
 (310,'ICS201','TSC',1,1,1,1,1,NULL,1,'2026-10-19 13:36:04','2026-10-19 13:36:04'),
@@ -392,11 +394,14 @@ INSERT INTO `meeting_types` VALUES
 (25,'OTHER','Other Meeting','Other incident-related meeting.',90,1,'2026-10-19 13:36:04','2026-10-19 13:36:04');
 
 INSERT INTO `form_permissions` (`form_code`, `role_code`, `can_view`, `can_create`, `can_edit`, `can_submit_final`, `can_manage_permissions`, `is_active`) VALUES
-('ICS204', 'RESL', 1, 1, 1, 1, 0, 1);
+('ICS204', 'RESL', 1, 1, 1, 1, 0, 1),
+('RESOURCES_UNIT', 'RESL', 1, 1, 1, 1, 0, 1),
+('RESOURCES_UNIT', 'RESOURCE_UNIT', 1, 1, 1, 1, 0, 1),
+('FINANCE_ADMIN', 'FSC', 1, 1, 1, 1, 0, 1),
+('FINANCE_ADMIN', 'FINANCE_ADMIN', 1, 1, 1, 1, 0, 1);
 
 INSERT INTO `app_settings` (`setting_key`, `setting_value`) VALUES
 ('email_delivery_method', 'smtp_password'),
-('email_oauth_scope', 'https://outlook.office365.com/.default'),
-('branding_logo_file', 'org-logo-8cb09c61de6e81e74ded6a26.png');
+('email_oauth_scope', 'https://outlook.office365.com/.default');
 
 SET FOREIGN_KEY_CHECKS = 1;

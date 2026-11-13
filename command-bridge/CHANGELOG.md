@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+* **Fixed: the Resources Unit and Finance/Admin pages could only be opened by TSC administrators.** Their access comes
+  from form codes `RESOURCES_UNIT` and `FINANCE_ADMIN`, which were missing from the `forms` table, and no role had
+  permission (the Form Permissions page could not save them either). Migration `0002_resources_and_finance_unit_access.sql`
+  (applied by `update.sh`) and `seed.sql` add both codes and these default permissions (view, create, edit, submit; no
+  permission management):
+  - Resources Unit: `RESL` (Resources Unit Leader) and `RESOURCE_UNIT` (Resources Unit staff)
+  - Finance/Admin queue: `FSC` (Finance/Admin Section Chief) and `FINANCE_ADMIN` (Finance/Admin staff)
+
+  Other roles can be added in Settings > Form Permissions. The self-check now confirms both pages have a role with access.
+* **Fixed: new installs showed a broken sidebar logo.** `seed.sql` set `branding_logo_file` to an uploaded file that only
+  existed on the machine it came from. The row is removed. The app now also ignores a saved logo whose file is missing
+  and shows the default icon instead. The self-check reports when that happens.
 * **ICS Canada branding removed from the web pages.** The ICS Canada logo is no longer shown in the sidebar, and the
   *Display ICS Canada logo* option is gone from Organization & Branding. The browser-tab icon, which was the ICS Canada
   logo, is now a Command Bridge icon (`assets/img/command-bridge-icon.svg`). That icon is also the sidebar logo until an
