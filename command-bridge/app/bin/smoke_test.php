@@ -534,6 +534,10 @@ if ($want('http')) {
             $r = $get($p);
             t_ok("$p is not readable without logging in", in_array($r['code'], [301, 302, 303, 307, 401, 403, 405], true), 'HTTP ' . $r['code']);
         }
+        $icon = $get('/assets/img/command-bridge-icon.svg');
+        t_ok('Command Bridge icon is served (browser tab and default logo)', $icon['code'] === 200, 'HTTP ' . $icon['code']);
+        $oldLogo = $get('/assets/img/ics-canada-logo.svg');
+        t_ok('old ICS Canada logo file is gone from the web folder', $oldLogo['code'] === 404, 'HTTP ' . $oldLogo['code'] . ' (update.sh removes it)');
         $helpAnon = $get('/help/view.php?topic=admin/smtp');
         t_ok('help for settings pages needs a sign-in', in_array($helpAnon['code'], [301, 302, 303, 401], true), 'HTTP ' . $helpAnon['code']);
         $helpLogin = $get('/help/view.php?topic=login&panel=1');

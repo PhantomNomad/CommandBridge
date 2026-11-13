@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="ICS Canada">
-  <rect width="512" height="512" rx="72" fill="#ffffff"/>
-  <rect x="24" y="24" width="464" height="464" rx="56" fill="#d71920"/>
-  <rect x="54" y="54" width="404" height="404" rx="38" fill="#ffffff"/>
-  <path d="M250 80c10 34 28 62 55 84-28-4-54-12-77-25 8 37 31 67 68 90-39-5-75-20-108-46 10 56 43 99 98 129-54-6-102-30-144-71 6 42 26 80 60 113-37-10-70-28-98-56 6 46 30 83 72 111h160c40-28 64-65 72-111-30 28-63 46-99 56 34-33 54-71 60-113-43 41-91 65-145 71 55-30 88-73 98-129-33 26-69 41-108 46 37-23 60-53 68-90-23 13-49 21-77 25 27-22 45-50 55-84z" fill="#d71920"/>
-  <text x="256" y="432" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="74" fill="#12324a">ICS</text>
-</svg>

@@ -24,6 +24,7 @@ render_header('ICS 215A Help');
 <tr><td>7</td><td>Prepared / Reviewed By</td><td>Enter both the Safety Officer and Operations Section Chief names, signatures, and date/time reviewed.</td></tr>
 </tbody>
 </table>
+<p class="small">Source: ICS Canada Forms Catalogue.</p>
 <p><a href="index.php">Back to ICS 215A</a></p>
 </div>
 <?php render_footer(); ?>

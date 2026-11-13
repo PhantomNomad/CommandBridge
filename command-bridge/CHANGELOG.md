@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+* **ICS Canada branding removed from the web pages.** The ICS Canada logo is no longer shown in the sidebar, and the
+  *Display ICS Canada logo* option is gone from Organization & Branding. The browser-tab icon, which was the ICS Canada
+  logo, is now a Command Bridge icon (`assets/img/command-bridge-icon.svg`). That icon is also the sidebar logo until an
+  organization logo is uploaded; it replaces a blank placeholder image. Messages beside PDF buttons now say
+  "Blank PDF template not loaded yet." The form instruction pages keep a short note, "Source: ICS Canada Forms Catalogue."
+  (now on all nine). The ICS Canada form templates and the PDFs made from them are unchanged.
+  The old setting `branding_show_ics_logo` is simply no longer read; no database change.
+
 ## 0.9.0-beta.4
 
 * **In-app help.** Every page has a **? Help** button that opens help for that page in a side panel, so you can read
