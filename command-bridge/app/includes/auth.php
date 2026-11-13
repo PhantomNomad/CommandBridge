@@ -404,6 +404,17 @@ function require_system_administrator(): void {
     require_tsc_admin();
 }
 
+/**
+ * The uploaded organization logo's file name, or '' when there is none or the file is missing (for example a setting
+ * copied from another server), so the sidebar shows the default icon instead of a broken image.
+ */
+function branding_logo_file_if_present(string $file): string {
+    if ($file === '' || !preg_match('/^org-logo-[a-f0-9]{24}\.(png|jpg|gif|webp)$/', $file)) {
+        return '';
+    }
+    return is_file(dirname(__DIR__) . '/storage/branding/' . $file) ? $file : '';
+}
+
 function branding_settings(): array {
     return [
         'application_name' => get_app_setting('branding_application_name', defined('APP_SHORT_NAME') ? APP_SHORT_NAME : APP_NAME) ?: 'Command Bridge',
@@ -411,7 +422,7 @@ function branding_settings(): array {
         'header_text' => get_app_setting('branding_header_text', '') ?: '',
         'footer_text' => get_app_setting('branding_footer_text', '') ?: '',
         'theme' => get_app_setting('branding_theme', 'blue') ?: 'blue',
-        'logo_file' => get_app_setting('branding_logo_file', '') ?: '',
+        'logo_file' => branding_logo_file_if_present((string)(get_app_setting('branding_logo_file', '') ?: '')),
     ];
 }
 
