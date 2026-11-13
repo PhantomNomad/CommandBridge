@@ -19,6 +19,7 @@ render_header('ICS 214 Help');
 <li><strong>Date/Time Prepared:</strong> Leave blank until the user submits or finalizes the log.</li>
 <li><strong>Activity Log:</strong> Enter a date/time and a concise description of each notable event. The system also displays eligible login/logout and past meeting entries.</li>
 </ul>
+<p class="small">Source: ICS Canada Forms Catalogue.</p>
 <p><a href="index.php">Back to ICS 214</a></p>
 </div>
 <?php render_footer(); ?>

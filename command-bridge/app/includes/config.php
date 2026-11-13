@@ -14,8 +14,7 @@ if (!defined('APP_NAME')) {
     define('APP_NAME', 'Command Bridge');
     define('APP_SHORT_NAME', 'Command Bridge');
     define('APP_ORG_NAME', 'Organization');
-    define('APP_ICS_LOGO', '/assets/img/ics-canada-logo.svg');
-    define('APP_CUSTOM_LOGO', '/assets/img/organization-logo.gif');
+    define('APP_CUSTOM_LOGO', '/assets/img/command-bridge-icon.svg');
 }
 
 

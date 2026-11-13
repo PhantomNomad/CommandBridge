@@ -411,7 +411,6 @@ function branding_settings(): array {
         'header_text' => get_app_setting('branding_header_text', '') ?: '',
         'footer_text' => get_app_setting('branding_footer_text', '') ?: '',
         'theme' => get_app_setting('branding_theme', 'blue') ?: 'blue',
-        'show_ics_logo' => get_app_setting('branding_show_ics_logo', '1') === '1',
         'logo_file' => get_app_setting('branding_logo_file', '') ?: '',
     ];
 }

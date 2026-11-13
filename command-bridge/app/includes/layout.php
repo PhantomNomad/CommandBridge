@@ -55,7 +55,7 @@ function render_ics_form_status(string $formCode, ?array $formRecord = null, ?ar
     if ($officialExists) {
         echo '<a class="btn btn-secondary" href="' . e(app_url($officialFile)) . '" target="_blank">' . e($officialLabel) . '</a>';
     } else {
-        echo '<span class="small">Official ICS Canada blank PDF not loaded yet.</span>';
+        echo '<span class="small">Blank PDF template not loaded yet.</span>';
     }
     echo '</div></div>';
 }
@@ -69,7 +69,7 @@ function render_ics_official_blank_pdf_button(string $formCode): void {
     if (is_file($officialPath)) {
         echo '<a class="btn btn-secondary" href="' . e(app_url($officialFile)) . '" target="_blank">Download Blank Form</a>';
     } else {
-        echo '<span class="small">Official ICS Canada blank PDF not loaded yet.</span>';
+        echo '<span class="small">Blank PDF template not loaded yet.</span>';
     }
 }
 
@@ -104,19 +104,18 @@ function render_header(string $title, ?string $helpTopic = null): void {
   <meta charset="utf-8">
   <title><?= e($title) ?> - <?= e($branding['application_name']) ?></title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/svg+xml" href="<?= e(app_url('/assets/img/favicon.svg')) ?>">
+  <link rel="icon" type="image/svg+xml" href="<?= e(app_url('/assets/img/command-bridge-icon.svg')) ?>">
   <link rel="stylesheet" href="<?= e(app_url('/assets/css/app.css')) ?>">
 </head>
 <body>
 <div class="app">
   <aside class="sidebar">
     <div class="brand brand-with-logos">
-      <?php if ($branding['show_ics_logo']): ?><img class="brand-logo brand-logo-ics" src="<?= e(app_url(defined('APP_ICS_LOGO') ? APP_ICS_LOGO : '/assets/img/ics-canada-logo.svg')) ?>" alt="ICS Canada"><?php endif; ?>
       <div class="brand-text">
         <div class="brand-title"><?= e($branding['application_name']) ?></div>
         <div class="brand-subtitle"><?= e($branding['header_text'] ?: $branding['organization_name']) ?></div>
       </div>
-      <img class="brand-logo brand-logo-custom" src="<?= e($branding['logo_file'] ? app_url('/brand_asset.php') : app_url(defined('APP_CUSTOM_LOGO') ? APP_CUSTOM_LOGO : '/assets/img/organization-logo.gif')) ?>" alt="Organization logo">
+      <img class="brand-logo brand-logo-custom" src="<?= e($branding['logo_file'] ? app_url('/brand_asset.php') : app_url(defined('APP_CUSTOM_LOGO') ? APP_CUSTOM_LOGO : '/assets/img/command-bridge-icon.svg')) ?>" alt="Organization logo">
     </div>
     <?php
       $isAdminArea = str_starts_with((string)($_SERVER['SCRIPT_NAME'] ?? ''), rtrim(APP_BASE_URL, '/') . '/admin/');

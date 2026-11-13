@@ -8,7 +8,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         save_app_setting('branding_' . $key, trim((string)($_POST[$key] ?? '')));
     }
     save_app_setting('branding_theme', in_array($_POST['theme'] ?? '', ['blue','green','grey'], true) ? $_POST['theme'] : 'blue');
-    save_app_setting('branding_show_ics_logo', isset($_POST['show_ics_logo']) ? '1' : '0');
     if (!empty($_FILES['organization_logo']['name'])) {
         $file = $_FILES['organization_logo'];
         $allowed = ['image/png'=>'png','image/jpeg'=>'jpg','image/gif'=>'gif','image/webp'=>'webp'];
@@ -49,7 +48,6 @@ settings_menu('organization');
 <label>Header colour/theme<select name="theme"><option value="blue" <?= $settings['theme']==='blue'?'selected':'' ?>>Blue</option><option value="green" <?= $settings['theme']==='green'?'selected':'' ?>>Green</option><option value="grey" <?= $settings['theme']==='grey'?'selected':'' ?>>Grey</option></select></label>
 <label>Organization logo (PNG, JPG, GIF, or WebP; 2 MB maximum)<input type="file" name="organization_logo" accept=".png,.jpg,.jpeg,.gif,.webp,image/png,image/jpeg,image/gif,image/webp"></label>
 <?php if ($settings['logo_file']): ?><p>Current logo: <img style="max-height:55px;max-width:180px;vertical-align:middle" src="<?= e(app_url('/brand_asset.php')) ?>" alt="Current organization logo"></p><?php endif; ?>
-<label><input type="checkbox" name="show_ics_logo" value="1" <?= $settings['show_ics_logo']?'checked':'' ?>> Display ICS Canada logo</label>
 <p class="small">Logo files are renamed server-side and are served only through a validated application route.</p>
 <button class="btn" type="submit">Save settings</button>
 </form></div>
