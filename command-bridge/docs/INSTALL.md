@@ -15,9 +15,10 @@ sudo ./install.sh
 |---|---|
 | Install folder | Default `/var/www/commandbridge`. You are asked to confirm. The web root is its `app/` subfolder only. |
 | Server name | The DNS name or IP address people will use. |
-| HTTPS mode | **1** Let's Encrypt (server must be reachable from the internet on port 80/443 with a public DNS name; falls back to self-signed if issuance fails). **2** Self-signed (default; works on internal networks). **3** Your own certificate and key files. **4** Plain HTTP (testing only). |
+| HTTPS mode | **1** Let's Encrypt (server must be reachable from the internet on port 80/443 with a public DNS name; falls back to self-signed if issuance fails). **2** Self-signed (default; works on internal networks). **3** Your own certificate and key files, for example a wildcard certificate: full-chain PEM plus an unencrypted key, placed in their permanent location first (Apache uses them where they are). **4** Plain HTTP (testing only). |
 | Time zone | Saved as `APP_TIMEZONE` in `db.env`. |
 | Administrator | Username, name, optional email; a strong password is generated and shown once, or type your own (12+ characters). |
+| Check-In Gateway (optional) | Whether to connect a gateway, its address, and whether to generate the shared key here or paste the one the gateway installer showed. At the end it tests the connection and asks whether to switch the sync timer on. See [EXTERNAL_CHECKIN.md](EXTERNAL_CHECKIN.md); you can also do this later with `tools/setup_checkin.sh`. |
 
 On a terminal the installer uses whiptail dialogs (it installs the small `whiptail` package itself if missing); with `CB_PLAIN=1`, over a non-interactive session, or with `CB_ASSUME_YES=1` it uses plain text prompts.
 
@@ -35,13 +36,18 @@ For unattended installs see the variables listed at the top of `install.sh` (`CB
 | Database | MariaDB database and user `commandbridge`, password in `/etc/commandbridge/db.env` |
 | Apache site | `/etc/apache2/sites-available/commandbridge.conf` (default sites are disabled; others are left alone) |
 | PHP settings | `/etc/php/<ver>/{apache2,cli}/conf.d/90-commandbridge.ini` |
-| Check-in sync (optional) | `/etc/commandbridge/external_checkin_sync.env`, systemd units installed but not enabled |
+| Check-in sync (optional) | `/etc/commandbridge/external_checkin_sync.env`; systemd timer switched on only after a passing connection test; tools `tools/setup_checkin.sh` and `tools/rotate_checkin_secret.sh` |
 
 ## Self-signed certificates
 
 Browsers warn until the certificate is trusted. The certificate is `/etc/ssl/commandbridge/commandbridge.crt`
 (valid 825 days); import it into your devices, or later switch to a certificate from your own CA by editing the two
 `SSLCertificate*` lines in the Apache site and running `systemctl reload apache2`.
+
+Self-signed sites do not send `Strict-Transport-Security` (HSTS); Let's Encrypt and your-own-certificate sites send it
+from the Apache site. If you switch a self-signed install to a trusted certificate, you can add
+`Header always set Strict-Transport-Security "max-age=15552000"` to the `<VirtualHost *:443>` section and set
+`TLS_MODE=3` in `/etc/commandbridge/install.conf`.
 
 ## Backups
 

@@ -27,6 +27,8 @@ ASSUME_YES="${CB_ASSUME_YES:-0}"
 
 # shellcheck disable=SC1091
 . "$SRC_DIR/deploy/lib/ui.sh" 2>/dev/null || { echo "deploy/lib/ui.sh is missing - run install.sh from the unpacked gateway folder." >&2; exit 1; }
+# shellcheck disable=SC1091
+. "$SRC_DIR/deploy/lib/timesync.sh"
 
 WARNINGS=()
 say()  { printf '%s\n' "$*"; }
@@ -139,7 +141,9 @@ fi
 [ "${#HMAC_SECRET}" -ge 32 ] || die "The shared secret must be at least 32 characters."
 
 SYNC_ENABLED=0
-if [ "$TLS_MODE" != 4 ] && ui_yesno "Synchronisation" "Accept synchronisation from Command Bridge as soon as the gateway is installed?\n\nChoose No to leave it disabled until you have configured Command Bridge." n; then SYNC_ENABLED=1; fi
+# A pasted secret came from Command Bridge's setup, which is then ready for sync; a generated one still has to be copied there.
+SYNC_DEFAULT=n; [ "$GENERATED_SECRET" = 0 ] && SYNC_DEFAULT=y
+if [ "$TLS_MODE" != 4 ] && ui_yesno "Synchronisation" "Accept synchronisation from Command Bridge as soon as the gateway is installed?\n\nChoose Yes if Command Bridge already has this key ID and secret (you pasted them from its setup). Choose No to leave it disabled until you have configured Command Bridge." "$SYNC_DEFAULT"; then SYNC_ENABLED=1; fi
 
 TLS_LABEL=("" "Let's Encrypt" "Self-signed certificate" "Your own certificate" "None (plain HTTP)")
 SUMMARY="  Install folder : $INSTALL_DIR\n  Web address    : $SERVER_NAME\n  Encryption     : ${TLS_LABEL[$TLS_MODE]}\n  Time zone      : $TZ_NAME\n  Database       : $DB_NAME (local MariaDB)\n  Delivery       : $DELIVERY_MODE\n  Key ID         : $HMAC_KEY_ID\n  Synchronisation: $([ $SYNC_ENABLED = 1 ] && echo enabled || echo disabled)"
@@ -150,12 +154,14 @@ ui_steps 7
 ui_stage "Installing packages (this can take a few minutes)"
 PACKAGES=(apache2 mariadb-server mariadb-client php php-cli libapache2-mod-php php-mysql php-curl php-mbstring php-xml rsync curl ca-certificates openssl)
 [ "$TLS_MODE" = 1 ] && PACKAGES+=(certbot)
+TIMESYNC_PKG="$(timesync_packages)"; [ -n "$TIMESYNC_PKG" ] && PACKAGES+=("$TIMESYNC_PKG")
 if [ "${CB_SKIP_PACKAGES:-0}" != 1 ]; then
     export DEBIAN_FRONTEND=noninteractive
     apt-get update
     apt-get install -y --no-install-recommends "${PACKAGES[@]}"
 fi
 systemctl enable --now mariadb >/dev/null 2>&1 || true
+TIMESYNC_WARN="$(timesync_check)" || warn "$TIMESYNC_WARN"
 
 # ---------------------------------------------------------------- database
 ui_stage "Creating the database"
@@ -192,7 +198,7 @@ mkdir -p "$APP_DIR/.well-known/acme-challenge"
 chown -R root:"$WEB_USER" "$INSTALL_DIR"
 find "$INSTALL_DIR" -type d -exec chmod 0750 {} +
 find "$INSTALL_DIR" -type f -exec chmod 0640 {} +
-chmod 0750 "$INSTALL_DIR/install.sh" "$INSTALL_DIR/update.sh" 2>/dev/null || true
+chmod 0750 "$INSTALL_DIR/install.sh" "$INSTALL_DIR/update.sh" "$INSTALL_DIR"/tools/*.sh 2>/dev/null || true
 
 if [ ! -d "$CONF_DIR" ]; then mkdir -p "$CONF_DIR"; chown root:"$WEB_USER" "$CONF_DIR"; chmod 0750 "$CONF_DIR"; fi
 install -m 0640 -o root -g "$WEB_USER" /dev/null "$ENV_FILE"
@@ -377,19 +383,24 @@ FINAL="$(mktemp)"; chmod 600 "$FINAL"
     echo "  Settings    : $ENV_FILE"
     echo "  Install log : $LOG"
     echo
-    echo "Put these in Command Bridge's /etc/commandbridge/external_checkin_sync.env:"
-    echo "  EXTERNAL_CHECKIN_ENABLED=1"
-    echo "  EXTERNAL_CHECKIN_GATEWAY_URL=$BASE_URL/api/v1/sync/events.php"
-    echo "  EXTERNAL_CHECKIN_GATEWAY_PULL_URL=$BASE_URL/api/v1/sync/pull.php"
-    echo "  EXTERNAL_CHECKIN_GATEWAY_ACK_URL=$BASE_URL/api/v1/sync/ack.php"
-    echo "  EXTERNAL_CHECKIN_HMAC_KEY_ID=$HMAC_KEY_ID"
+    echo "NEXT, ON THE COMMAND BRIDGE SERVER:"
     if [ "$GENERATED_SECRET" = 1 ]; then
-        echo "  EXTERNAL_CHECKIN_HMAC_SECRET=$HMAC_SECRET"
-        echo "  ^ generated secret, shown once - it is also in $ENV_FILE"
+        echo "  Run:  sudo <Command Bridge folder>/tools/setup_checkin.sh"
+        echo "  Choose 'Paste the key from the gateway' and enter:"
+        echo "    Gateway address : $BASE_URL"
+        echo "    Key ID          : $HMAC_KEY_ID"
+        echo "    Shared secret   : $HMAC_SECRET"
+        echo "    ^ generated secret, shown once - it is also in $ENV_FILE"
     else
-        echo "  EXTERNAL_CHECKIN_HMAC_SECRET=(the one you supplied)"
+        echo "  Command Bridge already has this key ID and secret. Test the connection and switch sync on:"
+        echo "    sudo <Command Bridge folder>/tools/setup_checkin.sh --test"
     fi
-    echo "  EXTERNAL_CHECKIN_PUBLIC_ENTRY_BASE_URL=$BASE_URL/?location={location_token}"
+    echo "  (Older Command Bridge without tools/setup_checkin.sh: see command-bridge/docs/EXTERNAL_CHECKIN.md.)"
+    echo
+    echo "Gateway tools (run as root on this server):"
+    echo "  New shared secret       : $INSTALL_DIR/tools/rotate_secret.sh   (start it from Command Bridge)"
+    echo "  Stuck check-ins         : php $INSTALL_DIR/bin/requeue_checkins.php --list"
+    echo "  PIN lockouts            : php $INSTALL_DIR/bin/clear_lockouts.php --list"
     echo
     echo "Self-check:"; printf '  %s\n' "${CHECK_LINES[@]}"
     if [ "${#WARNINGS[@]}" -gt 0 ]; then

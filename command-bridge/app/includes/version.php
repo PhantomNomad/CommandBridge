@@ -8,7 +8,7 @@ declare(strict_types=1);
 if (!defined('CB_VERSION')) {
     $cbVersionFile = dirname(__DIR__) . '/VERSION';
     $cbVersion = is_file($cbVersionFile) ? trim((string)@file_get_contents($cbVersionFile)) : '';
-    define('CB_VERSION', $cbVersion !== '' ? $cbVersion : '0.9.0-beta.2');
+    define('CB_VERSION', $cbVersion !== '' ? $cbVersion : '0.9.0-beta.3');
     unset($cbVersionFile, $cbVersion);
 }
 

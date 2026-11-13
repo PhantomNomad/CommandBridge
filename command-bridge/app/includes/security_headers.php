@@ -20,11 +20,9 @@ if (!function_exists('ics_send_security_headers')) {
         header('Referrer-Policy: strict-origin-when-cross-origin');
         header('Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()');
         header('Cross-Origin-Opener-Policy: same-origin');
-        $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
-            || strtolower((string)($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '')) === 'https';
-        if ($https) {
-            header('Strict-Transport-Security: max-age=31536000');
-        }
+        // Strict-Transport-Security is NOT sent from here. Once a browser has seen it over a trusted certificate it
+        // refuses any other certificate for that name for a year, with no "proceed anyway". The installer adds it in
+        // the Apache site only for trusted certificates (Let's Encrypt or your own), never for self-signed ones.
 
         $mode = strtolower(trim((string)(getenv('COMMANDBRIDGE_CSP_MODE') ?: ($_SERVER['COMMANDBRIDGE_CSP_MODE'] ?? 'enforce'))));
         if ($mode === 'off') {

@@ -53,7 +53,7 @@ if [ -f "$SRC_DIR/../LICENSE.txt" ]; then install -m 0640 "$SRC_DIR/../LICENSE.t
 chown -R root:"$WEB_USER" "$INSTALL_DIR"
 find "$INSTALL_DIR" -type d -exec chmod 0750 {} +
 find "$INSTALL_DIR" -type f ! -name '*.sh' -exec chmod 0640 {} +
-chmod 0750 "$INSTALL_DIR/update.sh" "$INSTALL_DIR/install.sh" 2>/dev/null || true
+chmod 0750 "$INSTALL_DIR/update.sh" "$INSTALL_DIR/install.sh" "$INSTALL_DIR"/tools/*.sh 2>/dev/null || true
 
 # 4. Database migrations
 ui_stage "Applying database migrations"

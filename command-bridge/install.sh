@@ -9,6 +9,8 @@
 # Unattended use: set CB_ASSUME_YES=1 and any of CB_INSTALL_DIR, CB_SERVER_NAME, CB_TLS_MODE
 # (1-4), CB_TIMEZONE, CB_ADMIN_USER, CB_ADMIN_NAME, CB_ADMIN_EMAIL, CB_ADMIN_PASSWORD,
 # CB_CERT_FILE, CB_KEY_FILE, CB_LE_EMAIL. CB_SKIP_PACKAGES=1 skips apt (testing/offline).
+# Check-In Gateway (optional): CB_CHECKIN=1 with CB_CHECKIN_URL, and CB_CHECKIN_KEY_ID + CB_CHECKIN_SECRET if the
+# gateway is already installed (otherwise a key is generated and shown at the end).
 # On a terminal the installer uses whiptail dialogs (installed automatically); CB_PLAIN=1 forces plain prompts.
 
 set -Eeuo pipefail
@@ -25,6 +27,10 @@ ASSUME_YES="${CB_ASSUME_YES:-0}"
 
 # shellcheck disable=SC1091
 . "$SRC_DIR/deploy/lib/ui.sh" 2>/dev/null || { echo "deploy/lib/ui.sh is missing - run install.sh from the unpacked Command Bridge folder." >&2; exit 1; }
+# shellcheck disable=SC1091
+. "$SRC_DIR/deploy/lib/timesync.sh"
+# shellcheck disable=SC1091
+. "$SRC_DIR/deploy/lib/checkin_setup.sh"
 
 WARNINGS=()
 say()  { printf '%s\n' "$*"; }
@@ -131,16 +137,20 @@ if [ -z "$ADMIN_PASSWORD" ]; then
 fi
 [ "${#ADMIN_PASSWORD}" -ge 12 ] || die "Administrator password must be at least 12 characters."
 
+chk_ask
+
 TLS_LABEL=("" "Let's Encrypt" "Self-signed certificate" "Your own certificate" "None (plain HTTP)")
 SUMMARY="  Install folder : $INSTALL_DIR\n  Web address    : $SERVER_NAME\n  Encryption     : ${TLS_LABEL[$TLS_MODE]}\n  Time zone      : $TZ_NAME\n  Database       : $DB_NAME (local MariaDB, user $DB_USER)\n  Administrator  : $ADMIN_USER"
+SUMMARY="$SUMMARY\n  Check-in       : $( [ "$CHK_WANTED" = 1 ] && echo "gateway $CHK_BASE_URL" || echo "no gateway (can be added later)" )"
 ui_yesno "Ready to install" "Please review:\n\n$SUMMARY\n\nProceed with the installation?" y || die "Cancelled."
-ui_steps 7
+ui_steps $(( 7 + CHK_WANTED ))
 
 # ---------------------------------------------------------------- packages
 ui_stage "Installing packages (this can take a few minutes)"
 PACKAGES=(apache2 mariadb-server mariadb-client php php-cli libapache2-mod-php php-mysql php-curl php-mbstring
           php-xml php-zip php-gd php-intl php-tcpdf pdftk-java poppler-utils ghostscript rsync ca-certificates openssl)
 [ "$TLS_MODE" = 1 ] && PACKAGES+=(certbot)
+TIMESYNC_PKG="$(timesync_packages)"; [ -n "$TIMESYNC_PKG" ] && PACKAGES+=("$TIMESYNC_PKG")
 if [ "${CB_SKIP_PACKAGES:-0}" != 1 ]; then
     export DEBIAN_FRONTEND=noninteractive
     apt-get update
@@ -148,6 +158,7 @@ if [ "${CB_SKIP_PACKAGES:-0}" != 1 ]; then
 fi
 command -v pdftk >/dev/null || warn "pdftk was not found; official PDF export will not work."
 systemctl enable --now mariadb >/dev/null 2>&1 || true
+TIMESYNC_WARN="$(timesync_check)" || warn "$TIMESYNC_WARN"
 
 # ---------------------------------------------------------------- database
 ui_stage "Creating the database"
@@ -185,7 +196,7 @@ mkdir -p "$APP_DIR/storage/uploads" "$APP_DIR/storage/branding" "$APP_DIR/.well-
 chown -R root:"$WEB_USER" "$INSTALL_DIR"
 find "$INSTALL_DIR" -type d -exec chmod 0750 {} +
 find "$INSTALL_DIR" -type f -exec chmod 0640 {} +
-chmod 0750 "$INSTALL_DIR/install.sh" "$INSTALL_DIR/update.sh" 2>/dev/null || true
+chmod 0750 "$INSTALL_DIR/install.sh" "$INSTALL_DIR/update.sh" "$INSTALL_DIR"/tools/*.sh 2>/dev/null || true
 chown -R "$WEB_USER":"$WEB_USER" "$APP_DIR/storage"
 chown "$WEB_USER":"$WEB_USER" "$APP_DIR/.well-known" "$APP_DIR/.well-known/acme-challenge"
 
@@ -297,7 +308,7 @@ OTHERS="$(cd /etc/apache2/sites-enabled && ls 2>/dev/null | grep -v "^$SITE_NAME
 TLS_RESULT="none"
 case "$TLS_MODE" in
     4) write_http_only; TLS_RESULT="HTTP only" ;;
-    3) write_redirect_80; append_https "$CERT_FILE" "$KEY_FILE" 0; TLS_RESULT="your certificate" ;;
+    3) write_redirect_80; append_https "$CERT_FILE" "$KEY_FILE" 1; TLS_RESULT="your certificate" ;;
     2)
         SSL_DIR=/etc/ssl/commandbridge; mkdir -p "$SSL_DIR"; chmod 0755 "$SSL_DIR"
         if [[ $SERVER_NAME =~ ^[0-9.]+$ ]]; then SAN="IP:$SERVER_NAME"; else SAN="DNS:$SERVER_NAME"; fi
@@ -337,13 +348,20 @@ if [ -d /run/systemd/system ]; then
         sed "s#__APP_DIR__#$APP_DIR#g" "$SRC_DIR/deploy/systemd/$u" > "/etc/systemd/system/$u"
     done
     systemctl daemon-reload
-    say "Installed (but did not enable) the optional external check-in sync timer; see docs/EXTERNAL_CHECKIN.md."
+    say "Installed the check-in sync timer (switched on only when a Check-In Gateway is connected; see docs/EXTERNAL_CHECKIN.md)."
 fi
 
 # ---------------------------------------------------------------- administrator
 ui_stage "Creating the administrator"
 printf '%s' "$ADMIN_PASSWORD" | runuser -u "$WEB_USER" -- php "$APP_DIR/bin/create_admin.php" \
     --username="$ADMIN_USER" --name="$ADMIN_NAME" ${ADMIN_EMAIL:+--email="$ADMIN_EMAIL"} --password-stdin
+
+# ---------------------------------------------------------------- check-in gateway (optional)
+if [ "$CHK_WANTED" = 1 ]; then
+    ui_stage "Connecting the Check-In Gateway"
+    chk_write_env
+    chk_ping || true
+fi
 
 # ---------------------------------------------------------------- self-check
 ui_stage "Running the self-check"
@@ -352,6 +370,9 @@ SMOKE_ARGS=(); [ "$TLS_MODE" = 4 ] && SMOKE_ARGS=(--base-url=http://127.0.0.1) |
 SMOKE_OUT="$(mktemp)"
 runuser -u "$WEB_USER" -- php "$APP_DIR/bin/smoke_test.php" "${SMOKE_ARGS[@]}" > "$SMOKE_OUT" 2>&1 || SMOKE_OK=0
 cat "$SMOKE_OUT"
+
+# Asked last, once everything else is in place: switch the check-in sync timer on?
+[ "$CHK_WANTED" = 1 ] && { chk_offer_enable || warn "Check-in sync could not be switched on; run $INSTALL_DIR/tools/setup_checkin.sh --test"; }
 
 SCHEME=https; [ "$TLS_MODE" = 4 ] && SCHEME=http
 FINAL="$(mktemp)"; chmod 600 "$FINAL"
@@ -373,13 +394,17 @@ FINAL="$(mktemp)"; chmod 600 "$FINAL"
     echo
     echo "After signing in you will be taken through creating your first incident."
     [ "$TLS_MODE" = 2 ] && echo "Browsers will warn about the self-signed certificate until you trust /etc/ssl/commandbridge/commandbridge.crt."
+    echo
+} > "$FINAL"
+chk_instructions "$FINAL"
+{
     if [ "$SMOKE_OK" != 1 ]; then
         echo; echo "SELF-CHECK PROBLEMS (see docs/SMOKE_TEST.md):"; grep -E 'FAIL|Failures|^ *- ' "$SMOKE_OUT" | head -15
     fi
     if [ "${#WARNINGS[@]}" -gt 0 ]; then
         echo; echo "NOTICES:"; for w in "${WARNINGS[@]}"; do echo "  - $w"; done
     fi
-} > "$FINAL"
+} >> "$FINAL"
 # Shown on the terminal only (fd 3), never written to the log - it may contain the generated password.
 [ "$UI_WT" = 1 ] && ui_textfile "Installation complete" "$FINAL"
 { echo; echo "=============================================="; cat "$FINAL"; echo "=============================================="; } >&3

@@ -1,6 +1,6 @@
 # Command Bridge Check-In Gateway
 
-> **Public beta (0.9.0-beta.1).** Part of the [Command Bridge repository](../README.md); the root README explains how this gateway and the main app work together. Run it on a **publicly reachable** server. Licensed under the GNU AGPL-3.0 ([LICENSE.txt](../LICENSE.txt)).
+> **Public beta (0.9.0-beta.2).** Part of the [Command Bridge repository](../README.md); the root README explains how this gateway and the main app work together. Run it on a **publicly reachable** server. Licensed under the GNU AGPL-3.0 ([LICENSE.txt](../LICENSE.txt)).
 
 A standalone, English-language public gateway for authorized Check-In Recorders and Staging Area Managers. It receives only the minimal location/expected-resource manifest from CommandBridge through HMAC-authenticated JSON synchronization, records public check-in or exception events locally, and sends those events back through the internal receipt API.
 

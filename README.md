@@ -4,7 +4,7 @@ Command Bridge is free, self-hosted software for running an **Incident Command S
 operational periods, positions and chain of command, ICS Canada forms with sign-off and PDF export, resource tracking,
 and resource check-in. It is built on PHP 8, MariaDB and Apache and installs on a plain Debian server.
 
-> **Public beta - version 0.9.0-beta.2 (Command Bridge; Check-In Gateway 0.9.0-beta.1).** It is used operationally but has not had wide testing. Test your install,
+> **Public beta - version 0.9.0-beta.3 (Command Bridge; Check-In Gateway 0.9.0-beta.2).** It is used operationally but has not had wide testing. Test your install,
 > keep backups, and read [SECURITY.md](SECURITY.md) before putting real incident data in it.
 
 ## Two programs, two servers
@@ -62,8 +62,8 @@ Every request is signed with a shared secret (HMAC-SHA256) and has a time limit,
 not from your Command Bridge. The **Sync status** page in Command Bridge shows what is queued, delivered or failed, and lets
 an administrator retry stuck items.
 
-The timer is installed by the Command Bridge installer but left **disabled** until the gateway exists. Enable it after
-setting up the gateway (see below): `sudo systemctl enable --now commandbridge-external-checkin-sync.timer`.
+The timer is installed by the Command Bridge installer but only switched on once a connection test to the gateway passes
+(see *Connect them* below). Both servers need accurate clocks: signed requests more than 5 minutes off are refused.
 
 ### What the gateway knows (and does not)
 
@@ -88,11 +88,12 @@ Do you need check-in from outside your network? If not, install only Command Bri
    cd checkin-gateway
    sudo ./install.sh
    ```
-   It asks for its address, HTTPS (Let's Encrypt recommended), and a shared secret, then prints the exact lines to copy into
-   Command Bridge. See [checkin-gateway/docs/INSTALL.md](checkin-gateway/docs/INSTALL.md).
-3. **Connect them:** put the printed values into `/etc/commandbridge/external_checkin_sync.env` on the Command Bridge server
-   (`EXTERNAL_CHECKIN_ENABLED=1`, gateway URLs, key ID, secret), enable the timer above, and set `GATEWAY_SYNC_ENABLED=1` on
-   the gateway. Details: [command-bridge/docs/EXTERNAL_CHECKIN.md](command-bridge/docs/EXTERNAL_CHECKIN.md).
+   It asks for its address, HTTPS (Let's Encrypt recommended; Command Bridge needs a gateway certificate it trusts) and a
+   shared secret. See [checkin-gateway/docs/INSTALL.md](checkin-gateway/docs/INSTALL.md).
+3. **Connect them:** either answer *Yes* to the Check-In Gateway question in Command Bridge's installer, or run
+   `sudo /var/www/commandbridge/tools/setup_checkin.sh` later. Whichever server you set up first generates the key ID and
+   secret; you paste them into the other. The script tests the connection and switches the timer on when it passes.
+   Details, including changing the secret later: [command-bridge/docs/EXTERNAL_CHECKIN.md](command-bridge/docs/EXTERNAL_CHECKIN.md).
 4. Run the built-in self-check on Command Bridge ([command-bridge/docs/SMOKE_TEST.md](command-bridge/docs/SMOKE_TEST.md)).
 
 Both installers use friendly `whiptail` dialogs on a terminal and plain prompts otherwise; both log to `/var/log/`.

@@ -43,7 +43,8 @@ function gateway_config(): array {
     $config['commandbridge_events_url'] = $values['COMMANDBRIDGE_EVENTS_URL'] ?? '';
     $deliveryMode = strtolower(trim((string) ($values['GATEWAY_DELIVERY_MODE'] ?? 'push')));
     $config['delivery_mode'] = in_array($deliveryMode, ['push', 'pull'], true) ? $deliveryMode : 'push';
-    $config['timezone'] = in_array(($values['GATEWAY_TIMEZONE'] ?? 'UTC'), timezone_identifiers_list(), true) ? $values['GATEWAY_TIMEZONE'] : 'UTC';
+    $timezone = (string)($values['GATEWAY_TIMEZONE'] ?? 'UTC');
+    $config['timezone'] = in_array($timezone, timezone_identifiers_list(), true) ? $timezone : 'UTC';
     date_default_timezone_set($config['timezone']);
     foreach ([
         'GATEWAY_REQUEST_TTL_SECONDS' => ['request_ttl_seconds', 60, 900],

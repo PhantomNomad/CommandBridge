@@ -18,7 +18,8 @@ to run the write scenarios if any table it touches is not InnoDB.
 
 What it checks
 - Install: PHP version and extensions, required tables and columns, roles, chain-of-command catalogue (COML -> LSC -> IC), InnoDB, `db.env` permissions,
-  official PDF templates, pdftk, sync worker heartbeat and queue health.
+  official PDF templates, pdftk, sync worker heartbeat and queue health, the public check-in link, and (when sync is configured) a read-only
+  connection test to the Check-In Gateway (`bin/external_checkin_ping.php`: trusted HTTPS, clocks, matching key).
 - Approvers: every form resolves to the configured position; a vacant LSC climbs to the IC; the signer holding the approving position moves up a level;
   two holders means the signer chooses; nobody in the chain falls back to a TSC admin; IC/UC self-approval rules.
 - Signing: a signed form gets its approver automatically, the approver is notified once, and the choice is audit-logged. The ICS 203 style (no signature
