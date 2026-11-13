@@ -64,7 +64,7 @@ rsync -a --delete "$SRC_DIR/docs/" "$INSTALL_DIR/docs/"
 for f in VERSION CHANGELOG.md README.md LICENSE SECURITY.md THIRD_PARTY.md update.sh install.sh; do
     [ -f "$SRC_DIR/$f" ] && install -m 0640 "$SRC_DIR/$f" "$INSTALL_DIR/$f"
 done
-chmod 0750 "$INSTALL_DIR/update.sh" "$INSTALL_DIR/install.sh" 2>/dev/null || true
+chmod 0750 "$INSTALL_DIR/update.sh" "$INSTALL_DIR/install.sh" "$INSTALL_DIR"/tools/*.sh 2>/dev/null || true
 chown -R root:"$WEB_USER" "$INSTALL_DIR"
 find "$INSTALL_DIR" -path "$APP_DIR/storage" -prune -o -type d -exec chmod 0750 {} +
 find "$INSTALL_DIR" -path "$APP_DIR/storage" -prune -o -type f ! -name '*.sh' -exec chmod 0640 {} +

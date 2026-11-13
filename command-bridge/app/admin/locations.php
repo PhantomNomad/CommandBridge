@@ -32,7 +32,11 @@ function locations_log(PDO $pdo, int $incidentId, string $type, array $data = []
  * issue cannot roll back a location that was just created or updated.
  */
 function locations_public_location_url(string $locationToken): string {
-    $baseUrl = trim((string)getenv('EXTERNAL_CHECKIN_PUBLIC_ENTRY_BASE_URL'));
+    // From /etc/commandbridge/external_checkin_sync.env; an Apache SetEnv value is still honoured for older setups.
+    $baseUrl = trim((string)(external_checkin_sync_config()['public_entry_base_url'] ?? ''));
+    if ($baseUrl === '') {
+        $baseUrl = trim((string)getenv('EXTERNAL_CHECKIN_PUBLIC_ENTRY_BASE_URL'));
+    }
     if ($baseUrl === '' || filter_var($baseUrl, FILTER_VALIDATE_URL) === false) {
         return '';
     }
@@ -42,7 +46,7 @@ function locations_public_location_url(string $locationToken): string {
     }
 
     return $baseUrl . (str_contains($baseUrl, '?') ? '&' : '?')
-        . 'location_token=' . rawurlencode($locationToken);
+        . 'location=' . rawurlencode($locationToken);
 }
 
 function locations_enqueue_location_snapshot(int $locationId): ?string {
@@ -205,7 +209,7 @@ render_header('Locations');
                   <?php if ($locationStatus !== 'active'): ?>
                     <p class="small">Public check-in is unavailable until this location is set to Active.</p>
                   <?php elseif ($publicUrl === ''): ?>
-                    <p class="small">A public entry URL could not be determined. Set <code>EXTERNAL_CHECKIN_PUBLIC_ENTRY_BASE_URL</code> in the server configuration.</p>
+                    <p class="small">A public entry URL could not be determined. Connect the Check-In Gateway on the server with <code>sudo tools/setup_checkin.sh</code> (it sets <code>EXTERNAL_CHECKIN_PUBLIC_ENTRY_BASE_URL</code>).</p>
                   <?php else: ?>
                     <p><a href="<?= e($publicUrl) ?>" target="_blank" rel="noopener noreferrer">Open public check-in page</a></p>
                     <label class="small" for="external-checkin-url-<?= $locationId ?>">Public check-in URL</label>

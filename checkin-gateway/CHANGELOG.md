@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.9.0-beta.2
+
+* New signed connection test `public/api/v1/sync/ping.php` (action `sync.ping`). It answers with the gateway version,
+  server time, delivery mode and how many check-ins are waiting or stuck. It is read-only and never leases or changes
+  events. Command Bridge 0.9.0-beta.3 uses it in `setup_checkin.sh --test`, during installation and in its self-check.
+* New `bin/requeue_checkins.php`: lists check-ins the gateway stopped offering to Command Bridge (attempts used up, or
+  rejected) and re-sends them with `--id=N` or `--all`. Written to the gateway audit log. Command Bridge ignores
+  check-ins it already recorded, so re-sending is safe.
+* New `tools/rotate_secret.sh`: installs a new key ID and shared secret from Command Bridge's `rotate_checkin_secret.sh`
+  (hidden input, settings backed up first, offers to switch sync on if it is off).
+* Installer: makes sure network time is on (signed requests more than 5 minutes off are refused). If you paste a secret
+  from Command Bridge, *Accept synchronisation* now defaults to Yes. The final screen now explains the next step on
+  Command Bridge (`setup_checkin.sh`) instead of listing settings to copy by hand, and lists the gateway's admin tools.
+* Fixed: a settings file without `GATEWAY_TIMEZONE` made every page fail.
+* Installer and updater mark `tools/*.sh` executable.
+
+No database changes. Update with `update.sh`.
+
 ## 0.9.0-beta.1 - first public beta
 
 First public release; version numbering reset (earlier private builds were 1.0.x, last 1.0.10) to match Command Bridge 0.9.0-beta.1.

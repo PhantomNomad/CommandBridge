@@ -14,7 +14,7 @@ In pull mode, the legacy gateway dispatcher does not post queued check-ins to `C
 
 ## Request authentication
 
-Both endpoints use the existing shared HMAC key and headers:
+All three endpoints (ping, pull, ack) use the shared HMAC key and headers:
 
 - `X-CommandBridge-Timestamp`: current Unix timestamp
 - `X-CommandBridge-Nonce`: a unique 16–128 character nonce
@@ -22,6 +22,24 @@ Both endpoints use the existing shared HMAC key and headers:
 - `X-CommandBridge-Signature`: Base64 HMAC-SHA256 of `timestamp + "\n" + nonce + "\n" + exact request body`
 
 The HMAC key is `EXTERNAL_CHECKIN_HMAC_SECRET`. The internal poller must validate the gateway TLS certificate.
+
+## Connection test (ping)
+
+`POST /api/v1/sync/ping.php` (gateway 0.9.0-beta.2 and newer)
+
+```json
+{"protocol_version":"1.0","request_id":"<32-128 hex characters>","action":"sync.ping"}
+```
+
+Read-only: it never leases, changes or deletes events. A `200` answer proves the key ID, secret and clocks match:
+
+```json
+{"ok":true,"gateway_version":"0.9.0-beta.2","server_time":1794588650,"delivery_mode":"pull","checkins_waiting":2,"checkins_stuck":0}
+```
+
+`checkins_stuck` counts check-ins that are no longer offered (attempts used up, or rejected); re-send them on the gateway with
+`bin/requeue_checkins.php`. Errors: `401` wrong key ID/secret or clock difference beyond `GATEWAY_REQUEST_TTL_SECONDS`;
+`503` sync disabled on the gateway. Command Bridge calls it from `bin/external_checkin_ping.php`.
 
 ## Pull events
 

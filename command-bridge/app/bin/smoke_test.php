@@ -157,6 +157,13 @@ if ($want('env')) {
             t_ok('Sync worker ran in the last 10 minutes', $age >= 0 && $age <= 600, $age >= 0 ? external_checkin_age_text($age) . ' ago' : 'never reported');
             t_ok('Sync status has no failing problems', $st['level'] !== 'fail', implode(' | ', array_map(static fn($p) => $p['text'], $st['problems'])));
             t_info('Queue now: waiting=' . $st['queue']['waiting'] . ' retrying=' . $st['queue']['retrying'] . ' stuck/failed=' . $st['queue']['failed']);
+            t_ok('Public check-in link configured (EXTERNAL_CHECKIN_PUBLIC_ENTRY_BASE_URL)',
+                external_checkin_sync_config()['public_entry_base_url'] !== '', 'QR codes on Admin > Locations need it; run tools/setup_checkin.sh');
+            // Signed, read-only connection test (bin/external_checkin_ping.php): never collects or changes check-ins.
+            $pingOut = []; $pingRc = 1;
+            @exec(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg(__DIR__ . '/external_checkin_ping.php') . ' 2>&1', $pingOut, $pingRc);
+            $pingFail = array_values(array_filter($pingOut, static fn($l) => str_starts_with((string)$l, 'FAIL')));
+            t_ok('Check-In Gateway connection test passes', $pingRc === 0, $pingFail ? substr((string)$pingFail[0], 5) : implode(' | ', $pingOut));
         }
     } catch (Throwable $e) { t_ok('Sync status readable', false, $e->getMessage()); }
 
