@@ -31,9 +31,9 @@ function signoff_needs_creator_sign(string $code): bool
     return in_array(signoff_normalize($code), ['ICS213', 'ICS214', 'ICS215A', 'ICS218'], true);
 }
 
-function signoff_is_tsc(): bool
+function signoff_is_sysadmin(): bool
 {
-    return !empty(current_user()['is_tsc_admin']);
+    return !empty(current_user()['is_sysadmin']);
 }
 
 /** @return array{record: ?array, creator: ?array, approval: ?array} */
@@ -63,7 +63,7 @@ function signoff_state(int $formRecordId): array
     return ['record' => $record, 'creator' => $creator, 'approval' => $record ? $sig('approved_by') : null];
 }
 
-/** People who can be named as approver: active users holding a position in the incident, plus TSC admins. */
+/** People who can be named as approver: active users holding a position in the incident, plus SysAdmins. */
 function signoff_approver_candidates(int $incidentId, int $excludeUserId = 0): array
 {
     try {
@@ -76,14 +76,14 @@ function signoff_approver_candidates(int $incidentId, int $excludeUserId = 0): a
 
 function signoff_approver_candidates_query(int $incidentId, int $excludeUserId): array
 {
-    $st = db()->prepare("SELECT u.id, COALESCE(NULLIF(u.real_name, ''), u.username) AS name, u.is_tsc_admin,
+    $st = db()->prepare("SELECT u.id, COALESCE(NULLIF(u.real_name, ''), u.username) AS name, u.is_sysadmin,
             GROUP_CONCAT(DISTINCT r.role_code ORDER BY r.role_code SEPARATOR ', ') AS roles
         FROM users u
         LEFT JOIN incident_positions ip ON ip.user_id = u.id AND ip.incident_id = ? AND ip.deleted_at IS NULL
             AND (ip.assigned_end IS NULL OR ip.assigned_end >= NOW())
         LEFT JOIN roles r ON r.id = ip.role_id
-        WHERE u.is_active = 1 AND u.deleted_at IS NULL AND u.id <> ? AND (ip.id IS NOT NULL OR u.is_tsc_admin = 1)
-        GROUP BY u.id, u.real_name, u.username, u.is_tsc_admin
+        WHERE u.is_active = 1 AND u.deleted_at IS NULL AND u.id <> ? AND (ip.id IS NOT NULL OR u.is_sysadmin = 1)
+        GROUP BY u.id, u.real_name, u.username, u.is_sysadmin
         ORDER BY name");
     $st->execute([$incidentId, $excludeUserId]);
     return $st->fetchAll() ?: [];
@@ -166,10 +166,10 @@ function signoff_position_holders(int $incidentId, string $acronym, int $opId = 
     return $ids;
 }
 
-/** Holding IC or UC (top of the chain) or TSC: may approve a form they signed themselves when nobody ranks above (always logged). */
+/** Holding IC or UC (top of the chain) or a SysAdmin: may approve a form they signed themselves when nobody ranks above (always logged). */
 function signoff_self_approval_allowed(int $incidentId, int $userId): bool
 {
-    if (signoff_is_tsc()) { return true; }
+    if (signoff_is_sysadmin()) { return true; }
     try { return (bool)array_intersect(['IC', 'UC'], array_map('strtoupper', get_user_role_codes($incidentId, $userId))); }
     catch (Throwable $e) { return false; }
 }
@@ -213,12 +213,12 @@ function signoff_resolve_approver(int $incidentId, string $formCode, int $signer
             if (count($holders) === 1) { return ['user_id' => $holders[0], 'position' => $pos, 'choices' => [], 'self' => false]; }
             if (count($holders) > 1) { return ['user_id' => 0, 'position' => $pos, 'choices' => $holders, 'self' => false]; }
         }
-        // Nobody in the chain: a TSC admin, else the IC / UC signing their own form.
-        $st = db()->prepare("SELECT id FROM users WHERE is_tsc_admin = 1 AND is_active = 1 AND deleted_at IS NULL AND id <> ? ORDER BY id");
+        // Nobody in the chain: a SysAdmin, else the IC / UC signing their own form.
+        $st = db()->prepare("SELECT id FROM users WHERE is_sysadmin = 1 AND is_active = 1 AND deleted_at IS NULL AND id <> ? ORDER BY id");
         $st->execute([$signerUserId]);
-        $tsc = array_map('intval', array_column($st->fetchAll(), 'id'));
-        if (count($tsc) === 1) { return ['user_id' => $tsc[0], 'position' => 'TSC', 'choices' => [], 'self' => false]; }
-        if (count($tsc) > 1) { return ['user_id' => 0, 'position' => 'TSC', 'choices' => $tsc, 'self' => false]; }
+        $sysadmins = array_map('intval', array_column($st->fetchAll(), 'id'));
+        if (count($sysadmins) === 1) { return ['user_id' => $sysadmins[0], 'position' => 'SYSADMIN', 'choices' => [], 'self' => false]; }
+        if (count($sysadmins) > 1) { return ['user_id' => 0, 'position' => 'SYSADMIN', 'choices' => $sysadmins, 'self' => false]; }
         if (signoff_self_approval_allowed($incidentId, $signerUserId)) { return ['user_id' => $signerUserId, 'position' => 'IC', 'choices' => [], 'self' => true]; }
     } catch (Throwable $e) {
         security_log($e, 'signoff_resolve');
@@ -276,18 +276,18 @@ function signoff_render_panel(string $formCode, int $incidentId, int $opId, int 
     $code = signoff_normalize($formCode);
     $status = strtolower((string)$rec['status']);
     $me = (int)(current_user()['id'] ?? 0);
-    $isTsc = signoff_is_tsc();
+    $isSysadmin = signoff_is_sysadmin();
     $perms = get_current_user_form_permissions($code, $incidentId);
-    $canSign = $isTsc || !empty($perms['can_submit_final']);
-    $canEdit = $isTsc || !empty($perms['can_edit']) || !empty($perms['can_create']);
+    $canSign = $isSysadmin || !empty($perms['can_submit_final']);
+    $canEdit = $isSysadmin || !empty($perms['can_edit']) || !empty($perms['can_create']);
     $canReopenApproved = $canSign;
     if ($code === 'ICS214') {
-        // Personal activity log: only its owner signs it; once approved it stays locked (a TSC administrator can reopen it).
+        // Personal activity log: only its owner signs it; once approved it stays locked (a SysAdmin can reopen it).
         require_once __DIR__ . '/ics214_log.php';
         $logOwnerId = ics214_owner_of_record($formRecordId);
         $canSign = $logOwnerId > 0 && $logOwnerId === $me;
-        $canEdit = $canSign || $isTsc;
-        $canReopenApproved = $isTsc;
+        $canEdit = $canSign || $isSysadmin;
+        $canReopenApproved = $isSysadmin;
     }
     $creator = $state['creator'];
     $creatorId = (int)($creator['signer_user_id'] ?? 0);
@@ -327,7 +327,7 @@ function signoff_render_panel(string $formCode, int $incidentId, int $opId, int 
         } else {
             echo '<p class="priority-high"><strong>No approver named yet.</strong> Choose who approves this form.</p>';
         }
-        if ($isApprover || $isTsc) {
+        if ($isApprover || $isSysadmin) {
             echo '<p>' . $btn('approve', 'Approve and sign', 'btn-success', 'Approve and digitally sign this form?') . '</p>';
         }
         if ($canNameApprover) {
@@ -337,14 +337,14 @@ function signoff_render_panel(string $formCode, int $incidentId, int $opId, int 
             echo '<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0"><label for="signoff_approver">' . ($approverId > 0 ? 'Change approver' : 'Approver') . '</label>'
                . '<select form="cb-signoff-form" id="signoff_approver" name="signoff_approver_id"><option value="">-- Select approver --</option>';
             foreach ($cands as $c) {
-                echo '<option value="' . (int)$c['id'] . '"' . (((int)$c['id'] === $approverId || ($approverId <= 0 && (int)$c['id'] === (int)$suggest['user_id'])) ? ' selected' : '') . '>' . e($c['name'] . ($c['roles'] ? ' (' . $c['roles'] . ')' : (!empty($c['is_tsc_admin']) ? ' (TSC)' : ''))) . '</option>';
+                echo '<option value="' . (int)$c['id'] . '"' . (((int)$c['id'] === $approverId || ($approverId <= 0 && (int)$c['id'] === (int)$suggest['user_id'])) ? ' selected' : '') . '>' . e($c['name'] . ($c['roles'] ? ' (' . $c['roles'] . ')' : (!empty($c['is_sysadmin']) ? ' (SysAdmin)' : ''))) . '</option>';
             }
             echo '</select> ';
             if ($approverId <= 0 && (int)$suggest['user_id'] > 0) { echo '<span class="small">Suggested from the chain of command (' . e($suggest['position']) . ').</span> '; }
             elseif ($approverId <= 0 && $suggest['choices']) { echo '<span class="small">More than one person holds ' . e($suggest['position']) . '; choose one.</span> '; }
             echo $btn('request', $approverId > 0 ? 'Update approver' : 'Send for approval', 'btn-primary') . '</div>';
         }
-        if ($isApprover || $isTsc || $canNameApprover) {
+        if ($isApprover || $isSysadmin || $canNameApprover) {
             echo '<div style="margin-top:8px"><label for="signoff_reason">Return for changes / reopen (reason required)</label><br>'
                . '<input form="cb-signoff-form" type="text" id="signoff_reason" name="signoff_reason" maxlength="300" style="width:100%;max-width:560px" onkeydown="if(event.keyCode===13){event.preventDefault();}"> '
                . $btn('return', 'Return for changes', 'btn-outline-secondary') . '</div>';

@@ -6,8 +6,8 @@ require_csrf_for_post();
 require_once __DIR__ . '/includes/layout.php';
 require_once __DIR__ . '/includes/login_throttle.php';
 
-if (!tsc_admin_exists()) {
-    header('Location: ' . app_url('/setup/setup_tsc.php'));
+if (!sysadmin_exists()) {
+    header('Location: ' . app_url('/setup/setup_sysadmin.php'));
     exit;
 }
 
@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $ip = login_throttle_client_ip();
     $pdo = db();
     $genericError = 'Invalid credentials, or the account is temporarily locked. '
-        . 'If you are locked out, ask your TSC or IC to unlock your account.';
+        . 'If you are locked out, ask your SysAdmin or IC to unlock your account.';
 
     if (login_throttle_ip_blocked($pdo, $ip)) {
         // Blocked requests are not recorded, so waiting out the window always works.
@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $ok = false;
 
         if ($user && !$locked) {
-            if ((int)$user['is_tsc_admin'] === 1 && !empty($user['password_hash'])) {
+            if ((int)$user['is_sysadmin'] === 1 && !empty($user['password_hash'])) {
                 $ok = password_verify($secret, $user['password_hash']);
             } elseif (!empty($user['pin_encrypted'])) {
                 $ok = verify_pin($secret, (string)$user['pin_encrypted']);
@@ -60,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             audit_log((int)$user['id'], 'account_locked', 'user', (int)$user['id'],
                 'Account locked for ' . login_throttle_format_remaining((int)$failure['locked_until'])
                 . ' after repeated failed sign-ins from ' . $ip . ' (lock level ' . $failure['level'] . ')');
-            notify_tsc_account_locked($user, $ip, login_throttle_format_remaining((int)$failure['locked_until']));
+            notify_sysadmin_account_locked($user, $ip, login_throttle_format_remaining((int)$failure['locked_until']));
         }
         flash('error', $genericError);
     }
@@ -90,7 +90,7 @@ render_header('Login');
     <div style="margin-top:16px;">
       <button type="submit">Sign in</button>
     </div>
-    <p class="small">Technical Services Coordinator administrators sign in with username and password. Incident users sign in with username and PIN.</p>
+    <p class="small">SysAdmins sign in with username and password. Incident users sign in with username and PIN.</p>
   </form>
 </div>
 <?php render_footer(); ?>

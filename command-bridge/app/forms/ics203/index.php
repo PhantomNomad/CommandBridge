@@ -28,14 +28,14 @@ if ($incidentId > 0 && !$canView) { http_response_code(403); render_header('ICS 
 
 function ics203_submitter_role_codes(): array {
     // ICS 203 is normally prepared/maintained by the Resources Unit Leader under Planning.
-    // Allow IC and Technical Services Coordinator as a controlling authority, and RESL as the form owner/preparer.
+    // Allow IC and SysAdmin as a controlling authority, and RESL as the form owner/preparer.
     return ['IC', 'RESL'];
 }
 
 function current_user_can_submit_ics203(PDO $pdo, int $incidentId): bool {
     $user = current_user();
     if (!$user) return false;
-    if (!empty($user['is_tsc_admin'])) return true;
+    if (!empty($user['is_sysadmin'])) return true;
     $userId = (int)($user['id'] ?? 0);
     if ($incidentId <= 0 || $userId <= 0) return false;
     try {

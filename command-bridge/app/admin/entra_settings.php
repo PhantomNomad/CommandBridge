@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 require_once dirname(__DIR__) . '/includes/layout.php';
-require_tsc_admin();
+require_sysadmin();
 require_csrf_for_post();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

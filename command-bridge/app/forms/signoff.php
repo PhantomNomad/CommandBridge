@@ -3,7 +3,7 @@ declare(strict_types=1);
 /**
  * Shared sign-off actions for ICS forms (see includes/signoff.php):
  *   request      - the form's signer / an editor names (or changes) the approver
- *   approve      - the named approver (or a TSC admin) approves and digitally signs
+ *   approve      - the named approver (or a SysAdmin) approves and digitally signs
  *   return       - the approver, signer or an editor returns / reopens the form for changes (reason required)
  *   creator_sign - sign and submit forms that have no submit button of their own (ICS 213, 214, 215A, 218)
  */
@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $pdo = db();
 $user = current_user() ?: [];
 $me = (int)($user['id'] ?? 0);
-$isTsc = signoff_is_tsc();
+$isSysadmin = signoff_is_sysadmin();
 $action = (string)($_POST['signoff_action'] ?? '');
 $recordId = (int)($_POST['signoff_record_id'] ?? 0);
 $returnUrl = (string)($_POST['signoff_return'] ?? '');
@@ -42,17 +42,17 @@ try {
     if (!signoff_form_supported($code)) { throw new RuntimeException('This form does not use the shared sign-off.'); }
     $status = strtolower((string)$rec['status']);
     $perms = get_current_user_form_permissions($code, $incidentId);
-    $canSign = $isTsc || !empty($perms['can_submit_final']);
-    $canEdit = $isTsc || !empty($perms['can_edit']) || !empty($perms['can_create']);
+    $canSign = $isSysadmin || !empty($perms['can_submit_final']);
+    $canEdit = $isSysadmin || !empty($perms['can_edit']) || !empty($perms['can_create']);
     $canReopenApproved = $canSign;
     $isPersonalLog = $code === 'ICS214';
     if ($isPersonalLog) {
-        // ICS 214 logs are personal: only the owner signs; once approved only a TSC administrator can reopen it.
+        // ICS 214 logs are personal: only the owner signs; once approved only a SysAdmin can reopen it.
         require_once __DIR__ . '/../includes/ics214_log.php';
         $logOwnerId = ics214_owner_of_record($recordId);
         $canSign = $logOwnerId > 0 && $logOwnerId === $me;
-        $canEdit = $canSign || $isTsc;
-        $canReopenApproved = $isTsc;
+        $canEdit = $canSign || $isSysadmin;
+        $canReopenApproved = $isSysadmin;
     }
     $creator = $state['creator'];
     $creatorId = (int)($creator['signer_user_id'] ?? 0);
@@ -97,11 +97,11 @@ try {
     } elseif ($action === 'approve') {
         if ($status !== 'submitted') { throw new RuntimeException('This form is not waiting for approval.'); }
         if ($approverId <= 0) { throw new RuntimeException('No approver has been named for this form yet.'); }
-        if (!($me === $approverId || $isTsc)) { throw new RuntimeException('Only the named approver can approve this form.'); }
+        if (!($me === $approverId || $isSysadmin)) { throw new RuntimeException('Only the named approver can approve this form.'); }
         $selfSigned = $creatorId > 0 && $creatorId === $me;
-        if ($selfSigned && !$isTsc && !signoff_self_approval_allowed($incidentId, $me)) { throw new RuntimeException('The person who signed the form cannot also approve it.'); }
+        if ($selfSigned && !$isSysadmin && !signoff_self_approval_allowed($incidentId, $me)) { throw new RuntimeException('The person who signed the form cannot also approve it.'); }
         $roles = get_user_role_codes($incidentId, $me);
-        $position = $roles ? (string)$roles[0] : ($isTsc ? 'TSC' : 'AUTHORIZED');
+        $position = $roles ? (string)$roles[0] : ($isSysadmin ? 'SYSADMIN' : 'AUTHORIZED');
         $pdo->beginTransaction();
         $pdo->prepare("DELETE FROM form_signatures WHERE form_record_id = ? AND signature_type = 'approved_by'")->execute([$recordId]);
         $pdo->prepare("INSERT INTO form_signatures (form_record_id, signer_user_id, signer_name, signer_position_title, signature_type, signature_method, signed_at, created_at)
@@ -126,7 +126,7 @@ try {
         $reason = trim((string)($_POST['signoff_reason'] ?? ''));
         if ($reason === '') { throw new RuntimeException('Enter a reason for returning the form.'); }
         if ($status === 'submitted') {
-            if (!($isTsc || $me === $approverId || $canEdit || ($creatorId > 0 && $creatorId === $me))) { throw new RuntimeException('You cannot return this form.'); }
+            if (!($isSysadmin || $me === $approverId || $canEdit || ($creatorId > 0 && $creatorId === $me))) { throw new RuntimeException('You cannot return this form.'); }
         } elseif ($status === 'approved') {
             if (!$canReopenApproved) { throw new RuntimeException('You cannot reopen an approved form.'); }
         } else {

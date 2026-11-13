@@ -21,7 +21,7 @@ What it checks
   official PDF templates, pdftk, sync worker heartbeat and queue health, the public check-in link, and (when sync is configured) a read-only
   connection test to the Check-In Gateway (`bin/external_checkin_ping.php`: trusted HTTPS, clocks, matching key).
 - Approvers: every form resolves to the configured position; a vacant LSC climbs to the IC; the signer holding the approving position moves up a level;
-  two holders means the signer chooses; nobody in the chain falls back to a TSC admin; IC/UC self-approval rules.
+  two holders means the signer chooses; nobody in the chain falls back to a SysAdmin; IC/UC self-approval rules.
 - Signing: a signed form gets its approver automatically, the approver is notified once, and the choice is audit-logged. The ICS 203 style (no signature
   row) is covered. If your Form Permissions do not let the test COML sign an ICS 205, the script says so and simulates the signature.
 - Resources: ICS 211 + 218 collector for the 209 (duplicates ignored, released resources excluded, totals).
@@ -44,7 +44,7 @@ Create these users and positions: Ivy (IC), Pat (PSC), Lou (LSC), Cam (COML), Sa
 | 4 | Remove Lou from the incident, Cam signs a 205 again | Approver becomes Ivy (IC) |
 | 5 | Pat signs an ICS 203 | Approver is Ivy (Pat holds the PSC position, so it moves up) |
 | 6 | Cam signs an ICS 213 and an ICS 214 | Approver is Cam's supervisor (LSC, or IC if vacant) |
-| 7 | Ivy signs an ICS 201 | No one ranks above: approver is a TSC admin, or Ivy self-approves (logged) |
+| 7 | Ivy signs an ICS 201 | No one ranks above: approver is a SysAdmin, or Ivy self-approves (logged) |
 | 8 | Give two people the LSC position and sign a 205 | No automatic pick; the dropdown asks the signer to choose |
 | 9 | Settings > Sign-off Approvers: set ICS 205 to PSC, sign another 205 | Approver is Pat; Reset to defaults restores LSC; both changes are in the Audit Log |
 | 10 | ICS 211: check in two engines (same identifier twice), a crew and one person; release one engine in the demob tracker; open the ICS 209 blocks 48-53 and press Refresh | Duplicate counted once, released engine gone, totals right; Preview PDF matches |

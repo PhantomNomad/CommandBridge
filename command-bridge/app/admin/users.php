@@ -314,14 +314,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['assign_existing_user_
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['unlock_user_id'])) {
     $unlockId = (int)$_POST['unlock_user_id'];
-    $unlockStmt = $pdo->prepare("SELECT id, username, is_tsc_admin FROM users WHERE id = ? AND deleted_at IS NULL LIMIT 1");
+    $unlockStmt = $pdo->prepare("SELECT id, username, is_sysadmin FROM users WHERE id = ? AND deleted_at IS NULL LIMIT 1");
     $unlockStmt->execute([$unlockId]);
     $unlockUser = $unlockStmt->fetch();
 
     if (!$unlockUser) {
         flash('error', 'User was not found.');
-    } elseif (!empty($unlockUser['is_tsc_admin']) && empty(current_user()['is_tsc_admin'])) {
-        flash('error', 'Only a Technical Services Coordinator administrator can unlock an administrator account.');
+    } elseif (!empty($unlockUser['is_sysadmin']) && empty(current_user()['is_sysadmin'])) {
+        flash('error', 'Only a SysAdmin can unlock an administrator account.');
     } else {
         login_throttle_unlock($pdo, $unlockId);
         audit_log((int)(current_user()['id'] ?? 0), 'unlock_user', 'user', $unlockId, 'Account unlocked by administrator');
@@ -376,7 +376,7 @@ $userSql = "
       u.username,
       u.real_name,
       u.email,
-      u.is_tsc_admin,
+      u.is_sysadmin,
       u.locked_until,
       GROUP_CONCAT(DISTINCT r.role_code ORDER BY r.role_code SEPARATOR ', ') AS role_codes,
       GROUP_CONCAT(DISTINCT CONCAT(oppa.position_code, ' - ', oppa.position_title) ORDER BY oppa.position_code SEPARATOR '; ') AS op_position_codes,
@@ -409,7 +409,7 @@ if ($selectedOperationalPeriodId > 0) {
     $userSql .= " AND oppa.id IS NOT NULL ";
 }
 $userSql .= "
-    GROUP BY u.id, u.username, u.real_name, u.email, u.is_tsc_admin, u.locked_until, i.incident_name
+    GROUP BY u.id, u.username, u.real_name, u.email, u.is_sysadmin, u.locked_until, i.incident_name
     ORDER BY u.id DESC
 ";
 $userStmt = $pdo->prepare($userSql);
@@ -527,7 +527,7 @@ render_header('Users / Roles');
             <option value="<?= e((string)$role['id']) ?>"><?= e($role['code'] . ' - ' . $role['name']) ?></option>
           <?php endforeach; ?>
         </select>
-        <p class="small">Hold Ctrl or Command to select multiple positions. Example: TSC/Admin, DOCL, RESL, and Food Unit.</p>
+        <p class="small">Hold Ctrl or Command to select multiple positions. Example: DOCL, RESL, and Food Unit.</p>
       </div>
       <div>
         <label>Assignment Status</label>
@@ -573,20 +573,20 @@ render_header('Users / Roles');
         <?php $lockedUntil = login_throttle_user_locked_until($u); ?>
         <td><?= e($u['username']) ?><?php if ($lockedUntil !== null): ?><br><span class="small" style="color:#b00020;font-weight:bold;">LOCKED until <?= e(date('g:i a', $lockedUntil)) ?></span><?php endif; ?></td>
         <td><?= e($u['real_name']) ?></td>
-        <td><?= e($u['role_codes'] ?: ($u['is_tsc_admin'] ? 'TSC/Admin' : '')) ?></td>
+        <td><?= e($u['role_codes'] ?: ($u['is_sysadmin'] ? 'SysAdmin' : '')) ?></td>
         <td><?= e($selectedOperationalPeriodId > 0 ? ($u['op_position_codes'] ?? '') : ($u['op_summary'] ?? '')) ?></td>
         <td><?= e($u['incident_name']) ?></td>
         <td><?= e(trim(($u['email'] ?? '') . ' ' . ($u['cell_phone'] ?? ''))) ?></td>
         <td class="actions">
           <a class="btn btn-secondary" href="<?= e(app_url('/admin/user_edit.php?id=' . (int)$u['id'])) ?>">Edit</a>
-          <?php if ($lockedUntil !== null && (empty($u['is_tsc_admin']) || !empty(current_user()['is_tsc_admin']))): ?>
+          <?php if ($lockedUntil !== null && (empty($u['is_sysadmin']) || !empty(current_user()['is_sysadmin']))): ?>
           <form method="post">
     <?= csrf_field() ?>
             <input type="hidden" name="unlock_user_id" value="<?= e((string)$u['id']) ?>">
             <button type="submit">Unlock</button>
           </form>
           <?php endif; ?>
-          <?php if (empty($u['is_tsc_admin'])): ?>
+          <?php if (empty($u['is_sysadmin'])): ?>
           <form method="post">
     <?= csrf_field() ?>
             <input type="hidden" name="reset_pin_user_id" value="<?= e((string)$u['id']) ?>">

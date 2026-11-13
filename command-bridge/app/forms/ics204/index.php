@@ -30,7 +30,7 @@ if ($incidentId > 0 && !$canView) { http_response_code(403); render_header('ICS 
 
 function ics204_user_has_role(PDO $pdo, int $incidentId, array $codes): bool {
     $u = current_user(); if (!$u) return false;
-    if (!empty($u['is_tsc_admin'])) return true;
+    if (!empty($u['is_sysadmin'])) return true;
     $uid = (int)($u['id'] ?? 0); if ($incidentId <= 0 || $uid <= 0) return false;
     try {
         $codes = array_values(array_unique(array_map('strtoupper', $codes)));
@@ -81,10 +81,10 @@ $incidentName = (string)($incident['incident_name'] ?? $incident['name'] ?? '');
 $opDates = $op ? operational_period_label($op) : '';
 
 // Planning Section Chief approval. Deliberately independent of the form edit permission: approving
-// is not editing, so PSC only needs view access (plus the PSC position or TSC/Admin).
+// is not editing, so PSC only needs view access (plus the PSC position or SysAdmin).
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $incidentId > 0 && (string)($_POST['action'] ?? '') === 'approve_psc') {
     try {
-        if (!$canApprove204) { http_response_code(403); throw new RuntimeException('Only the Planning Section Chief or Technical Services Coordinator/Admin may approve ICS 204.'); }
+        if (!$canApprove204) { http_response_code(403); throw new RuntimeException('Only the Planning Section Chief or SysAdmin may approve ICS 204.'); }
         $pdo->beginTransaction();
         $st = $pdo->prepare("SELECT id, status FROM form_records WHERE id=? AND incident_id=? AND form_type='ICS204' FOR UPDATE");
         $st->execute([$formRecordId, $incidentId]);
@@ -102,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $incidentId > 0 && (string)($_POST[
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $canEdit && $incidentId > 0) {
     try {
         $action = (string)($_POST['action'] ?? 'save');
-        if ($action === 'submit_ics204' && !$canSubmit204) { http_response_code(403); throw new RuntimeException('Only the Incident Commander, Technical Services Coordinator/Admin, or Resources Unit Leader may submit ICS 204.'); }
+        if ($action === 'submit_ics204' && !$canSubmit204) { http_response_code(403); throw new RuntimeException('Only the Incident Commander, SysAdmin, or Resources Unit Leader may submit ICS 204.'); }
         $pdo->beginTransaction();
         $formRecordId = ics204_ensure_record($pdo, $incidentId, $opId);
         $stmt=$pdo->prepare("INSERT INTO form_204_headers (form_record_id, operational_period_id, branch_name, division_group, operations_personnel, work_assignments, special_instructions, medical_plan_summary, safety_message_summary, prepared_by_user_id, prepared_by_name, prepared_by_position_title, approved_by_user_id, approved_by_name) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE operational_period_id=VALUES(operational_period_id), branch_name=VALUES(branch_name), division_group=VALUES(division_group), operations_personnel=VALUES(operations_personnel), work_assignments=VALUES(work_assignments), special_instructions=VALUES(special_instructions), medical_plan_summary=VALUES(medical_plan_summary), safety_message_summary=VALUES(safety_message_summary), prepared_by_user_id=VALUES(prepared_by_user_id), prepared_by_name=VALUES(prepared_by_name), prepared_by_position_title=VALUES(prepared_by_position_title)");
@@ -168,7 +168,7 @@ if ($status204 === 'approved' && !empty($data['approved_by_name'])): ?>
 <?php elseif ($status204 === 'submitted'): ?>
 <p class="small">Waiting for Planning Section Chief approval.</p>
 <?php endif; ?>
-<p class="small">ICS 204 may be submitted by the Incident Commander, Technical Services Coordinator/Admin, or Resources Unit Leader. Once submitted, the Planning Section Chief receives a dashboard notification and can approve it.</p>
+<p class="small">ICS 204 may be submitted by the Incident Commander, SysAdmin, or Resources Unit Leader. Once submitted, the Planning Section Chief receives a dashboard notification and can approve it.</p>
 </div>
 
 <div class="card"><h2>Assignment List (ICS 204)</h2><p><a href="help.php">Help / Instructions</a></p>

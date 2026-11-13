@@ -159,6 +159,16 @@ if ($want('env')) {
                 $hasForm ? ($viewers !== '' ? 'roles: ' . $viewers : 'no role has view permission') : "form code missing; run update.sh (migration 0002)");
         } catch (Throwable $e) { t_ok("$unitLabel permissions readable", false, $e->getMessage()); }
     }
+    // TSC renamed SysAdmin (migration 0004).
+    try {
+        t_ok('SysAdmin flag column present (users.is_sysadmin)', in_array('is_sysadmin', table_columns('users'), true), 'run update.sh (migration 0004)');
+        $oldTsc = (int)$pdo->query("SELECT (SELECT COUNT(*) FROM roles WHERE role_code = 'TSC') + (SELECT COUNT(*) FROM incident_position_catalog WHERE acronym = 'TSC')
+            + (SELECT COUNT(*) FROM form_permissions WHERE role_code = 'TSC')")->fetchColumn();
+        t_ok('No TSC position left (SysAdmin is not an ICS position)', $oldTsc === 0, $oldTsc . ' TSC row(s) left; run update.sh (migration 0004)');
+        $admins = (int)$pdo->query('SELECT COUNT(*) FROM users WHERE is_sysadmin = 1 AND is_active = 1 AND deleted_at IS NULL')->fetchColumn();
+        t_ok('At least one active SysAdmin account', $admins > 0, 'none; run bin/create_admin.php');
+    } catch (Throwable $e) { t_ok('SysAdmin checks', false, $e->getMessage()); }
+
     // ICS 214: one log per person (migration 0003).
     try {
         $cols = table_columns('form_214_activity_log');
@@ -243,9 +253,9 @@ if ($needDb) {
             ->execute([$inc]);
         $op = (int)$pdo->lastInsertId();
 
-        $mkUser = static function (string $name, int $tsc = 0) use ($pdo): int {
-            $pdo->prepare("INSERT INTO users (username, real_name, email, is_tsc_admin, is_active, created_at) VALUES (?, ?, NULL, ?, 1, NOW())")
-                ->execute(['smoke_' . $name . '_' . bin2hex(random_bytes(3)), 'Smoke ' . strtoupper($name), $tsc]);
+        $mkUser = static function (string $name, int $sysadmin = 0) use ($pdo): int {
+            $pdo->prepare("INSERT INTO users (username, real_name, email, is_sysadmin, is_active, created_at) VALUES (?, ?, NULL, ?, 1, NOW())")
+                ->execute(['smoke_' . $name . '_' . bin2hex(random_bytes(3)), 'Smoke ' . strtoupper($name), $sysadmin]);
             return (int)$pdo->lastInsertId();
         };
         $roleId = static function (string $code) use ($pdo): int {
@@ -267,7 +277,7 @@ if ($needDb) {
         $ctx = compact('inc', 'op', 'u', 'ip', 'assign', 'unassign', 'mkUser');
         t_ok('TRAINING incident, operational period, 4 users with positions created', $inc > 0 && $op > 0);
         // The functions under test read the "current user" from the session array.
-        $_SESSION = ['user' => ['id' => $u['coml'], 'username' => 'smoke_coml', 'real_name' => 'Smoke COML', 'is_tsc_admin' => 0, 'incident_id' => $inc]];
+        $_SESSION = ['user' => ['id' => $u['coml'], 'username' => 'smoke_coml', 'real_name' => 'Smoke COML', 'is_sysadmin' => 0, 'incident_id' => $inc]];
     } catch (Throwable $e) {
         t_ok('Build the TRAINING incident', false, $e->getMessage());
         try { if ($pdo->inTransaction()) { $pdo->rollBack(); } } catch (Throwable $e2) { }
@@ -314,16 +324,16 @@ if ($ctx && $want('approvers')) {
         t_ok('no automatic pick when two people hold the position', $res['user_id'] === 0 && count($res['choices']) === 2, 'choices: ' . count($res['choices']));
     });
 
-    t_run('nobody in the chain: TSC administrator fallback and IC self-approval', function () use ($inc, $op, $u, $ip, $unassign) {
+    t_run('nobody in the chain: SysAdmin fallback and IC self-approval', function () use ($inc, $op, $u, $ip, $unassign) {
         foreach (['ic', 'psc', 'lsc'] as $k) { $unassign($ip[$k]); }
         $unassign((int)($GLOBALS['ctx_lsc_row'] ?? 0));
         $res = signoff_resolve_approver($inc, 'ICS201', $u['coml'], $op);
-        t_ok('IC and UC vacant (and nobody in the chain) -> TSC administrator', $res['position'] === 'TSC' && ($res['user_id'] > 0 || count($res['choices']) > 0), 'position ' . $res['position']);
+        t_ok('IC and UC vacant (and nobody in the chain) -> SysAdmin', $res['position'] === 'SYSADMIN' && ($res['user_id'] > 0 || count($res['choices']) > 0), 'position ' . $res['position']);
     });
 
     t_run('self-approval rules', function () use ($inc, $u, $ip, $assign) {
         $icRow = $assign($inc, $u['ic'], 'IC');
-        $_SESSION['user'] = ['id' => $u['coml'], 'is_tsc_admin' => 0, 'incident_id' => $inc];
+        $_SESSION['user'] = ['id' => $u['coml'], 'is_sysadmin' => 0, 'incident_id' => $inc];
         t_ok('IC is allowed to self-approve', signoff_self_approval_allowed($inc, $u['ic']));
         t_ok('COML is NOT allowed to self-approve', !signoff_self_approval_allowed($inc, $u['coml']));
     });
@@ -337,7 +347,7 @@ if ($ctx && $want('signing')) {
         // Fresh roster for this scenario: IC, PSC, LSC, COML.
         $pdo->prepare('UPDATE incident_positions SET deleted_at = NOW(), assigned_end = NOW() WHERE incident_id = ? AND deleted_at IS NULL')->execute([$inc]);
         foreach (['ic' => 'IC', 'psc' => 'PSC', 'lsc' => 'LSC', 'coml' => 'COML'] as $k => $role) { $assign($inc, $u[$k], $role); }
-        $_SESSION['user'] = ['id' => $u['coml'], 'username' => 'smoke_coml', 'real_name' => 'Smoke COML', 'is_tsc_admin' => 0, 'incident_id' => $inc];
+        $_SESSION['user'] = ['id' => $u['coml'], 'username' => 'smoke_coml', 'real_name' => 'Smoke COML', 'is_sysadmin' => 0, 'incident_id' => $inc];
 
         $rec = get_or_create_form_record($inc, 'ICS205', '205', $u['coml'], $op);
         t_ok('form record created', $rec > 0);
@@ -556,7 +566,7 @@ if ($want('http')) {
         t_ok('Content-Security-Policy header present (enforced or report-only)', str_contains($login['headers'], 'content-security-policy'));
         t_ok('session cookie is HttpOnly', !str_contains($login['headers'], 'set-cookie: ') || str_contains($login['headers'], 'httponly'));
         // A form posted after the sign-in timed out gets a plain-language page that returns to sign-in, not "Invalid CSRF token".
-        $ch = curl_init($baseUrl . '/setup/setup_tsc.php?step=2');
+        $ch = curl_init($baseUrl . '/setup/setup_sysadmin.php?step=2');
         curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_POST => true, CURLOPT_POSTFIELDS => 'csrf_token=expired',
             CURLOPT_TIMEOUT => 15, CURLOPT_SSL_VERIFYPEER => !$insecure, CURLOPT_SSL_VERIFYHOST => $insecure ? 0 : 2]);
         $expiredBody = (string)curl_exec($ch);

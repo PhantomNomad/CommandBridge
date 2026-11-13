@@ -2,23 +2,35 @@
 
 ## Unreleased
 
+* **TSC is now SysAdmin, and it is no longer an ICS position.** ICS Canada does not list a Technical Services
+  Coordinator, so the application administrator is now called **SysAdmin** everywhere (screens, help, setup, scripts).
+  A SysAdmin manages the application and can open and approve every form, as before, but is not part of the incident's
+  command structure: it is gone from the position list and chain of command, can't be assigned on Users & Roles, and
+  first-run setup no longer assigns the administrator a position or checks them in on the ICS 211.
+  - Database: migration `0004_rename_tsc_to_sysadmin.sql` renames `users.is_tsc_admin` to `users.is_sysadmin`, ends
+    current TSC position assignments, renames the `TSC` role to `SYSADMIN` and switches it off (kept for history),
+    removes TSC from the position catalogue, and changes unread TSC notifications to go to SysAdmins.
+    `schema.sql` and `seed.sql` match.
+  - **Form security change:** the 20 `TSC` rows in Form Permissions are removed (ICS 201-230 and EXTERNAL_CHECKIN).
+    SysAdmins don't need them; they always have full access. No other role changes.
+  - The first-run setup page is now `setup/setup_sysadmin.php`. People signed in during the update keep their access.
 * **ICS 214 is now one activity log per person per operational period.** Before, everyone shared one ICS 214 that
   showed every person's sign-ins and actions. Now:
   - Each person's log starts when their login is created (Users & Roles), or the first time they open it, and shows
     only their own sign-ins/sign-outs, account changes, form actions, and the meetings marked *Completed* on the ICS 230.
   - Entries are added, never edited or deleted. Each shows who added it. To correct one, add another entry.
-  - **Who can open someone else's log:** the Incident Commander / Unified Command, TSC administrators and the person's
+  - **Who can open someone else's log:** the Incident Commander / Unified Command, SysAdmins and the person's
     supervisor can read and add entries; the Documentation Unit Leader can only read. All of them can send the owner an
     "update your log" request (notification + audit entry). Everyone else sees only their own.
   - New page **ICS 214 - Activity Logs** (`forms/ics214/logs.php`) lists the logs you may open for the selected period.
   - Only the owner can sign their log. Signing locks it; while waiting for approval it can be returned. **Once approved
-    it stays locked**; only a TSC administrator can reopen it.
+    it stays locked**; only a SysAdmin can reopen it.
   - The PDF prints one person's log. Sign-off and approval notifications open the right person's log.
   - The dashboard's form-status table shows only your own ICS 214, and the end-of-period reminder for an unsigned
-    ICS 214 goes only to its owner (not to IC/PSC/TSC for every person).
+    ICS 214 goes only to its owner (not to IC/PSC/SysAdmin for every person).
   - **Form security change:** new permission row `ICS214` / `ALL_AUTHENTICATED` (view, create, edit, sign; no
-    permission management), so every signed-in user can open and sign their own log. The existing ICS214 rows for TSC,
-    IC, PSC, OSC and GENERAL_STAFF are unchanged.
+    permission management), so every signed-in user can open and sign their own log. The existing ICS214 rows for IC, PSC,
+    OSC and GENERAL_STAFF are unchanged.
   - Database: migration `0003_ics214_per_person.sql` adds `form_214_activity_log.added_by_user_id` and `added_by_name`,
     ties existing logs to the person who prepared them, and adds the permission row. `schema.sql` and `seed.sql` match.
     The old shared log becomes the log of whoever created it.
@@ -29,11 +41,11 @@
   on the dashboard.
 * **ECC display: meetings start at the last meeting held.** The Meetings tab scrolls to the most recent Completed
   meeting (labelled *Last meeting held*) so the upcoming meetings are on screen; older meetings are dimmed.
-* **Audit Log viewer** (`audit/index.php`), for TSC administrators and IC/UC holders: filter by person, category
+* **Audit Log viewer** (`audit/index.php`), for SysAdmins and IC/UC holders: filter by person, category
   (sign-ins, accounts, forms, settings/other), date range and text; show 25/50/100/250/All rows with paging; plain
   sentences instead of raw action codes. No export. It is in the left menu for IC/UC, and Settings > Audit Log now
   opens it (the old `admin/audit_log.php` redirects there).
-* **Fixed: the Resources Unit and Finance/Admin pages could only be opened by TSC administrators.** Their access comes
+* **Fixed: the Resources Unit and Finance/Admin pages could only be opened by SysAdmins.** Their access comes
   from form codes `RESOURCES_UNIT` and `FINANCE_ADMIN`, which were missing from the `forms` table, and no role had
   permission (the Form Permissions page could not save them either). Migration `0002_resources_and_finance_unit_access.sql`
   (applied by `update.sh`) and `seed.sql` add both codes and these default permissions (view, create, edit, submit; no

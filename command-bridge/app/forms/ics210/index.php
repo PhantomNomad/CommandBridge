@@ -42,7 +42,7 @@ if ($incidentId > 0 && !$canView) { http_response_code(403); render_header('ICS 
 
 function ics210_user_has_role(PDO $pdo, int $incidentId, array $codes): bool {
     $u = current_user(); if (!$u) return false;
-    if (!empty($u['is_tsc_admin'])) return true;
+    if (!empty($u['is_sysadmin'])) return true;
     $uid = (int)($u['id'] ?? 0); if ($incidentId <= 0 || $uid <= 0) return false;
     try {
         $codes = array_values(array_unique(array_map('strtoupper', $codes)));
@@ -120,7 +120,7 @@ render_ics_form_status('ICS210', $formRecord, $preparer, $signature, [
   'show_print' => false,
   'show_pdf' => false,
   'official_file' => '/assets/pdf/official/ICS210.pdf',
-  'note' => $canSubmit ? 'ICS 210 is normally completed by the Resources Unit when resource status changes.' : 'Submit is limited to IC, PSC, RESL, OSC, or Technical Services Coordinator/Admin.'
+  'note' => $canSubmit ? 'ICS 210 is normally completed by the Resources Unit when resource status changes.' : 'Submit is limited to IC, PSC, RESL, OSC, or SysAdmin.'
 ]);
 ?>
 <div class="card">

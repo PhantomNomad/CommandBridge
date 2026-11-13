@@ -30,7 +30,7 @@ if ($incidentId > 0 && !$canView) { http_response_code(403); render_header('ICS 
 
 function ics206_user_has_role(PDO $pdo, int $incidentId, array $codes): bool {
     $u = current_user(); if (!$u) return false;
-    if (!empty($u['is_tsc_admin'])) return true;
+    if (!empty($u['is_sysadmin'])) return true;
     $uid = (int)($u['id'] ?? 0); if ($incidentId <= 0 || $uid <= 0) return false;
     try {
         $codes = array_values(array_unique(array_map('strtoupper', $codes)));

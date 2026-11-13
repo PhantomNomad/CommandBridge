@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 /*
  * Console unlock for a locked-out account, for the case where no administrator
- * can sign in to use the Users page (for example the only TSC admin is locked).
+ * can sign in to use the Users page (for example the only SysAdmin is locked).
  *
  *   php bin/unlock_user.php <username>             clear the lock only
- *   php bin/unlock_user.php <username> --reset     TSC admin accounts only: also
+ *   php bin/unlock_user.php <username> --reset     SysAdmin accounts only: also
  *                                                  set a random temporary password
  *                                                  that must be changed at sign-in
  *
@@ -45,7 +45,7 @@ if ($username === '') {
 
 try {
     $pdo = db();
-    $stmt = $pdo->prepare('SELECT id, username, is_tsc_admin, auth_provider FROM users WHERE username = ? AND deleted_at IS NULL LIMIT 1');
+    $stmt = $pdo->prepare('SELECT id, username, is_sysadmin, auth_provider FROM users WHERE username = ? AND deleted_at IS NULL LIMIT 1');
     $stmt->execute([$username]);
     $user = $stmt->fetch();
     if (!$user) {
@@ -57,8 +57,8 @@ try {
     $detail = 'Account unlocked from the server console';
 
     if ($reset) {
-        if ((int)$user['is_tsc_admin'] !== 1) {
-            fwrite(STDERR, "--reset only applies to TSC admin accounts. Use Reset PIN on the Users page for PIN users.\n");
+        if ((int)$user['is_sysadmin'] !== 1) {
+            fwrite(STDERR, "--reset only applies to SysAdmin accounts. Use Reset PIN on the Users page for PIN users.\n");
             exit(1);
         }
         if (($user['auth_provider'] ?? 'local') === 'entra') {
