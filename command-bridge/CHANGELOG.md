@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+* **ICS 202 now uses the ICS Canada form.** The bundled `assets/pdf/official/ICS202.pdf` was not the ICS Canada
+  version (no ICS logo or "ICS 202-CAN", and US-only items). It is replaced with ICS Canada's Form-202.pdf, and the field
+  map is updated for it:
+  - Check boxes now line up with the ICS Canada items: ICS 208, Map/Chart, Weather, Blank ICS 214.
+  - The operational period dates and the preparer's position now print. Both were blank before.
+  - Uploaded attachments are listed under "Other Attachments" and still follow the form as extra pages.
+  - Long objectives go on a continuation sheet.
+  The smoke test checks that the ICS 202 template is the ICS Canada one.
 * **Every form's PDF is now the official ICS Canada form.** Before, only the ICS 202, 205, 205A, 207, 209, 209-WF,
   210, 211, 213 and 213-RR filled the official PDF; the ICS 201, 203, 204, 206, 208, 214, 215A, 218 and 230 were
   redrawn by the app. Now all of them fill the official ICS Canada template, so printouts look like the real forms.
