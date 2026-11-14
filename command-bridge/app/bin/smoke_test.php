@@ -192,7 +192,7 @@ if ($want('env')) {
         require_once $appRoot . '/includes/form_lock.php';
         t_ok('Forms keep a revision number (form_records.revision)', in_array('revision', table_columns('form_records'), true), 'column missing; run update.sh (migration 0005)');
         t_ok('Revision history table exists (form_revisions)', table_columns('form_revisions') !== [], 'table missing; run update.sh (migration 0005)');
-        foreach (['/includes/form_lock.php', '/bin/form_snapshot.php', '/forms/revision_pdf.php'] as $rel) {
+        foreach (['/includes/form_lock.php', '/bin/form_snapshot.php', '/forms/revision_pdf.php', '/assets/js/app_shell.js'] as $rel) {
             t_ok("File present: app$rel", is_file($appRoot . $rel));
         }
         t_ok('A signed or approved form counts as locked', cb_form_is_locked_status('submitted') && cb_form_is_locked_status('approved') && !cb_form_is_locked_status('draft'));
