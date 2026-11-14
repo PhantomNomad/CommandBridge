@@ -39,8 +39,8 @@ The IC, SysAdmins, supervisors and the DOCL can open **Everyone's activity logs*
 When the period is over, press **Sign and submit ICS 214** in the Sign-off box. Only you can sign your own log. Your supervisor is chosen as the approver.
 
 - After you sign, the log is locked: no more entries or header changes.
-- While it is waiting for approval, you or the approver can **Return for changes**, which opens it again.
-- Once it is **approved** it stays locked. Only a SysAdmin can reopen an approved log.
+- While it is waiting for approval, you can **Revise** it, or the approver can **Return for changes**. Either one opens it again as a new revision.
+- Once it is **approved** it stays locked. You (the owner) or a SysAdmin can **Revise** it. A PDF of the approved version is kept in the revision history.
 
 If someone asks you to update your log, you get a notification. If the log is already signed, the approver has to return it first.
 

@@ -251,6 +251,14 @@ final class OfficialPdfTemplateExporter
         if (!is_file($pdfPath) || !is_readable($pdfPath)) {
             throw new RuntimeException('The generated PDF is no longer available.');
         }
+        // bin/form_snapshot.php (saving a copy of a form before it is revised): write the PDF to a file and stop.
+        $capture = (string)($GLOBALS['cb_pdf_capture_path'] ?? '');
+        if ($capture !== '' && PHP_SAPI === 'cli') {
+            $ok = @copy($pdfPath, $capture);
+            @unlink($pdfPath);
+            while (ob_get_level() > 0) { ob_end_clean(); }
+            exit($ok ? 0 : 6);
+        }
         if (headers_sent()) {
             throw new RuntimeException('PDF output headers cannot be sent because output has already started.');
         }

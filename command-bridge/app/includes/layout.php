@@ -5,59 +5,24 @@ require_once __DIR__ . '/helpers.php';
 
 
 if (!function_exists('render_ics_form_status')) {
+/**
+ * Top of a form page: the status banner (includes/form_lock.php) with the status, the sign-off steps, the next action
+ * and the revision history. $preparer / $signature are kept for older callers; the banner reads them itself.
+ */
 function render_ics_form_status(string $formCode, ?array $formRecord = null, ?array $preparer = null, ?array $signature = null, array $options = []): void {
-    $status = (string)($options['status'] ?? ($formRecord['status'] ?? 'draft'));
-    $formTitles = [
-        'ICS201' => 'ICS201 - Incident Briefing',
-        'ICS202' => 'ICS202 - Incident Objectives',
-        'ICS203' => 'ICS203 - Organization Assignment List',
-        'ICS204' => 'ICS204 - Assignment List',
-        'ICS205' => 'ICS205 - Radio Communications Plan',
-        'ICS205A' => 'ICS205A - Communications List',
-        'ICS206' => 'ICS206 - Medical Plan',
-        'ICS207' => 'ICS207 - Incident Organization Chart',
-        'ICS208' => 'ICS208 - Safety Message / Plan',
-        'ICS210' => 'ICS210 - Status Change',
-        'ICS211' => 'ICS211 - Check-In List',
-        'ICS213' => 'ICS213 - General Message',
-        'ICS214' => 'ICS214 - Activity Log',
-        'ICS215A' => 'ICS215A - Incident Action Plan Safety Analysis',
-        'ICS218' => 'ICS218 - Support Vehicle/Equipment Inventory',
-        'ICS230' => 'ICS230 - Daily Meeting Schedule',
-    ];
-    $title = (string)($options['title'] ?? ($formTitles[strtoupper($formCode)] ?? strtoupper($formCode)));
-    $printUrl = (string)($options['print_url'] ?? ('/forms/' . strtolower($formCode) . '/index.php?view=print'));
-    $pdfUrl = (string)($options['pdf_url'] ?? ('/forms/' . strtolower($formCode) . '/pdf.php'));
-    $printUrl = is_file(dirname(__DIR__) . $printUrl) ? $printUrl : '/not_implemented.php';
-    $pdfUrl = is_file(dirname(__DIR__) . $pdfUrl) ? $pdfUrl : '/not_implemented.php';
-    $showPrint = (bool)($options['show_print'] ?? true);
-    $showPdf = (bool)($options['show_pdf'] ?? true);
-    $pdfLabel = (string)($options['pdf_label'] ?? 'Download PDF');
-    $officialLabel = (string)($options['official_label'] ?? 'Download Blank Form');
-    $officialFile = (string)($options['official_file'] ?? ('/assets/pdf/official/' . strtoupper($formCode) . '.pdf'));
-    $officialPath = dirname(__DIR__) . $officialFile;
-    $officialExists = is_file($officialPath);
-    $note = (string)($options['note'] ?? '');
-    echo '<div class="card no-print">';
-    echo '<h2>' . e($title) . '</h2>';
+    require_once __DIR__ . '/form_lock.php';
     if (!empty($options['error'])) { echo '<div class="flash error">' . e((string)$options['error']) . '</div>'; }
-    echo '<p><strong>Status:</strong> ' . e(ucwords(str_replace('_', ' ', $status))) . '</p>';
-    if ($preparer) {
-        echo '<p><strong>Prepared By:</strong> ' . e((string)($preparer['name'] ?? 'TBD')) . ' (' . e((string)($preparer['position_title'] ?? '')) . ')</p>';
+    $recordId = (int)($formRecord['id'] ?? ($options['form_record_id'] ?? 0));
+    $incidentId = (int)($formRecord['incident_id'] ?? ($options['incident_id'] ?? 0));
+    if ($incidentId <= 0) { $incidentId = active_incident_id(); }
+    $opId = (int)($formRecord['operational_period_id'] ?? ($options['op_id'] ?? 0));
+    $op = null;
+    if ($incidentId > 0) {
+        $op = $opId > 0 ? (get_operational_period_by_id($incidentId, $opId) ?: null) : (current_operational_period($incidentId) ?: null);
+        $opId = (int)($op['id'] ?? $opId);
     }
-    if ($signature) {
-        echo '<p><strong>Digitally Signed By:</strong> ' . e((string)$signature['signer_name']) . ' (' . e((string)$signature['signer_position_title']) . ') on ' . e((string)$signature['signed_at']) . '</p>';
-    } elseif ($note !== '') {
-        echo '<p class="small">' . e($note) . '</p>';
-    }
-    echo '<div class="actions" style="margin-top:12px;">';
-    // Preview PDF / Download PDF are rendered once per page by render_ics_form_actions() (includes/form_action_buttons.php).
-    if ($officialExists) {
-        echo '<a class="btn btn-secondary" href="' . e(app_url($officialFile)) . '" target="_blank">' . e($officialLabel) . '</a>';
-    } else {
-        echo '<span class="small">Blank PDF template not loaded yet.</span>';
-    }
-    echo '</div></div>';
+    $subtitle = (string)($options['subtitle'] ?? ($op ? operational_period_label($op) : ''));
+    cb_form_status_banner($formCode, $incidentId, $opId, $recordId, ['subtitle' => $subtitle] + $options);
 }
 }
 
@@ -105,7 +70,8 @@ function render_header(string $title, ?string $helpTopic = null): void {
   <title><?= e($title) ?> - <?= e($branding['application_name']) ?></title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/svg+xml" href="<?= e(app_url('/assets/img/command-bridge-icon.svg')) ?>">
-  <link rel="stylesheet" href="<?= e(app_url('/assets/css/app.css')) ?>">
+  <?php // ?v= changes whenever the file changes, so browsers fetch the new styles after an update instead of a cached copy. ?>
+  <link rel="stylesheet" href="<?= e(app_url('/assets/css/app.css') . '?v=' . (string)@filemtime(dirname(__DIR__) . '/assets/css/app.css')) ?>">
 </head>
 <body>
 <div class="app">
@@ -284,6 +250,7 @@ function render_footer(): void {
 <?php require_once __DIR__ . '/version.php'; ?>
 <div class="app-footer no-print" style="font-size:12px;opacity:.75">Command Bridge <?= e(CB_VERSION) ?> &middot; free software under the GNU AGPL-3.0<?php if (CB_SOURCE_URL !== ''): ?> &middot; <a href="<?= e(CB_SOURCE_URL) ?>" rel="noopener">source code</a><?php endif; ?></div>
 <?php require_once __DIR__ . '/signoff.php'; echo signoff_hidden_form_html(); ?>
+<?php require_once __DIR__ . '/form_lock.php'; echo cb_page_action_form_html(); ?>
 <?php require_once __DIR__ . '/help.php'; ?>
 <aside id="help-panel" class="help-panel no-print" hidden aria-labelledby="help-panel-title" role="complementary"
        data-help-base="<?= e(app_url('/help/view.php')) ?>">
@@ -294,7 +261,7 @@ function render_footer(): void {
   </div>
   <div class="help-panel-body help-doc" tabindex="-1"></div>
 </aside>
-<script src="<?= e(app_url('/assets/js/help_panel.js')) ?>" defer></script>
+<script src="<?= e(app_url('/assets/js/help_panel.js') . '?v=' . (string)@filemtime(dirname(__DIR__) . '/assets/js/help_panel.js')) ?>" defer></script>
 <?php
     ?>
 

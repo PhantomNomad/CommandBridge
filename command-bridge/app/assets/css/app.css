@@ -740,3 +740,35 @@ body.help-open .content{margin-right:440px}
 .sidebar .brand.brand-with-logos{display:flex;align-items:center;gap:10px}
 .brand-with-logos .brand-logo{flex:none;width:42px;height:42px}
 .brand-with-logos .brand-text{flex:1;min-width:0}
+
+/* Form status banner (includes/form_lock.php), same look as the ICS 213RR */
+.cb-form-banner { margin-bottom: 1rem; }
+.cb-form-hero { display:flex; gap:1rem; justify-content:space-between; align-items:flex-start; border-left:5px solid #006b5c; }
+.cb-form-hero.is-locked { border-left-color:#374151; }
+.cb-form-eyebrow { margin:0 0 .25rem; color:#4b5563; font-weight:700; font-size:.85rem; letter-spacing:.02em; text-transform:uppercase; }
+.cb-form-title { margin:.1rem 0; }
+.cb-form-subtitle { margin:.4rem 0 0; color:#4b5563; }
+.cb-form-hero-side { text-align:right; }
+.cb-form-hero-side .btn { margin-top:.4rem; }
+.cb-form-status { display:inline-block; padding:.4rem .65rem; font-weight:700; background:#e7f4f1; color:#0a4d43; border:1px solid #9bcfc4; white-space:nowrap; }
+.cb-form-status-draft, .cb-form-status-rejected { background:#fff7e6; color:#7a4b00; border-color:#f0c36d; }
+.cb-form-status-submitted { background:#fff1e6; color:#8a3b00; border-color:#f2a66b; }
+.cb-form-steps { display:grid; gap:.45rem; margin:1rem 0; }
+.cb-form-step { border:1px solid #d1d5db; padding:.65rem; color:#4b5563; font-size:.9rem; background:#f9fafb; }
+.cb-form-step.current { background:#e7f4f1; border-color:#006b5c; color:#073b34; font-weight:700; }
+.cb-form-step.complete { background:#f2f7f6; color:#266158; }
+.cb-form-next { border:2px solid #006b5c; background:#f5fbfa; padding:1.15rem; margin:1rem 0; }
+.cb-form-next h2 { margin:0 0 .35rem; font-size:1.25rem; }
+.cb-form-next p { margin:.35rem 0 .9rem; }
+.cb-form-next .btn { margin-right:.4rem; }
+.cb-form-waiting { font-size:1.05rem; }
+.cb-form-reason, .cb-form-approver { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:.6rem 0; }
+.cb-form-reason label, .cb-form-approver label { flex-basis:100%; font-weight:600; }
+.cb-form-reason input[type=text] { flex:1 1 320px; max-width:560px; }
+.cb-form-history { margin-top:1rem; }
+.cb-form-history summary { cursor:pointer; font-weight:600; }
+@media (max-width: 760px) {
+  .cb-form-hero { display:block; }
+  .cb-form-hero-side { text-align:left; margin-top:1rem; }
+  .cb-form-steps { grid-template-columns:1fr !important; }
+}

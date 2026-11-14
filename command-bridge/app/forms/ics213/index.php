@@ -169,7 +169,7 @@ if ($messageId <= 0 && !$isNewMessage):
 <div class="card">
   <h2><?= $locked ? 'ICS 213 Message Details' : 'Create ICS 213 General Message' ?></h2>
   <p><?= $locked ? 'The original message fields are locked. Update the reply information as needed.' : 'Complete the original message fields and save. Reply information can be added later from the message details screen.' ?></p>
-  <form method="post">
+  <form method="post" class="cb-lock-exempt">
     <?= csrf_field() ?>
     <div class="grid-2">
       <label>1. Incident Name<input value="<?= e($incident['incident_name'] ?? $incident['name'] ?? '') ?>" readonly></label>

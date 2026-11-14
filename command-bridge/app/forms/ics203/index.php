@@ -149,6 +149,10 @@ if ($isComplete && $formRecordId <= 0) {
 
 $canSubmitIcs203 = $incidentId > 0 && current_user_can_submit_ics203($pdo, $incidentId);
 
+// Signed or approved: locked until someone revises it (includes/form_lock.php).
+require_once dirname(dirname(__DIR__)) . '/includes/form_lock.php';
+cb_form_block_locked_post('ICS203', (int)($incidentId ?? 0), (int)($opId ?? 0), (int)($formRecordId ?? 0));
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $incidentId > 0 && ($_POST['action'] ?? '') === 'submit_ics203') {
     if (!$canSubmitIcs203) {
         http_response_code(403);
@@ -180,10 +184,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $incidentId > 0 && ($_POST['action'
 $isPrintView = (string)($_GET['view'] ?? '') === 'print';
 render_header($isPrintView ? 'ICS 203 - Organization Assignment List Print View' : 'ICS 203 - Organization Assignment List');
 ?>
+<?php if($error):?><p class="error"><?=h($error)?></p><?php endif;?>
+<?php if (!$isPrintView) { cb_form_status_banner('ICS203', (int)$incidentId, (int)($formRecord['operational_period_id'] ?? (current_operational_period((int)$incidentId)['id'] ?? 0)), (int)$formRecordId,
+    ['subtitle' => $isComplete ? 'Incident Commander assigned' : 'Incomplete: no Incident Commander assigned yet']); } ?>
 <div class="card no-print">
-  <h2>ICS203 - Organization Assignment List</h2>
-  <?php if($error):?><p class="error"><?=h($error)?></p><?php endif;?>
-  <p><strong>Status:</strong> <?= $isComplete ? 'Complete' : 'Incomplete' ?></p>
   <p class="small">ICS 203 is auto-populated from active incident position assignments. It is complete when an Incident Commander is assigned. Blank positions are intentionally left blank and cannot be manually typed here.</p>
 </div>
 <div class="card">

@@ -174,6 +174,8 @@ function dashboard_get_current_op_form_statuses(int $incidentId, int $operationa
 function dashboard_form_status_label(string $status): string {
     $status = strtolower($status);
     if ($status === 'not_started') { return 'Not started'; }
+    if ($status === 'submitted') { return 'Signed, waiting for approval'; }
+    if ($status === 'rejected') { return 'Returned for changes'; }
     return ucfirst($status);
 }
 

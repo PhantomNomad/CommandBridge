@@ -6,7 +6,7 @@ if (!function_exists('ics_action_h')) {
 if (!function_exists('ics_form_status_label')) {
     function ics_form_status_label($status): string {
         $s = strtolower(trim((string)($status ?: 'draft')));
-        $map = ['submitted'=>'Complete','approved'=>'Complete','final'=>'Complete','complete'=>'Complete','draft'=>'Draft'];
+        $map = ['submitted'=>'Waiting for approval','approved'=>'Approved','final'=>'Complete','complete'=>'Complete','draft'=>'Draft','rejected'=>'Returned for changes'];
         return $map[$s] ?? ucwords(str_replace('_',' ', $s));
     }
 }
@@ -73,6 +73,8 @@ function render_ics_form_actions(array $options = []): void {
     $formTitle = (string)($options['form_title'] ?? $formCode);
     $permissions = $options['permissions'] ?? [];
     $isFinal = !empty($options['is_final']) || in_array(strtolower((string)($options['status'] ?? '')), ['submitted','approved','complete'], true);
+    // The status banner (includes/form_lock.php) knows whether this form is signed/approved and therefore locked.
+    if (!empty($GLOBALS['cb_form_locked'])) { $isFinal = true; }
     $canView = !empty($permissions['can_view']) || !empty($permissions['view']) || !empty($options['can_view']);
     $canCreate = !empty($permissions['can_create']) || !empty($permissions['create']) || !empty($options['can_create']);
     $canEdit = !empty($permissions['can_edit']) || !empty($permissions['edit']) || !empty($options['can_edit']);
@@ -100,7 +102,7 @@ function render_ics_form_actions(array $options = []): void {
         <?php if ($canView && $showPreview): ?><a class="btn btn-outline-secondary" target="_blank" rel="noopener" href="<?= ics_action_h($previewUrl) ?>">Preview PDF</a><?php endif; ?>
         <?php if ($canView && $showDownload): ?><a class="btn btn-outline-secondary" target="_blank" rel="noopener" href="<?= ics_action_h($downloadUrl) ?>">Download PDF</a><?php endif; ?>
         <?php if ($canView && $blankUrl): ?><a class="btn btn-outline-secondary" target="_blank" rel="noopener" href="<?= ics_action_h($blankUrl) ?>">Download Blank Form</a><?php endif; ?>
-      </div><?php if ($isFinal): ?><div class="text-muted small mt-3">This form is complete/submitted. Editing may be restricted by permissions.</div><?php endif; ?></div>
+      </div><?php if ($isFinal): ?><div class="text-muted small mt-3">This form is signed and locked. To change it, use Revise at the top of the form.</div><?php endif; ?></div>
     </div>
     <?php
     // Staged sign-off (creator signs, named approver approves). Not shown for forms with their own workflow.
@@ -115,7 +117,8 @@ function render_ics_form_actions(array $options = []): void {
             $soRow = get_form_record($soIncident, signoff_normalize($formCode), $soOp ?: null);
             $soRecord = (int)($soRow['id'] ?? 0);
         }
-        if ($soRecord > 0) { signoff_render_panel($formCode, $soIncident, $soOp, $soRecord); }
+        // The status banner at the top of the form now carries the sign-off steps; the old box is only a fallback.
+        if ($soRecord > 0 && empty($GLOBALS['cb_form_banner_done'])) { signoff_render_panel($formCode, $soIncident, $soOp, $soRecord); }
     } catch (Throwable $e) { security_log($e, 'signoff_panel'); }
 }
 }

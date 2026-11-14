@@ -170,7 +170,7 @@ function ecc_display_render_page(string $orientation): void {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><?= e($title) ?> - <?= e($branding['application_name']) ?></title>
-  <link rel="stylesheet" href="<?= e(app_url('/assets/css/ecc_display.css')) ?>">
+  <link rel="stylesheet" href="<?= e(app_url('/assets/css/ecc_display.css') . '?v=' . (string)@filemtime(dirname(__DIR__) . '/assets/css/ecc_display.css')) ?>">
 </head>
 <body data-ecc-default-tab="resl">
 <main class="ecc-shell">

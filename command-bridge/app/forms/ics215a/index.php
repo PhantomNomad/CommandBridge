@@ -53,6 +53,10 @@ try {
 } catch(Throwable $e){}
 
 if ($formRecordId>0 && i215a_table_exists($pdo,'form_215a_headers')) { $st=$pdo->prepare("SELECT * FROM form_215a_headers WHERE form_record_id=?"); $st->execute([$formRecordId]); $h=$st->fetch() ?: []; }
+// Signed or approved: locked until someone revises it (includes/form_lock.php).
+require_once dirname(dirname(__DIR__)) . '/includes/form_lock.php';
+cb_form_block_locked_post('ICS215A', (int)($incidentId ?? 0), (int)($opId ?? 0), (int)($formRecordId ?? 0));
+
 if ($_SERVER['REQUEST_METHOD']==='POST' && $canEdit) {
   try {
     $pdo->beginTransaction();

@@ -25,10 +25,10 @@ function signoff_form_supported(string $code): bool
     return (bool)preg_match('/^ICS\d+[A-Z]*$/', $c);
 }
 
-/** Forms with no submit button of their own get a "Sign and submit" button in the panel. */
+/** Forms with no submit button of their own get a "Sign and submit" button in the status banner. */
 function signoff_needs_creator_sign(string $code): bool
 {
-    return in_array(signoff_normalize($code), ['ICS213', 'ICS214', 'ICS215A', 'ICS218'], true);
+    return in_array(signoff_normalize($code), ['ICS201', 'ICS213', 'ICS214', 'ICS215A', 'ICS218', 'ICS230'], true);
 }
 
 function signoff_is_sysadmin(): bool

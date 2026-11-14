@@ -82,6 +82,10 @@ $opDates = $op ? operational_period_label($op) : '';
 
 // Planning Section Chief approval. Deliberately independent of the form edit permission: approving
 // is not editing, so PSC only needs view access (plus the PSC position or SysAdmin).
+// Signed or approved: locked until someone revises it (includes/form_lock.php).
+require_once dirname(dirname(__DIR__)) . '/includes/form_lock.php';
+cb_form_block_locked_post('ICS204', (int)($incidentId ?? 0), (int)($opId ?? 0), (int)($formRecordId ?? 0), ['action' => ['approve_psc']]);
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $incidentId > 0 && (string)($_POST['action'] ?? '') === 'approve_psc') {
     try {
         if (!$canApprove204) { http_response_code(403); throw new RuntimeException('Only the Planning Section Chief or SysAdmin may approve ICS 204.'); }
@@ -113,7 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $canEdit && $incidentId > 0) {
         $ins=$pdo->prepare("INSERT INTO form_204_resources (header_id,line_number,resource_identifier,leader_name,number_persons,contact_info,reporting_location) VALUES (?,?,?,?,?,?,?)");
         $resources=$_POST['resources'] ?? [];
         $i=1; foreach($resources as $r){ if(trim(implode('', array_map('strval',(array)$r)))==='') continue; $ins->execute([$hid,$i++,trim($r['resource_identifier']??''),trim($r['leader_name']??''),($r['number_persons']!==''?(int)$r['number_persons']:null),trim($r['contact_info']??''),trim($r['reporting_location']??'')]); }
-        if ($action === 'submit_ics204') { $pdo->prepare("UPDATE form_records SET status='submitted', updated_at=NOW() WHERE id=?")->execute([$formRecordId]); ics204_notify_psc($pdo,$incidentId,$formRecordId); }
+        if ($action === 'submit_ics204') { $pdo->prepare("UPDATE form_records SET status='submitted', submitted_at=NOW(), submitted_by_user_id=?, submitted_by_name=?, updated_at=NOW() WHERE id=?")->execute([(int)($user['id'] ?? 0) ?: null, (string)($user['real_name'] ?? $user['display_name'] ?? $user['username'] ?? ''), $formRecordId]); ics204_notify_psc($pdo,$incidentId,$formRecordId); }
         $pdo->commit(); header('Location: index.php?saved=1'); exit;
     } catch (Throwable $e) { if ($pdo->inTransaction()) $pdo->rollBack(); $error=$e->getMessage(); }
 }
@@ -152,24 +156,16 @@ $divisionGroupOptions = [
 ];
 render_header('ICS 204 - Assignment List');
 ?>
-<div class="card no-print"><h2>ICS204 - Assignment List</h2>
 <?php if(isset($_GET['saved'])):?><p class="notice">Saved.</p><?php endif;?><?php if(isset($_GET['approved'])):?><p class="notice">ICS 204 approved.</p><?php endif;?><?php if($error):?><p class="error"><?=h($error)?></p><?php endif;?>
-<p><strong>Status:</strong> <?=h(ucfirst((string)($formRecord['status'] ?? 'draft')))?></p>
 <?php
 $status204 = strtolower((string)($formRecord['status'] ?? 'draft'));
-if ($status204 === 'approved' && !empty($data['approved_by_name'])): ?>
-<p><strong>Approved by:</strong> <?=h((string)$data['approved_by_name'])?><?php if (!empty($formRecord['approved_at'])): ?> on <?=h((string)$formRecord['approved_at'])?><?php endif; ?></p>
-<?php elseif ($status204 === 'submitted' && $canApprove204): ?>
-<form method="post" style="margin:12px 0" onsubmit="return confirm('Approve this ICS 204 as Planning Section Chief?');">
-    <?= csrf_field() ?>
-    <input type="hidden" name="action" value="approve_psc">
-    <button type="submit" class="btn btn-success">Approve ICS 204 (Planning Section Chief)</button>
-</form>
-<?php elseif ($status204 === 'submitted'): ?>
-<p class="small">Waiting for Planning Section Chief approval.</p>
-<?php endif; ?>
-<p class="small">ICS 204 may be submitted by the Incident Commander, SysAdmin, or Resources Unit Leader. Once submitted, the Planning Section Chief receives a dashboard notification and can approve it.</p>
-</div>
+cb_form_status_banner('ICS204', (int)$incidentId, (int)$opId, (int)$formRecordId, [
+    'subtitle' => $opDates,
+    'approve' => ['can' => $canApprove204, 'field' => 'action', 'value' => 'approve_psc', 'label' => 'Approve ICS 204 (Planning Section Chief)'],
+    'submit_hint' => 'Use Submit at the bottom of the form. The Incident Commander, a SysAdmin or the Resources Unit Leader can submit it.',
+]);
+?>
+<p class="small no-print">ICS 204 may be submitted by the Incident Commander, SysAdmin, or Resources Unit Leader. Once submitted, the Planning Section Chief receives a dashboard notification and can approve it.</p>
 
 <div class="card"><h2>Assignment List (ICS 204)</h2><p><a href="help.php">Help / Instructions</a></p>
 <form id="ics204form" method="post">

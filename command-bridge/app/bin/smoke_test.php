@@ -187,6 +187,26 @@ if ($want('env')) {
         }
     } catch (Throwable $e) { t_ok('ICS 214 checks', false, $e->getMessage()); }
 
+    // Locked forms and Revise (includes/form_lock.php, migration 0005).
+    try {
+        require_once $appRoot . '/includes/form_lock.php';
+        t_ok('Forms keep a revision number (form_records.revision)', in_array('revision', table_columns('form_records'), true), 'column missing; run update.sh (migration 0005)');
+        t_ok('Revision history table exists (form_revisions)', table_columns('form_revisions') !== [], 'table missing; run update.sh (migration 0005)');
+        foreach (['/includes/form_lock.php', '/bin/form_snapshot.php', '/forms/revision_pdf.php'] as $rel) {
+            t_ok("File present: app$rel", is_file($appRoot . $rel));
+        }
+        t_ok('A signed or approved form counts as locked', cb_form_is_locked_status('submitted') && cb_form_is_locked_status('approved') && !cb_form_is_locked_status('draft'));
+        $php = cb_php_cli_binary();
+        t_ok('PHP command line found for revision PDFs (' . $php . ')', $php !== 'php' || trim((string)@shell_exec('command -v php')) !== '', 'install php-cli');
+        $unguarded = [];
+        foreach (glob($appRoot . '/forms/ics*/index.php') ?: [] as $page) {
+            $dir = basename(dirname($page));
+            if (in_array($dir, ['ics213', 'ics214', 'ics230', 'ics213rr_v2', 'ics213rr', 'ics209wf'], true)) { continue; }   // own rules
+            if (strpos((string)file_get_contents($page), 'cb_form_block_locked_post(') === false) { $unguarded[] = $dir; }
+        }
+        t_ok('Every form page refuses changes to a signed form', $unguarded === [], 'no lock check in: ' . implode(', ', $unguarded));
+    } catch (Throwable $e) { t_ok('Form lock checks', false, $e->getMessage()); }
+
     $logoSetting = (string)get_app_setting('branding_logo_file', '');
     if ($logoSetting !== '' && branding_logo_file_if_present($logoSetting) === '') {
         t_info("The saved organization logo ($logoSetting) is missing from storage/branding; the default icon is shown. Upload the logo again in Organization & Branding.");
@@ -377,6 +397,7 @@ if ($ctx && $want('signing')) {
         $n->execute([$rec, $u['lsc']]);
         t_ok('running it again does not notify twice', (int)$n->fetchColumn() === 1);
 
+
         // A form that marks itself submitted without a signature row (e.g. ICS 203): the sweep still finds the signer.
         $rec3 = get_or_create_form_record($inc, 'ICS203', '203', $u['coml'], $op);
         $pdo->prepare("UPDATE form_records SET status = 'submitted', submitted_by_user_id = ?, submitted_by_name = 'Smoke COML', submitted_at = NOW() WHERE id = ?")->execute([$u['coml'], $rec3]);
@@ -387,6 +408,28 @@ if ($ctx && $want('signing')) {
         // Return / reopen leaves the record editable and clears the approver (same SQL the handler uses).
         $state = signoff_state($rec);
         t_ok('sign-off state reports the signer', (int)($state['creator']['signer_user_id'] ?? 0) === $u['coml']);
+
+        // Locked forms and Revise (includes/form_lock.php).
+        if (in_array('revision', table_columns('form_records'), true) && table_columns('form_revisions') !== []) {
+            require_once dirname(__DIR__) . '/includes/form_lock.php';
+            $lockedRow = $pdo->prepare('SELECT * FROM form_records WHERE id = ?'); $lockedRow->execute([$rec]); $lockedRow = $lockedRow->fetch();
+            $refused = false;
+            try { cb_form_assert_editable($lockedRow, 'ICS205'); } catch (RuntimeException $e) { $refused = true; }
+            t_ok('a signed form refuses changes', $refused);
+            t_ok('the person who signed it can revise it', cb_form_can_revise($rec));
+            $GLOBALS['cb_skip_revision_snapshot'] = true;   // the test data is never committed, and storage must stay owned by the web server
+            $newRev = cb_form_revise($rec, 'Smoke test revision');
+            $after = $pdo->prepare('SELECT status, revision, current_approver_user_id FROM form_records WHERE id = ?'); $after->execute([$rec]); $after = $after->fetch();
+            t_ok('Revise opens it as a draft with revision 1', $newRev === 1 && ($after['status'] ?? '') === 'draft' && (int)$after['revision'] === 1
+                && empty($after['current_approver_user_id']), json_encode($after));
+            $sigs = $pdo->prepare('SELECT COUNT(*) FROM form_signatures WHERE form_record_id = ?'); $sigs->execute([$rec]);
+            t_ok('Revise clears the signatures', (int)$sigs->fetchColumn() === 0);
+            $hist = cb_form_revisions($rec);
+            t_ok('the replaced version is in the revision history', count($hist) === 1 && (int)$hist[0]['revision'] === 0
+                && (string)$hist[0]['prepared_by_name'] !== '' && (string)$hist[0]['reason'] === 'Smoke test revision', json_encode($hist[0] ?? []));
+        } else {
+            t_info('Revise checks skipped: run update.sh (migration 0005) first.');
+        }
     });
 }
 

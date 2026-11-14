@@ -34,7 +34,7 @@ Each meeting has a status:
 | Completed | The meeting was held |
 | Cancelled | It won't happen; it no longer shows under upcoming meetings on the dashboard |
 
-**Only Completed meetings count as held.** Each one shows as "Meeting held: ..." on everyone's [ICS 214](help:forms/ics214/index) for that operational period. While the ICS 230 is a draft, anyone who can edit it can change a meeting's status with **Edit**.
+**Only Completed meetings count as held.** Each one shows as "Meeting held: ..." on everyone's [ICS 214](help:forms/ics214/index) for that operational period. While the ICS 230 is a draft, anyone who can edit it can change a meeting's status with **Edit**. Once it is signed, the schedule is locked: adding, moving or removing a meeting needs **Revise** (see [Working with ICS forms](help:forms/working_with_forms)).
 
 Once a meeting's start time has passed and it is still Scheduled or Tentative, a **Was it held?** button shows next to its status. It opens a page with **Completed (meeting was held)** and **Cancelled** buttons and an optional note. This works even after the ICS 230 has been signed, because it records what happened rather than changing the plan. The chair, the Incident Commander, the Planning Section Chief and anyone who can edit the ICS 230 can use it.
 

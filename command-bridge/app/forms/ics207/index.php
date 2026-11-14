@@ -54,6 +54,10 @@ if ($incidentId > 0) {
     $rows = $stmt->fetchAll();
 }
 
+// Signed or approved: locked until someone revises it (includes/form_lock.php).
+require_once dirname(dirname(__DIR__)) . '/includes/form_lock.php';
+cb_form_block_locked_post('ICS207', (int)($incidentId ?? 0), (int)($opId ?? 0), (int)($formRecordId ?? 0));
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $incidentId > 0) {
     if (!$canEdit) {
         $error = 'You do not have permission to edit ICS 207.';
@@ -105,21 +109,13 @@ if ($incidentId > 0 && !$canView) {
     render_footer();
     exit;
 }
-$canSubmit = $incidentId > 0 && $formStatus !== 'submitted' && !empty($permissions['can_submit_final']);
+$canSubmit = $incidentId > 0 && !cb_form_is_locked_status($formStatus) && !empty($permissions['can_submit_final']);
 
 render_header('ICS 207 - Organization Assignment List');
 ?>
-<div class="card">
-  <h2>ICS207 - Organization Chart</h2>
-  <?php if ($error): ?><div class="flash error"><?= e($error) ?></div><?php endif; ?>
-  <p><strong>Status:</strong> <?= e(ucfirst($formStatus)) ?></p>
-  <p><strong>Prepared By:</strong> <?= e((string)($preparer['name'] ?? 'TBD')) ?> (<?= e((string)($preparer['position_title'] ?? 'DOCL')) ?>)</p>
-  <?php if ($signature): ?>
-    <p><strong>Digitally Signed By:</strong> <?= e($signature['signer_name']) ?> (<?= e($signature['signer_position_title']) ?>) on <?= e($signature['signed_at']) ?></p>
-  <?php else: ?>
-    <p class="small">This form remains a live draft until submitted.</p>
-  <?php endif; ?>
-</div>
+<?php if ($error): ?><div class="flash error"><?= e($error) ?></div><?php endif; ?>
+<?php cb_form_status_banner('ICS207', (int)$incidentId, (int)($formRecord['operational_period_id'] ?? (current_operational_period((int)$incidentId)['id'] ?? 0)), (int)$formRecordId,
+    ['subtitle' => 'Wall chart of the incident organization']); ?>
 
 <div class="card">
   <h2>Current Assignments</h2>

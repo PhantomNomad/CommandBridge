@@ -77,6 +77,10 @@ function normalize_resource_rows(array $ordered, array $identification, array $e
     return $rows;
 }
 
+// Signed or approved: locked until someone revises it (includes/form_lock.php).
+require_once dirname(dirname(__DIR__)) . '/includes/form_lock.php';
+cb_form_block_locked_post('ICS201', (int)($incidentId ?? 0), 0, (int)($formRecordId ?? 0));
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         if ($isLockedFinal) {
@@ -282,24 +286,15 @@ function datetime_local_value(?string $value): string {
     return $ts ? date('Y-m-d H:i', $ts) : '';
 }
 ?>
-<div class="card no-print">
-  <h2>ICS201 - Incident Briefing</h2>
-  <?php if ($error): ?><div class="flash error"><?= e($error) ?></div><?php endif; ?>
-  <p><strong>Status:</strong> <?= e(ucfirst($formStatus)) ?></p>
-  <p><strong>Prepared By Default:</strong> <?= e((string)($preparer['name'] ?? 'TBD')) ?> (<?= e((string)($preparer['position_title'] ?? 'IC')) ?>)</p>
-  <p class="small">ICS 201 is typically prepared by the Initial Incident Commander. This local build also allows the Planning Section Chief and Documentation Unit Leader to create and edit the form when operational workload requires it, but only the Incident Commander may digitally sign and submit it.</p>
-  <?php if ($signature): ?>
-    <p><strong>Digitally Signed By:</strong> <?= e($signature['signer_name']) ?> (<?= e($signature['signer_position_title']) ?>) on <?= e($signature['signed_at']) ?></p>
-  <?php else: ?>
-    <p class="small">Attachments accepted here: BMP, JPG, JPEG, PNG, PDF, and TXT.</p>
-  <?php endif; ?>
-</div>
+<?php if ($error): ?><div class="flash error"><?= e($error) ?></div><?php endif; ?>
+<?php if (!$isPrintView) { cb_form_status_banner('ICS201', $incidentId, 0, $formRecordId, ['subtitle' => 'Incident briefing']); } ?>
+<p class="small no-print">ICS 201 is normally prepared by the initial Incident Commander; the Planning Section Chief and Documentation Unit Leader can also fill it in. Attachments accepted: BMP, JPG, JPEG, PNG, PDF and TXT.</p>
 
 <?php if (!$isPrintView): ?>
 <div class="card">
   <h2>Edit ICS 201</h2>
   <?php if ($isLockedFinal): ?>
-    <p>This ICS 201 has been <?= h($formStatus === 'approved' ? 'approved' : 'submitted') ?> and is locked. Use <strong>Preview PDF</strong> to read it. Only a SysAdmin can reopen it.</p>
+    <p>This ICS 201 has been <?= h($formStatus === 'approved' ? 'approved' : 'submitted') ?> and is locked. Use <strong>Preview PDF</strong> to read it, or <strong>Revise</strong> at the top to change it.</p>
   <?php elseif (!$canEdit): ?>
     <p>You do not have permission to edit this form. By default only the IC, DOCL or PSC can create or edit it.</p>
   <?php endif; ?>
