@@ -2,19 +2,35 @@
 declare(strict_types=1);
 $appRoot = dirname(dirname(__DIR__));
 require_once $appRoot . '/includes/layout.php';
-require_once $appRoot . '/includes/pdf/Ics206PdfRenderer.php';
 require_once $appRoot . '/includes/pdf/pdf_request.php';
-require_login();
+require_once __DIR__ . '/Ics206OfficialPdfFieldMapper.php';
 
-$pdo=db(); $incident=active_incident(); $incidentId=(int)($incident['id']??0);
-if($incidentId<=0){http_response_code(400);echo 'No active incident.';exit;}
-if(!current_user_can_view_form('ICS206',$incidentId)){http_response_code(403);echo 'Forbidden';exit;}
-$formRecord=get_form_record($incidentId,'ICS206'); if(!$formRecord){http_response_code(404);echo 'ICS 206 record not found.';exit;}
-$st=$pdo->prepare("SELECT * FROM form_206_headers WHERE form_record_id=? LIMIT 1"); $st->execute([(int)$formRecord['id']]); $header=$st->fetch();
-if(!$header){http_response_code(404);echo 'ICS 206 record not found.';exit;}
-$hid=(int)$header['id'];
-$aid=$pdo->prepare("SELECT * FROM form_206_aid_stations WHERE header_id=? ORDER BY sort_order,id"); $aid->execute([$hid]); $aid=$aid->fetchAll();
-$tr=$pdo->prepare("SELECT * FROM form_206_transportation WHERE header_id=? ORDER BY sort_order,id"); $tr->execute([$hid]); $tr=$tr->fetchAll();
-$hos=$pdo->prepare("SELECT * FROM form_206_hospitals WHERE header_id=? ORDER BY sort_order,id"); $hos->execute([$hid]); $hos=$hos->fetchAll();
-$op=[]; if(!empty($header['operational_period_id'])){ foreach(['operational_periods','incident_operational_periods'] as $t){ try{$s=$pdo->prepare("SELECT * FROM `$t` WHERE id=? LIMIT 1");$s->execute([(int)$header['operational_period_id']]);$op=$s->fetch()?:[]; if($op)break;}catch(Throwable $e){} } }
-$renderer=new Ics206PdfRenderer(); $renderer->renderFilled(['incident'=>$incident,'operational_period'=>$op,'header'=>$header,'aid_stations'=>$aid,'transportation'=>$tr,'hospitals'=>$hos,'inline'=>ics_pdf_preview_requested()]);
+$ctx = ics_pdf_context('ICS206');
+$pdo = db();
+$st = $pdo->prepare('SELECT * FROM form_206_headers WHERE form_record_id = ? LIMIT 1');
+$st->execute([(int)$ctx['form_record']['id']]);
+$header = $st->fetch();
+if (!$header) {
+    ics_pdf_fail(404, 'ICS 206 has not been saved yet. Save the form, then try the PDF again.');
+}
+$hid = (int)$header['id'];
+$rows = static function (string $table) use ($pdo, $hid): array {
+    $st = $pdo->prepare("SELECT * FROM `$table` WHERE header_id = ? ORDER BY sort_order, id");
+    $st->execute([$hid]);
+    return $st->fetchAll();
+};
+$op = $ctx['op'];
+if (!empty($header['operational_period_id'])) {
+    $op = get_operational_period_by_id($ctx['incident_id'], (int)$header['operational_period_id']) ?: $op;
+}
+
+try {
+    $built = Ics206OfficialPdfFieldMapper::build($header, $ctx['incident'], $op, $ctx['form_record'],
+        $rows('form_206_aid_stations'), $rows('form_206_transportation'), $rows('form_206_hospitals'));
+    ics_pdf_send_official_with_continuation('ICS206', $built['pages'], $built['continuations'],
+        ics_pdf_header_lines($ctx['incident'], $op), 'ICS 206', 'ICS206_Medical_Plan_Incident_' . $ctx['incident_id'] . '.pdf');
+} catch (Throwable $e) {
+    error_log('ICS 206 official PDF export failed: ' . $e->getMessage());
+    ics_pdf_fail(500, 'The ICS 206 PDF could not be generated. Please contact the system administrator.');
+}
+exit;

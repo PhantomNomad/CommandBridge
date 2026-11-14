@@ -75,6 +75,7 @@ final class SimpleTextPdf
     {
         $pw = 612; $ph = 792; $m = 50; $fs = 10; $lead = 12.5; $width = $pw - 2 * $m;
         $pages = []; $ops = ''; $y = 0; $pageNo = 0;
+        $footer = trim($title) !== '' ? $title : 'Continuation sheet';
 
         $newPage = function () use (&$pages, &$ops, &$y, &$pageNo, $title, $headerLines, $pw, $ph, $m, $width) {
             if ($ops !== '') { $pages[] = $ops; }
@@ -113,7 +114,7 @@ final class SimpleTextPdf
             $pageId = $n++; $contentId = $n++;
             $kids[] = "$pageId 0 R";
             $total = count($pages);
-            $content .= self::text($m, 28, 'F1', 8, 'ICS 209 continuation sheet - page ' . ($i + 1) . ' of ' . $total);
+            $content .= self::text($m, 28, 'F1', 8, $footer . ' - page ' . ($i + 1) . ' of ' . $total);
             $pageObjs[$pageId] = "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 $pw $ph] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents $contentId 0 R >>";
             $pageObjs[$contentId] = "<< /Length " . strlen($content) . " >>\nstream\n" . $content . "endstream";
         }

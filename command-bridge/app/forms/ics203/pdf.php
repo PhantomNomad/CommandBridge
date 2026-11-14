@@ -2,7 +2,6 @@
 declare(strict_types=1);
 $appRoot = dirname(dirname(__DIR__));
 require_once $appRoot . '/includes/layout.php';
-require_once $appRoot . '/includes/pdf/Ics203PdfRenderer.php';
 require_once $appRoot . '/includes/pdf/pdf_request.php';
 require_login();
 
@@ -90,17 +89,36 @@ $hasIc = false; foreach ($rows as $r) { if ($r['position_title']==='Incident Com
 if (!$hasIc) { http_response_code(409); echo 'ICS 203 is incomplete because no Incident Commander is assigned.'; exit; }
 try { ics203_pdf_ensure_record($pdo, $incidentId, $rows); } catch(Throwable $e) {}
 
-$op = [];
-if (function_exists('current_operational_period')) {
-    $cur = current_operational_period($incidentId);
-    if ($cur) { $op = ['id'=>$cur['id'] ?? null, 'name'=>$cur['period_name'] ?? $cur['name'] ?? '', 'start_time'=>$cur['op_start'] ?? $cur['start_time'] ?? '', 'end_time'=>$cur['op_end'] ?? $cur['end_time'] ?? '']; }
+// Everyone currently holding each position (the official form has room for several in some boxes).
+$holders = [];
+$titles = [];
+try {
+    $st = $pdo->prepare("SELECT r.role_code, r.role_name, COALESCE(NULLIF(u.real_name, ''), u.username) AS person
+        FROM incident_positions ip
+        INNER JOIN roles r ON r.id = ip.role_id
+        LEFT JOIN users u ON u.id = ip.user_id AND u.deleted_at IS NULL
+        WHERE ip.incident_id = ? AND ip.deleted_at IS NULL AND (ip.assigned_end IS NULL OR ip.assigned_end >= NOW())
+        ORDER BY r.role_code, person");
+    $st->execute([$incidentId]);
+    foreach ($st->fetchAll() as $r) {
+        $code = strtoupper(trim((string)$r['role_code']));
+        $titles[$code] = (string)$r['role_name'];
+        if (trim((string)$r['person']) !== '') { $holders[$code][] = (string)$r['person']; }
+    }
+} catch (Throwable $e) {
+    security_log($e, 'ics203_pdf');
 }
 
+require_once __DIR__ . '/Ics203OfficialPdfFieldMapper.php';
+$op = current_operational_period($incidentId) ?: [];
+$me = current_user();
 try {
-    $layout = require $appRoot . '/includes/pdf/ics203_layout.php';
-    $renderer = new Ics203PdfRenderer($layout);
-    $renderer->renderFilled(['incident'=>$incident, 'operational_period'=>$op, 'assignments'=>$rows, 'attachments'=>[], 'inline'=>ics_pdf_preview_requested()]);
-    exit;
+    $built = Ics203OfficialPdfFieldMapper::build($holders, $incident, $op,
+        trim((string)($me['display_name'] ?? $me['username'] ?? '')), date('Y-m-d H:i:s'), $titles);
+    ics_pdf_send_official_with_continuation('ICS203', [$built['fields']], $built['continuations'],
+        ics_pdf_header_lines($incident, $op), 'ICS 203', 'ICS203_Incident_' . $incidentId . '.pdf');
 } catch (Throwable $e) {
-    http_response_code(500); render_header('ICS 203 PDF'); echo '<div class="card"><p>'.e($e->getMessage()).'</p></div>'; render_footer(); exit;
+    error_log('ICS 203 official PDF export failed: ' . $e->getMessage());
+    ics_pdf_fail(500, 'The ICS 203 PDF could not be generated. Please contact the system administrator.');
 }
+exit;

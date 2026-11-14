@@ -3,16 +3,9 @@ declare(strict_types=1);
 $appRoot = dirname(dirname(__DIR__));
 require_once $appRoot . '/includes/layout.php';
 
-$rendererFile = $appRoot . '/includes/pdf/Ics202PdfRenderer.php';
-if (!is_file($rendererFile)) {
-    http_response_code(500);
-    header('Content-Type: text/plain; charset=utf-8');
-    echo "ICS 202 PDF renderer is missing.\n";
-    echo "Expected file: " . $rendererFile . "\n";
-    echo "Fix: copy the includes/pdf directory from the update package to the web root, preserving case-sensitive filenames.\n";
-    exit;
-}
-require_once $rendererFile;
+require_once $appRoot . '/includes/pdf/pdf_request.php';
+// Only used to turn uploaded attachments into pages that follow the official form.
+require_once $appRoot . '/includes/pdf/Ics202PdfRenderer.php';
 
 require_login();
 
@@ -225,49 +218,33 @@ foreach ($pdfAutoIncludes as $field => $detected) {
 
 
 /*
- * Use the official ICS Canada fillable template whenever the standardized PDF
- * engine is available. The legacy renderer remains the safe fallback when
- * uploaded attachment files must be appended, or when the server has not yet
- * been configured with pdftk.
+ * The ICS 202 is always the official ICS Canada form. Uploaded attachments follow it as pages of their own.
  */
-$forceLegacy = isset($_GET['legacy']) && (string)$_GET['legacy'] === '1';
-if (!$forceLegacy && $attachments === []) {
-    require_once $appRoot . '/includes/pdf/OfficialPdfTemplateExporter.php';
-    require_once __DIR__ . '/Ics202OfficialPdfFieldMapper.php';
-
-    try {
-        $officialExporter = new OfficialPdfTemplateExporter();
-        $officialPdfPath = $officialExporter->create(
-            'ICS202',
-            Ics202OfficialPdfFieldMapper::map($record, $incident, $op)
-        );
-        $officialFilename = 'ICS202_Incident_' . $incidentId . '.pdf';
-        if ($preview) {
-            $officialExporter->sendInline($officialPdfPath, $officialFilename);
-        } else {
-            $officialExporter->sendDownload($officialPdfPath, $officialFilename);
-        }
-        exit;
-    } catch (Throwable $e) {
-        error_log('ICS 202 official PDF export unavailable; using legacy renderer. ' . $e->getMessage());
-    }
-}
-
+require_once $appRoot . '/includes/pdf/OfficialPdfTemplateExporter.php';
+require_once __DIR__ . '/Ics202OfficialPdfFieldMapper.php';
+$attachPdf = '';
 try {
-    $layout = require $appRoot . '/includes/pdf/ics202_layout.php';
-    $renderer = new Ics202PdfRenderer($layout);
-    $renderer->renderFilled([
-        'incident' => $incident,
-        'record' => $record,
-        'operational_period' => $op,
-        'attachments' => $attachments,
-        'inline' => $preview,
-    ]);
+    $officialExporter = new OfficialPdfTemplateExporter();
+    $officialPdfPath = $officialExporter->create('ICS202', Ics202OfficialPdfFieldMapper::map($record, $incident, $op));
+    if ($attachments) {
+        $layout = require $appRoot . '/includes/pdf/ics202_layout.php';
+        $attachPdf = (string)tempnam(sys_get_temp_dir(), 'cb202att_');
+        if ($attachPdf !== '' && (new Ics202PdfRenderer($layout))->writeAttachmentsPdf($attachments, $attachPdf)) {
+            $officialPdfPath = $officialExporter->appendPdf($officialPdfPath, $attachPdf);
+        } else {
+            @unlink($attachPdf);
+        }
+        $attachPdf = '';
+    }
+    $officialFilename = 'ICS202_Incident_' . $incidentId . '.pdf';
+    if ($preview) {
+        $officialExporter->sendInline($officialPdfPath, $officialFilename);
+    } else {
+        $officialExporter->sendDownload($officialPdfPath, $officialFilename);
+    }
     exit;
 } catch (Throwable $e) {
-    http_response_code(500);
-    render_header('ICS 202 PDF');
-    echo '<div class="card"><p>' . e($e->getMessage()) . '</p></div>';
-    render_footer();
-    exit;
+    if ($attachPdf !== '') { @unlink($attachPdf); }
+    error_log('ICS 202 official PDF export failed: ' . $e->getMessage());
+    ics_pdf_fail(500, 'The ICS 202 PDF could not be generated. Please contact the system administrator.');
 }

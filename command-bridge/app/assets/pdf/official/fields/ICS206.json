@@ -1,0 +1,457 @@
+{
+"1 INCIDENT NAME": [
+177.9,
+22.6,
+0.0,
+0,
+1
+],
+"10 APPROVED BY Safety Officer": [
+196.0,
+22.8,
+0.0,
+0,
+1
+],
+"2 DATE PREPARED": [
+51.4,
+14.7,
+0.0,
+0,
+1
+],
+"8. SPECIAL MEDICAL EMERGENCY PROCEDURES": [
+542.1,
+92.8,
+12.0,
+1,
+1
+],
+"Address Lat and Long if HelipadRow1": [
+125.0,
+20.2,
+0.0,
+0,
+1
+],
+"Address Lat and Long if HelipadRow2": [
+125.0,
+20.2,
+0.0,
+0,
+1
+],
+"Address Lat and Long if HelipadRow3": [
+125.0,
+20.2,
+0.0,
+0,
+1
+],
+"Address Lat and Long if HelipadRow4": [
+125.0,
+20.2,
+0.0,
+0,
+1
+],
+"Address Lat and Long if HelipadRow5": [
+125.0,
+19.2,
+0.0,
+0,
+1
+],
+"Ambulance ServiceRow1": [
+200.4,
+20.2,
+0.0,
+0,
+1
+],
+"Ambulance ServiceRow2": [
+200.4,
+20.2,
+0.0,
+0,
+1
+],
+"Ambulance ServiceRow3": [
+200.4,
+20.2,
+0.0,
+0,
+1
+],
+"Ambulance ServiceRow4": [
+200.4,
+20.2,
+0.0,
+0,
+1
+],
+"Ambulance ServiceRow5": [
+200.4,
+19.8,
+0.0,
+0,
+1
+],
+"Contact number or frequencyRow1": [
+113.9,
+20.2,
+0.0,
+0,
+1
+],
+"Contact number or frequencyRow1_2": [
+148.9,
+20.2,
+0.0,
+0,
+1
+],
+"Contact number or frequencyRow2": [
+113.9,
+20.2,
+0.0,
+0,
+1
+],
+"Contact number or frequencyRow2_2": [
+148.9,
+20.2,
+0.0,
+0,
+1
+],
+"Contact number or frequencyRow3": [
+113.9,
+20.2,
+0.0,
+0,
+1
+],
+"Contact number or frequencyRow3_2": [
+148.9,
+20.2,
+0.0,
+0,
+1
+],
+"Contact number or frequencyRow4": [
+113.9,
+20.2,
+0.0,
+0,
+1
+],
+"Contact number or frequencyRow4_2": [
+148.9,
+20.2,
+0.0,
+0,
+1
+],
+"Contact number or frequencyRow5": [
+113.9,
+19.8,
+0.0,
+0,
+1
+],
+"Contact number or frequencyRow5_2": [
+148.9,
+19.2,
+0.0,
+0,
+1
+],
+"Hospital NameRow1": [
+110.3,
+20.2,
+0.0,
+0,
+1
+],
+"Hospital NameRow2": [
+110.3,
+20.2,
+0.0,
+0,
+1
+],
+"Hospital NameRow3": [
+110.3,
+20.2,
+0.0,
+0,
+1
+],
+"Hospital NameRow4": [
+110.3,
+20.2,
+0.0,
+0,
+1
+],
+"Hospital NameRow5": [
+110.4,
+19.2,
+0.0,
+0,
+1
+],
+"LocationRow1": [
+159.9,
+20.2,
+0.0,
+0,
+1
+],
+"LocationRow1_2": [
+158.5,
+20.2,
+0.0,
+0,
+1
+],
+"LocationRow2": [
+159.9,
+20.2,
+0.0,
+0,
+1
+],
+"LocationRow2_2": [
+158.5,
+20.2,
+0.0,
+0,
+1
+],
+"LocationRow3": [
+159.9,
+20.2,
+0.0,
+0,
+1
+],
+"LocationRow3_2": [
+158.5,
+20.2,
+0.0,
+0,
+1
+],
+"LocationRow4": [
+159.9,
+20.2,
+0.0,
+0,
+1
+],
+"LocationRow4_2": [
+158.5,
+20.2,
+0.0,
+0,
+1
+],
+"LocationRow5": [
+159.9,
+19.8,
+0.0,
+0,
+1
+],
+"LocationRow5_2": [
+158.5,
+19.8,
+0.0,
+0,
+1
+],
+"Medical Aid StationsRow1": [
+200.4,
+20.2,
+0.0,
+0,
+1
+],
+"Medical Aid StationsRow2": [
+200.4,
+20.2,
+0.0,
+0,
+1
+],
+"Medical Aid StationsRow3": [
+200.4,
+20.2,
+0.0,
+0,
+1
+],
+"Medical Aid StationsRow4": [
+200.2,
+20.2,
+0.0,
+0,
+1
+],
+"Medical Aid StationsRow5": [
+200.4,
+19.8,
+0.0,
+0,
+1
+],
+"PREPARED BY Medical Unit Leader": [
+191.9,
+23.8,
+0.0,
+0,
+1
+],
+"Text1": [
+53.2,
+13.9,
+0.0,
+0,
+1
+],
+"Text2": [
+53.2,
+13.9,
+0.0,
+0,
+1
+],
+"Text3": [
+53.2,
+13.9,
+0.0,
+0,
+1
+],
+"Text4": [
+53.2,
+13.9,
+0.0,
+0,
+1
+],
+"Text5": [
+115.9,
+19.2,
+0.0,
+0,
+1
+],
+"Text6": [
+115.9,
+19.2,
+0.0,
+0,
+1
+],
+"Text7": [
+115.9,
+19.2,
+0.0,
+0,
+1
+],
+"Text8": [
+115.9,
+19.2,
+0.0,
+0,
+1
+],
+"Text9": [
+115.9,
+19.2,
+0.0,
+0,
+1
+],
+"Travel Time Air GrndRow1": [
+28.7,
+20.2,
+0.0,
+0,
+1
+],
+"Travel Time Air GrndRow1_2": [
+29.9,
+20.2,
+0.0,
+0,
+1
+],
+"Travel Time Air GrndRow2": [
+28.7,
+20.2,
+0.0,
+0,
+1
+],
+"Travel Time Air GrndRow2_2": [
+29.9,
+20.2,
+0.0,
+0,
+1
+],
+"Travel Time Air GrndRow3": [
+28.7,
+20.2,
+0.0,
+0,
+1
+],
+"Travel Time Air GrndRow3_2": [
+29.9,
+20.2,
+0.0,
+0,
+1
+],
+"Travel Time Air GrndRow4": [
+28.7,
+20.2,
+0.0,
+0,
+1
+],
+"Travel Time Air GrndRow4_2": [
+29.9,
+20.2,
+0.0,
+0,
+1
+],
+"Travel Time Air GrndRow5": [
+28.7,
+19.2,
+0.0,
+0,
+1
+],
+"Travel Time Air GrndRow5_2": [
+29.9,
+19.2,
+0.0,
+0,
+1
+],
+"time prep": [
+51.4,
+14.7,
+0.0,
+0,
+1
+]
+}

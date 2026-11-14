@@ -54,23 +54,27 @@ exit;
 
 Do not place field maps in browser JavaScript, pass field names from requests, or accept PDF paths from users.
 
-## Form exceptions
+## Every form uses the official template
 
-The current official templates for ICS 209-WF, ICS 218, ICS 233, and ICS 260 do not contain fillable AcroForm fields. They require a retained purpose-built renderer or an approved fillable replacement template. ICS 218 should continue to use its dedicated renderer until a replacement is available.
+Every ICS form's PDF (`forms/<form>/pdf.php`) fills the official ICS Canada template; nothing is redrawn in PHP.
 
-## Rollout order
+- **Field maps** live next to each form: `forms/<form>/Ics<form>OfficialPdfFieldMapper.php`.
+- **Fitting text:** mappers put the full text in each field and call `OfficialPdfText::apply()`. It uses the real size
+  and font of every box, from `assets/pdf/official/fields/<template>.json`, to cut text that does not fit and move the
+  full text to a continuation sheet appended to the PDF (`ics_pdf_send_official_with_continuation()`).
+- **More rows than the form has:** the template is filled again for the extra rows and the copies are joined
+  (`OfficialPdfTemplateExporter::createPaged()`, which can also keep only some pages of a template, e.g. the ICS 214
+  continuation page).
+- **ICS 218** has no fillable fields. Its text is drawn on a transparent overlay at the template's coordinates
+  (`forms/ics218/Ics218OfficialPdfOverlay.php`, using the bundled FPDF) and stamped onto the official page
+  (`OfficialPdfTemplateExporter::stampTemplate()`).
+- **Attachments** (ICS 201 maps, ICS 202 attachments) follow the official form as pages of their own.
+- **Not ICS forms:** the ICS 230 "meeting posting" wall sheet keeps its own layout.
 
-The first conversion should be ICS 202. Its official template is fillable and it will validate the shared method with a multi-page operational form, narrative fields, checkboxes, dates, and approval information before the remaining forms are migrated.
+## When ICS Canada updates a form
 
-
-## ICS 202 implementation
-
-ICS 202 now uses this standard export path by default when the approved PDF engine is configured:
-
-- The incident, operational period, objectives, command emphasis, situational awareness, site-safety fields, IAP checklist, and preparer/approver details are mapped to the official ICS Canada 202 template.
-- The output is flattened before it is sent to the browser.
-- `forms/ics202/pdf.php?legacy=1` explicitly uses the previous TCPDF renderer.
-- Records with uploaded ICS 202 attachments continue to use the legacy renderer. This preserves the existing attachment append behaviour until standardized PDF attachment merging is added.
-- If `pdftk` is not installed or cannot be started, the legacy renderer is retained automatically and an error is written to the server log.
-
-This provides a safe migration path: configure the PDF engine, validate ICS 202 output, then apply the same registry/mapper pattern to the next form.
+1. Replace the PDF in `assets/pdf/official/` (same file name).
+2. Run `python3 tools/pdf_field_metadata.py` (needs `pip install pypdf`) to refresh `assets/pdf/official/fields/`.
+3. Compare the new field names with the form's mapper (`pdftk <file> dump_data_fields_utf8`) and fix any that changed.
+   For ICS 218, re-measure the column and row positions in `Ics218OfficialPdfOverlay.php`.
+4. Download a filled PDF of the form and check it.

@@ -92,20 +92,32 @@ final class OfficialPdfTemplateExporter
      * @param array<int, array<string, mixed>> $pages One field map per output page.
      * @return string Absolute path to a temporary flattened PDF. Caller must delete it after delivery.
      */
-    public function createPaged(string $formCode, array $pages): string
+    public function createPaged(string $formCode, array $pages, ?array $keepPages = null): string
     {
         $pages = array_values($pages);
+        $keepPages = $keepPages === null ? null : array_values($keepPages);
         if ($pages === []) {
             throw new InvalidArgumentException('At least one page of data is required.');
         }
-        if (count($pages) === 1) {
+        if (count($pages) === 1 && ($keepPages === null || ($keepPages[0] ?? '') === '')) {
             return $this->create($formCode, $pages[0]);
         }
 
         $parts = [];
         try {
-            foreach ($pages as $fields) {
-                $parts[] = $this->create($formCode, $fields);
+            foreach ($pages as $i => $fields) {
+                $part = $this->create($formCode, $fields);
+                $range = $keepPages === null ? '' : trim((string)($keepPages[$i] ?? ''));
+                if ($range !== '') {
+                    // Keep only some pages of a multi-page template (e.g. the ICS 214 continuation page).
+                    $part = $this->selectPages($part, $range);
+                }
+                $parts[] = $part;
+            }
+            if (count($parts) === 1) {
+                $only = $parts[0];
+                $parts = [];
+                return $only;
             }
 
             $basePath = tempnam($this->temporaryDirectory, 'commandbridge_pdf_');
@@ -126,6 +138,69 @@ final class OfficialPdfTemplateExporter
             foreach ($parts as $part) {
                 @unlink($part);
             }
+        }
+    }
+
+    /**
+     * Returns a new temporary PDF holding only $range of $pdf ("1", "2-end", "1 3"); deletes $pdf.
+     */
+    public function selectPages(string $pdf, string $range): string
+    {
+        if (!preg_match('/^[0-9]+(-([0-9]+|end))?( [0-9]+(-([0-9]+|end))?)*$/', $range)) {
+            @unlink($pdf);
+            throw new InvalidArgumentException('Invalid page range.');
+        }
+        $this->assertTemporaryDirectory();
+        $basePath = tempnam($this->temporaryDirectory, 'commandbridge_pdf_');
+        if ($basePath === false) {
+            @unlink($pdf);
+            throw new RuntimeException('Unable to create a temporary PDF export file.');
+        }
+        @unlink($basePath);
+        $out = $basePath . '.pdf';
+        try {
+            $this->runCommand(array_merge([$this->pdftkBinary, $pdf, 'cat'], explode(' ', $range), ['output', $out]));
+            if (!is_file($out) || filesize($out) === 0) {
+                throw new RuntimeException('The PDF export engine did not create an output file.');
+            }
+            @chmod($out, 0600);
+            return $out;
+        } finally {
+            @unlink($pdf);
+        }
+    }
+
+    /**
+     * For a template without fillable fields (ICS 218): lays $overlayPdf (text on transparent pages drawn at the
+     * template's coordinates) over copies of one page of the official template, one copy per overlay page.
+     * $overlayPdf is deleted.
+     */
+    public function stampTemplate(string $formCode, string $overlayPdf, int $overlayPages, int $templatePage = 1): string
+    {
+        $template = OfficialPdfTemplateRegistry::get($formCode);
+        $this->assertRuntimeReady();
+        $this->assertTemporaryDirectory();
+        $basePath = tempnam($this->temporaryDirectory, 'commandbridge_pdf_');
+        if ($basePath === false) {
+            @unlink($overlayPdf);
+            throw new RuntimeException('Unable to create a temporary PDF export file.');
+        }
+        @unlink($basePath);
+        $background = $basePath . '_bg.pdf';
+        $out = $basePath . '.pdf';
+        try {
+            $page = (string)max(1, min($templatePage, (int)($template['pages'] ?? 1)));
+            $this->runCommand(array_merge([$this->pdftkBinary, $template['path'], 'cat'], array_fill(0, max(1, $overlayPages), $page),
+                ['output', $background]));
+            $this->runCommand([$this->pdftkBinary, $background, 'multistamp', $overlayPdf, 'output', $out]);
+            if (!is_file($out) || filesize($out) === 0) {
+                throw new RuntimeException('The PDF export engine did not create an output file.');
+            }
+            @chmod($out, 0600);
+            return $out;
+        } finally {
+            @unlink($background);
+            @unlink($overlayPdf);
         }
     }
 

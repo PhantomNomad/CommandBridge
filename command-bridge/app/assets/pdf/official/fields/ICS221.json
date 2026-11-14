@@ -1,0 +1,156 @@
+{
+"1 INCIDENT NAMENUMBER": [
+226.5,
+17.0,
+0.0,
+0,
+1
+],
+"10 UNIT LEADER RESPONSIBLE FOR COLLECTING PERFORMANCE RATING": [
+580.2,
+25.4,
+0.0,
+0,
+1
+],
+"13 PREPARED BY include date and time": [
+258.5,
+20.5,
+0.0,
+0,
+1
+],
+"2 DATETIME": [
+95.6,
+17.0,
+0.0,
+0,
+1
+],
+"3 DEMOB NUMBER": [
+104.3,
+17.0,
+0.0,
+0,
+1
+],
+"4 UNITPERSONNEL RELEASED": [
+577.6,
+15.8,
+0.0,
+0,
+1
+],
+"5 TRANSPORATION TYPENUMBER": [
+577.6,
+15.8,
+0.0,
+0,
+1
+],
+"6 ACTUAL RELEASE DATETIME": [
+384.2,
+15.8,
+0.0,
+0,
+1
+],
+"8 DESTINATION": [
+231.2,
+27.9,
+0.0,
+1,
+1
+],
+"Communication Unit": [
+578.5,
+12.1,
+0.0,
+0,
+1
+],
+"Date": [
+444.1,
+13.2,
+0.0,
+0,
+1
+],
+"Documentation Unit": [
+577.9,
+12.2,
+0.0,
+0,
+1
+],
+"Facilities Unit": [
+578.5,
+13.2,
+0.0,
+0,
+1
+],
+"Ground Support Unit Leader": [
+578.5,
+13.4,
+0.0,
+0,
+1
+],
+"OTHERRow1": [
+574.8,
+12.6,
+0.0,
+0,
+1
+],
+"OTHERRow2": [
+576.0,
+13.2,
+0.0,
+0,
+1
+],
+"REMARKS": [
+715.6,
+82.7,
+10.0,
+1,
+1
+],
+"Supply Unit": [
+578.5,
+12.6,
+0.0,
+0,
+1
+],
+"Text60": [
+24.7,
+21.3,
+12.0,
+0,
+1
+],
+"Text61": [
+24.7,
+21.3,
+12.0,
+0,
+1
+],
+"Text9": [
+444.1,
+13.2,
+0.0,
+0,
+1
+],
+"Time Unit": [
+577.3,
+12.6,
+0.0,
+0,
+1
+]
+}
