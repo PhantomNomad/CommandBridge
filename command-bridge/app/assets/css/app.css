@@ -868,3 +868,12 @@ img,video{max-width:100%;height:auto}
   .mobile-bar,.nav-backdrop,.nav-close{display:none !important}
   .table-scroll{overflow:visible}
 }
+
+/* Dashboard panels (includes/dashboard_panels.php) */
+.dashboard-panel{border-top:1px solid #d9e2ec;margin-top:16px;padding-top:4px}
+.dashboard-panel:first-child{border-top:0;margin-top:0}
+.dashboard-panel > h3{margin:12px 0 8px}
+.dashboard-panel-matrix th{font-size:13px;white-space:normal;vertical-align:bottom;min-width:90px}
+.dashboard-panel-matrix tbody th{vertical-align:middle;min-width:220px;font-weight:normal}
+.dashboard-panel-matrix input[type=checkbox]{width:20px;height:20px;margin:0}
+.dashboard-panel-matrix tr.dashboard-panel-everyone{background:#f0f7ff}

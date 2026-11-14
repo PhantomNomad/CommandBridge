@@ -2,12 +2,16 @@
 declare(strict_types=1);
 require_once dirname(__DIR__) . '/includes/layout.php';
 require_once dirname(__DIR__) . '/includes/meetings.php';
+require_once dirname(__DIR__) . '/includes/dashboard_panels.php';
 require_login();
 
 $incident = active_incident();
 $incidentId = (int)($incident['id'] ?? 0);
 $currentOperationalPeriod = $incidentId > 0 ? current_operational_period($incidentId) : null;
 $currentOperationalPeriodId = (int)($currentOperationalPeriod['id'] ?? 0);
+// Which panels this person sees (includes/dashboard_panels.php). ?all=1 shows every panel.
+$showAllPanels = (string)($_GET['all'] ?? '') === '1';
+$panels = cb_dashboard_user_panels($incidentId, $showAllPanels);
 
 
 $meetings = [];
@@ -198,11 +202,11 @@ function dashboard_user_has_any_role(int $incidentId, array $roles): bool {
     return !empty(current_user()['is_sysadmin']);
 }
 
-function dashboard_get_213rr_action_items(int $incidentId): array {
+function dashboard_get_213rr_action_items(int $incidentId, bool $anyRole = false): array {
     if ($incidentId <= 0) { return []; }
     $items = [];
     try {
-        if (dashboard_user_has_any_role($incidentId, ['LSC','SPUL','PROC'])) {
+        if ($anyRole || dashboard_user_has_any_role($incidentId, ['LSC','SPUL','PROC'])) {
             $stmt = db()->prepare("
                 SELECT h.id, h.request_number, h.priority_level, h.needed_by_datetime,
                        h.workflow_status, fr.updated_at AS action_updated_at,
@@ -233,7 +237,7 @@ function dashboard_get_213rr_action_items(int $incidentId): array {
                     'title' => '213RR awaiting Logistics review',
                     'body' => (string)$r['request_number'] . ' - ' . $summary,
                     'urgency' => (string)($r['priority_level'] ?? 'routine'),
-                    'created_at' => (string)($r['updated_at'] ?? ''),
+                    'created_at' => (string)($r['action_updated_at'] ?? ''),
                     'link_url' => app_url('/forms/ics213rr_v2/index.php?action=view&id=' . (int)$r['id']),
                 ];
             }
@@ -244,30 +248,48 @@ function dashboard_get_213rr_action_items(int $incidentId): array {
     return $items;
 }
 
-function dashboard_render_notification_panels(int $incidentId): void {
+/** Forms waiting for the signed-in user's approval. */
+function dashboard_get_my_approvals(int $incidentId): array {
+    if ($incidentId <= 0) { return []; }
+    try {
+        $st = db()->prepare("SELECT fr.id, fr.form_type, fr.form_number, fr.operational_period_id, fr.submitted_at, fr.updated_at,
+                COALESCE(NULLIF(fr.submitted_by_name, ''), fr.prepared_by_name) AS signed_by
+            FROM form_records fr
+            WHERE fr.incident_id = ? AND fr.is_deleted = 0 AND fr.status = 'submitted' AND fr.current_approver_user_id = ?
+            ORDER BY COALESCE(fr.submitted_at, fr.updated_at) ASC");
+        $st->execute([$incidentId, (int)(current_user()['id'] ?? 0)]);
+        return $st->fetchAll() ?: [];
+    } catch (Throwable $e) { return []; }
+}
+
+function dashboard_count(string $sql, array $params): int {
+    try { $st = db()->prepare($sql); $st->execute($params); return (int)$st->fetchColumn(); }
+    catch (Throwable $e) { return -1; }
+}
+
+function dashboard_panel_head(string $key, string $extra = ''): void {
+    $cat = cb_dashboard_panel_catalogue();
+    echo '<section class="dashboard-panel" id="panel-' . e($key) . '"><h3>' . e((string)($cat[$key]['title'] ?? $key)) . $extra . '</h3>';
+}
+
+/** The main column of the dashboard: every panel this person sees except Scheduled meetings (the side column). */
+function dashboard_render_notification_panels(int $incidentId, array $panels): void {
     cb_meeting_reminders_run($incidentId);
-    $notifications = dashboard_get_notifications($incidentId);
-    $actionItems = dashboard_get_213rr_action_items($incidentId);
+    $show = static fn(string $k): bool => in_array($k, $panels, true);
+    $me = (int)(current_user()['id'] ?? 0);
     $currentOp = current_operational_period($incidentId);
-    $currentOpForms = $currentOp ? dashboard_get_current_op_form_statuses($incidentId, (int)$currentOp['id']) : [];
-    $closeoutForms = $currentOp ? operational_period_unsubmitted_forms($incidentId, (int)$currentOp['id']) : [];
-    $reviewRequiredForms = $currentOp ? operational_period_copied_forms_requiring_review($incidentId, (int)$currentOp['id']) : [];
-    $myReviewRequiredForms = $currentOp ? copied_forms_assigned_to_current_user($incidentId, (int)$currentOp['id']) : [];
-    $positionAssignments = $currentOp ? operational_period_position_assignments($incidentId, (int)$currentOp['id']) : [];
+    $opId = (int)($currentOp['id'] ?? 0);
+    $closeoutForms = ($opId && ($show('closeout') || $show('my_forms'))) ? operational_period_unsubmitted_forms($incidentId, $opId) : [];
+    $rendered = 0;
     ?>
     <div id="dashboard-notification-content">
-      <?php if (!$notifications && !$actionItems): ?>
-        <p class="muted">No unread notifications or role action items.</p>
+    <?php if ($show('action_items')): $rendered++;
+        $notifications = dashboard_get_notifications($incidentId);
+        dashboard_panel_head('action_items'); ?>
+      <?php if (!$notifications): ?>
+        <p class="muted">No unread notifications.</p>
       <?php else: ?>
         <table class="cb-cards"><thead><tr><th>Notification / Action Item</th><th>Urgency</th><th>Created/Updated</th><th>Action</th></tr></thead><tbody>
-        <?php foreach ($actionItems as $n): ?>
-          <tr>
-            <td><strong><?= e((string)$n['title']) ?></strong><br><span class="small"><?= e((string)$n['body']) ?></span></td>
-            <td><span class="priority-<?= e(strtolower((string)$n['urgency'])) ?>"><?= e(ucfirst((string)$n['urgency'])) ?></span></td>
-            <td><?= e((string)$n['created_at']) ?></td>
-            <td><?php if (!empty($n['link_url'])): ?><a class="btn btn-small" href="<?= e((string)$n['link_url']) ?>">Open</a><?php endif; ?></td>
-          </tr>
-        <?php endforeach; ?>
         <?php foreach ($notifications as $n): ?>
           <tr>
             <td><strong><?= e((string)$n['title']) ?></strong><br><span class="small"><?= e((string)$n['body']) ?></span></td>
@@ -278,55 +300,119 @@ function dashboard_render_notification_panels(int $incidentId): void {
         <?php endforeach; ?>
         </tbody></table>
       <?php endif; ?>
+      </section>
+    <?php endif; ?>
 
-      <?php if (!$currentOp): ?>
-        <div class="notice warning">
-          <h3>No Active Operational Period</h3>
-          <p>The previous Operational Period has ended and no new Operational Period has been created.</p>
-          <p>ICS forms are tied to an active Operational Period. Create or start a new Operational Period before creating or reviewing current forms.</p>
-          <?php if (current_user_can_create_operational_period($incidentId)): ?>
-            <p><a class="btn btn-primary" href="<?= e(app_url('/operational_periods/new.php')) ?>">Create New Operational Period</a></p>
-          <?php endif; ?>
-        </div>
-      <?php else: ?>
+    <?php if (!$currentOp): ?>
+      <div class="notice warning">
+        <h3>No Active Operational Period</h3>
+        <p>The previous Operational Period has ended and no new Operational Period has been created.</p>
+        <p>ICS forms are tied to an active Operational Period. Create or start a new Operational Period before creating or reviewing current forms.</p>
+        <?php if (current_user_can_create_operational_period($incidentId)): ?>
+          <p><a class="btn btn-primary" href="<?= e(app_url('/operational_periods/new.php')) ?>">Create New Operational Period</a></p>
+        <?php endif; ?>
+      </div>
+    <?php endif; ?>
 
-      <h3>Your Copied Forms to Review</h3>
-      <?php if (!$myReviewRequiredForms): ?>
-        <p class="muted">No copied-forward forms are specifically assigned to your current position/user account.</p>
+    <?php if ($show('my_forms')): $rendered++;
+        $approvals = dashboard_get_my_approvals($incidentId);
+        $myDrafts = array_values(array_filter($closeoutForms, static fn($f) => (int)($f['prepared_by_user_id'] ?? 0) === $me
+            && strtoupper(str_replace(' ', '', (string)$f['form_type'])) !== 'ICS214'));
+        $myReview = $opId ? copied_forms_assigned_to_current_user($incidentId, $opId) : [];
+        dashboard_panel_head('my_forms'); ?>
+      <?php if (!$approvals && !$myDrafts && !$myReview): ?>
+        <p class="muted">Nothing is waiting on you.</p>
       <?php else: ?>
-        <p class="small muted">These copied-forward forms are assigned to your current operational-period position or directly to you.</p>
-        <table class="cb-cards"><thead><tr><th>Form</th><th>Responsible position</th><th>Status</th><th>Action</th></tr></thead><tbody>
-        <?php foreach ($myReviewRequiredForms as $f): ?>
+        <table class="cb-cards"><thead><tr><th>Form</th><th>What is needed</th><th>Details</th><th>Action</th></tr></thead><tbody>
+        <?php foreach ($approvals as $f): ?>
+          <tr>
+            <td><?= e(ics_audit_form_label((string)$f['form_type'])) ?></td>
+            <td><span class="priority-high">Waiting for your approval</span></td>
+            <td class="small">Signed by <?= e((string)($f['signed_by'] ?: 'the preparer')) ?><?= !empty($f['submitted_at']) ? ' on ' . e((string)$f['submitted_at']) : '' ?></td>
+            <td><a class="btn btn-small" href="<?= e(dashboard_form_link((string)$f['form_type'], (int)$f['id'])) ?>">Open</a></td>
+          </tr>
+        <?php endforeach; ?>
+        <?php foreach ($myReview as $f): ?>
           <tr>
             <td><?= e('ICS ' . (string)$f['form_number'] . ' - ' . (string)($f['form_name'] ?: $f['form_type'])) ?></td>
-            <td><?= e((string)($f['responsible_position_title'] ?? $f['responsible_position_code'] ?? 'Not assigned')) ?></td>
-            <td><span class="priority-high">Review required</span><br><span class="small"><?= e(ucfirst((string)$f['status'])) ?></span></td>
+            <td><span class="priority-high">Copied form to review</span></td>
+            <td class="small"><?= e((string)($f['responsible_position_title'] ?? $f['responsible_position_code'] ?? '')) ?></td>
             <td><a class="btn btn-small" href="<?= e(dashboard_form_link((string)$f['form_type'], (int)$f['id'])) ?>">Open / Review</a></td>
           </tr>
         <?php endforeach; ?>
-        </tbody></table>
-      <?php endif; ?>
-
-      <h3>Operational Period Staffing / Position Assignments</h3>
-      <?php if (!$positionAssignments): ?>
-        <p class="muted">No operational-period-specific position assignments have been set yet.</p>
-      <?php else: ?>
-        <table class="cb-cards"><thead><tr><th>Position</th><th>Assigned person</th><th>Status</th></tr></thead><tbody>
-        <?php foreach ($positionAssignments as $a): ?>
+        <?php foreach ($myDrafts as $f): ?>
           <tr>
-            <td><?= e((string)$a['position_title']) ?></td>
-            <td><?= e((string)($a['assigned_name'] ?: $a['user_real_name'] ?: $a['username'] ?: 'Vacant')) ?></td>
-            <td><?= e(ucfirst((string)$a['assignment_status'])) ?></td>
+            <td><?= e('ICS ' . (string)$f['form_number'] . ' - ' . (string)($f['form_name'] ?: $f['form_type'])) ?></td>
+            <td>Not signed yet</td>
+            <td class="small"><?= e(dashboard_form_status_label((string)$f['status'])) ?></td>
+            <td><a class="btn btn-small" href="<?= e(dashboard_form_link((string)$f['form_type'], (int)$f['id'])) ?>">Open</a></td>
           </tr>
         <?php endforeach; ?>
         </tbody></table>
       <?php endif; ?>
+      </section>
+    <?php endif; ?>
 
-      <h3>Copied Forms Requiring Review</h3>
+    <?php if ($show('my_214') && $opId): $rendered++;
+        require_once dirname(__DIR__) . '/includes/ics214_log.php';
+        $log = ics214_find_log($incidentId, $opId, $me);
+        $logStatus = strtolower((string)($log['status'] ?? ''));
+        dashboard_panel_head('my_214'); ?>
+      <p><?php if (!$log): ?>You have not started an activity log for this operational period yet.
+         <?php else: ?>Status: <strong><?= e(dashboard_form_status_label($logStatus ?: 'draft')) ?></strong>
+           <?php if (in_array($logStatus, ['draft', 'rejected', ''], true)): ?> &middot; sign it at the end of your shift.<?php endif; ?>
+         <?php endif; ?></p>
+      <p><a class="btn btn-small" href="<?= e(ics214_url()) ?>"><?= $log ? 'Open my ICS 214' : 'Start my ICS 214' ?></a></p>
+      </section>
+    <?php endif; ?>
+
+    <?php if ($show('logistics_queue')): $rendered++;
+        $actionItems = dashboard_get_213rr_action_items($incidentId, true);
+        dashboard_panel_head('logistics_queue'); ?>
+      <?php if (!$actionItems): ?>
+        <p class="muted">No resource requests are waiting for Logistics.</p>
+      <?php else: ?>
+        <table class="cb-cards"><thead><tr><th>Request</th><th>Priority</th><th>Updated</th><th>Action</th></tr></thead><tbody>
+        <?php foreach ($actionItems as $n): ?>
+          <tr>
+            <td><?= e((string)$n['body']) ?></td>
+            <td><span class="priority-<?= e(strtolower((string)$n['urgency'])) ?>"><?= e(ucfirst((string)$n['urgency'])) ?></span></td>
+            <td><?= e((string)$n['created_at']) ?></td>
+            <td><a class="btn btn-small" href="<?= e((string)$n['link_url']) ?>">Open</a></td>
+          </tr>
+        <?php endforeach; ?>
+        </tbody></table>
+      <?php endif; ?>
+      <p><a class="btn btn-small btn-secondary" href="<?= e(app_url('/forms/ics213rr_v2/index.php')) ?>">All resource requests</a></p>
+      </section>
+    <?php endif; ?>
+
+    <?php if ($show('resl_queue')): $rendered++;
+        $n = dashboard_count("SELECT COUNT(*) FROM resource_unit_intake WHERE incident_id = ? AND intake_status IN ('pending_arrival','new','reviewed','received')", [$incidentId]);
+        dashboard_panel_head('resl_queue'); ?>
+      <p><?= $n < 0 ? 'The intake queue is not available.' : ($n === 0 ? 'Nothing is waiting in the Resources Unit queue.' : '<strong>' . (int)$n . '</strong> item' . ($n === 1 ? '' : 's') . ' expected, arrived or waiting to be put on the ICS 211 or 218.') ?></p>
+      <?php if (current_user_can_resources_view($incidentId)): ?><p><a class="btn btn-small" href="<?= e(app_url('/forms/resources/index.php')) ?>">Open the Resources Unit queue</a></p><?php endif; ?>
+      </section>
+    <?php endif; ?>
+
+    <?php if ($show('finance_queue')): $rendered++;
+        $n = dashboard_count("SELECT COUNT(*) FROM form_213rr_headers h INNER JOIN form_records fr ON fr.id = h.form_record_id
+            WHERE fr.incident_id = ? AND fr.is_deleted = 0 AND h.workflow_status NOT IN ('draft','returned_for_revision','cancelled','closed')
+              AND (LOWER(h.finance_status) IN ('finance_review','pending_review','pending review','on_hold','on hold') OR h.workflow_status = 'finance_review')", [$incidentId]);
+        dashboard_panel_head('finance_queue'); ?>
+      <p><?= $n < 0 ? 'The Finance/Admin queue is not available.' : ($n === 0 ? 'No resource requests are waiting for Finance/Admin.' : '<strong>' . (int)$n . '</strong> request' . ($n === 1 ? '' : 's') . ' pending review or on hold.') ?></p>
+      <?php if (current_user_can_finance_view($incidentId)): ?><p><a class="btn btn-small" href="<?= e(app_url('/forms/finance/index.php')) ?>">Open the Finance/Admin queue</a></p><?php endif; ?>
+      </section>
+    <?php endif; ?>
+
+    <?php if ($currentOp): ?>
+    <?php if ($show('copied_review')): $rendered++;
+        $reviewRequiredForms = operational_period_copied_forms_requiring_review($incidentId, $opId);
+        dashboard_panel_head('copied_review'); ?>
       <?php if (!$reviewRequiredForms): ?>
         <p class="muted">No copied-forward forms currently require review.</p>
       <?php else: ?>
-        <p class="small muted">These forms were copied from the previous operational period. They must be reviewed, updated if needed, and submitted/approved for the current operational period.</p>
+        <p class="small muted">These forms were copied from the previous operational period. They must be reviewed, updated if needed, and signed for this operational period.</p>
         <table class="cb-cards"><thead><tr><th>Form</th><th>Status</th><th>Copied from</th><th>Current preparer</th><th>Action</th></tr></thead><tbody>
         <?php foreach ($reviewRequiredForms as $f): ?>
           <?php
@@ -338,7 +424,7 @@ function dashboard_render_notification_panels(int $incidentId): void {
           ?>
           <tr>
             <td><?= e('ICS ' . (string)$f['form_number'] . ' - ' . (string)($f['form_name'] ?: $f['form_type'])) ?></td>
-            <td><span class="priority-high">Review required</span><br><span class="small"><?= e(ucfirst((string)$f['status'])) ?></span></td>
+            <td><span class="priority-high">Review required</span><br><span class="small"><?= e(dashboard_form_status_label((string)$f['status'])) ?></span></td>
             <td><?= e($fromPeriod ?: 'Previous operational period') ?></td>
             <td><?= e(trim((string)($f['prepared_by_name'] ?? '') . ' ' . (!empty($f['prepared_by_position_title']) ? '(' . (string)$f['prepared_by_position_title'] . ')' : '')) ?: 'Not assigned') ?></td>
             <td><a class="btn btn-small" href="<?= e(dashboard_form_link((string)$f['form_type'], (int)$f['id'])) ?>">Open / Review</a></td>
@@ -346,26 +432,32 @@ function dashboard_render_notification_panels(int $incidentId): void {
         <?php endforeach; ?>
         </tbody></table>
       <?php endif; ?>
+      </section>
+    <?php endif; ?>
 
-      <h3>Forms to Submit Before Operational Period Ends</h3>
+    <?php if ($show('closeout')): $rendered++; dashboard_panel_head('closeout'); ?>
       <?php if (!$closeoutForms): ?>
-        <p class="muted">No current-period draft or rejected forms requiring submission.</p>
+        <p class="muted">Every form for this operational period is signed.</p>
       <?php else: ?>
-        <p class="small muted">These forms are not submitted as final for the current operational period<?php if ($currentOp): ?> ending <?= e(format_datetime_display((string)($currentOp['op_end'] ?? ''))) ?><?php endif; ?>.</p>
+        <p class="small muted">Not signed yet for the operational period ending <?= e(format_datetime_display((string)($currentOp['op_end'] ?? ''))) ?>.</p>
         <table class="cb-cards"><thead><tr><th>Form</th><th>Status</th><th>Prepared by</th><th>Action</th></tr></thead><tbody>
         <?php foreach ($closeoutForms as $f): ?>
           <tr>
             <td><?= e('ICS ' . (string)$f['form_number'] . ' - ' . (string)($f['form_name'] ?: $f['form_type'])) ?></td>
-            <td><?= e(ucfirst((string)$f['status'])) ?></td>
+            <td><?= e(dashboard_form_status_label((string)$f['status'])) ?></td>
             <td><?= e(trim((string)($f['prepared_by_name'] ?? '') . ' ' . (!empty($f['prepared_by_position_title']) ? '(' . (string)$f['prepared_by_position_title'] . ')' : ''))) ?></td>
             <td><a class="btn btn-small" href="<?= e(dashboard_form_link((string)$f['form_type'], (int)$f['id'])) ?>">Open</a></td>
           </tr>
         <?php endforeach; ?>
         </tbody></table>
       <?php endif; ?>
+      </section>
+    <?php endif; ?>
 
-      <h3>Current Operational Period Form Status</h3>
-      <p class="small muted">Forms 201 through 208 are shown for the current operational period. Other forms are shown only when a current-period record exists.</p>
+    <?php if ($show('op_form_status')): $rendered++;
+        $currentOpForms = dashboard_get_current_op_form_statuses($incidentId, $opId);
+        dashboard_panel_head('op_form_status'); ?>
+      <p class="small muted">Forms 202 through 208 are always listed. Other forms are listed once they have been started this period.</p>
       <?php if (!$currentOpForms): ?>
         <p class="muted">No current operational period form status is available.</p>
       <?php else: ?>
@@ -397,15 +489,37 @@ function dashboard_render_notification_panels(int $incidentId): void {
         <?php endforeach; ?>
         </tbody></table>
       <?php endif; ?>
-      <p class="small muted">Notifications refresh every 120 seconds. Last checked: <?= e(date('M j, Y H:i:s')) ?></p>
-      <?php endif; ?>
+      </section>
+    <?php endif; ?>
 
+    <?php if ($show('staffing')): $rendered++;
+        $positionAssignments = operational_period_position_assignments($incidentId, $opId);
+        dashboard_panel_head('staffing'); ?>
+      <?php if (!$positionAssignments): ?>
+        <p class="muted">No operational-period-specific position assignments have been set yet.</p>
+      <?php else: ?>
+        <table class="cb-cards"><thead><tr><th>Position</th><th>Assigned person</th><th>Status</th></tr></thead><tbody>
+        <?php foreach ($positionAssignments as $a): ?>
+          <tr>
+            <td><?= e((string)$a['position_title']) ?></td>
+            <td><?= e((string)($a['assigned_name'] ?: $a['user_real_name'] ?: $a['username'] ?: 'Vacant')) ?></td>
+            <td><?= e(ucfirst((string)$a['assignment_status'])) ?></td>
+          </tr>
+        <?php endforeach; ?>
+        </tbody></table>
+      <?php endif; ?>
+      </section>
+    <?php endif; ?>
+    <?php endif; ?>
+
+    <?php if ($rendered === 0): ?><p class="muted">No panels are set up for your position.</p><?php endif; ?>
+      <p class="small muted">Refreshes every 120 seconds. Last checked: <?= e(date('M j, Y H:i:s')) ?></p>
     </div>
     <?php
 }
 
 if (isset($_GET['partial']) && $_GET['partial'] === 'notifications') {
-    dashboard_render_notification_panels($incidentId);
+    dashboard_render_notification_panels($incidentId, $panels);
     exit;
 }
 
@@ -413,27 +527,38 @@ render_header('Dashboard');
 
 ?>
 
+<?php
+$panelCatalogue = cb_dashboard_panel_catalogue();
+$showMeetings = in_array('meetings', $panels, true);
+$isSysadminUser = !empty(current_user()['is_sysadmin']);
+?>
 <div class="dashboard-row">
   <div class="card dashboard-main-card">
-    <h2>Notifications</h2>
-    <div class="actions"><button class="btn btn-secondary btn-small" type="button" id="refresh-notifications">Refresh Notifications</button></div>
+    <h2>Dashboard</h2>
+    <?php $canCreateOp = current_user_can_create_operational_period($incidentId); ?>
+    <div class="actions">
+      <?php if ($currentOperationalPeriod && current_user_can_edit_operational_period($incidentId)): ?>
+        <a class="btn btn-secondary btn-small" href="<?= e(app_url('/operational_periods/edit.php?id=' . (int)$currentOperationalPeriod['id'])) ?>">Edit Current Operational Period</a>
+      <?php endif; ?>
+      <?php if ($canCreateOp): ?>
+        <a class="btn btn-small" href="<?= e(app_url('/operational_periods/new.php')) ?>">New Operational Period</a>
+        <a class="btn btn-secondary btn-small" href="<?= e(app_url('/operational_periods/assignments.php')) ?>">Position Assignments</a>
+      <?php endif; ?>
+      <button class="btn btn-secondary btn-small" type="button" id="refresh-notifications">Refresh</button>
+      <?php if ($showAllPanels): ?>
+        <a class="btn btn-secondary btn-small" href="<?= e(app_url('/dashboard/index.php')) ?>">Show my panels only</a>
+      <?php elseif (!$isSysadminUser): ?>
+        <a class="btn btn-secondary btn-small" href="<?= e(app_url('/dashboard/index.php?all=1')) ?>">Show everything</a>
+      <?php endif; ?>
+    </div>
     <div id="dashboard-notifications-wrap">
-      <?php dashboard_render_notification_panels($incidentId); ?>
+      <?php dashboard_render_notification_panels($incidentId, $panels); ?>
     </div>
   </div>
 
+<?php if ($showMeetings): ?>
   <div class="card dashboard-side-card">
-    <?php $canCreateOp = current_user_can_create_operational_period($incidentId); ?>
     <h2>Scheduled Meetings</h2>
-    <p class="actions" style="display:flex;flex-wrap:wrap;gap:12px">
-      <?php if ($currentOperationalPeriod && current_user_can_edit_operational_period($incidentId)): ?>
-        <a class="btn btn-secondary" href="<?= e(app_url('/operational_periods/edit.php?id=' . (int)$currentOperationalPeriod['id'])) ?>">Edit Current Operational Period</a>
-      <?php endif; ?>
-      <?php if ($canCreateOp): ?>
-        <a class="btn" href="<?= e(app_url('/operational_periods/new.php')) ?>">New Operational Period</a>
-        <a class="btn btn-secondary" href="<?= e(app_url('/operational_periods/assignments.php')) ?>">Position Assignments</a>
-      <?php endif; ?>
-    </p>
     <p class="dashboard-current-time">Current time: <?= e($currentTimeDisplay) ?></p>
     <?php if ($currentOperationalPeriod): ?>
       <p class="small"><?= e(operational_period_label($currentOperationalPeriod)) ?></p>
@@ -459,6 +584,7 @@ render_header('Dashboard');
       <p><a class="btn btn-secondary" href="<?= e(app_url('/forms/ics230/index.php')) ?>">Manage Schedule</a></p>
     <?php endif; ?>
   </div>
+<?php endif; ?>
 </div>
 
 <script>
