@@ -63,6 +63,34 @@ function signoff_state(int $formRecordId): array
     return ['record' => $record, 'creator' => $creator, 'approval' => $record ? $sig('approved_by') : null];
 }
 
+/**
+ * For forms that mark themselves "submitted" on their own page (ICS 203, 205, 206, 208, 210): record the preparer's
+ * signature and who submitted it, then pick the approver and notify them, exactly as submit_form_record() does.
+ * Without this the form was locked with no signature and no approver.
+ */
+function signoff_record_direct_submit(int $formRecordId, string $formCode, int $incidentId, int $userId): void
+{
+    if ($formRecordId <= 0 || $userId <= 0) { return; }
+    $pdo = db();
+    $code = signoff_normalize($formCode);
+    $st = $pdo->prepare('SELECT real_name, username FROM users WHERE id = ? LIMIT 1');
+    $st->execute([$userId]);
+    $u = $st->fetch() ?: [];
+    $name = (string)(($u['real_name'] ?? '') ?: ($u['username'] ?? ''));
+    $role = function_exists('get_submitter_role_for_form') ? get_submitter_role_for_form($incidentId, $userId, $code) : null;
+    if ($role === null || $role === '') {
+        $roles = get_user_role_codes($incidentId, $userId);
+        $role = $roles ? (string)$roles[0] : (signoff_is_sysadmin() ? 'SYSADMIN' : 'Preparer');
+    }
+    $pdo->prepare("UPDATE form_records SET submitted_at = COALESCE(submitted_at, NOW()), submitted_by_user_id = COALESCE(submitted_by_user_id, ?),
+            submitted_by_name = COALESCE(NULLIF(submitted_by_name, ''), ?), prepared_at = COALESCE(prepared_at, NOW()), updated_at = NOW() WHERE id = ?")
+        ->execute([$userId, $name, $formRecordId]);
+    $pdo->prepare("DELETE FROM form_signatures WHERE form_record_id = ? AND signature_type = 'prepared_by'")->execute([$formRecordId]);
+    $pdo->prepare("INSERT INTO form_signatures (form_record_id, signer_user_id, signer_name, signer_position_title, signature_type, signature_method, signed_at, created_at)
+        VALUES (?, ?, ?, ?, 'prepared_by', 'system_attestation', NOW(), NOW())")->execute([$formRecordId, $userId, $name, $role]);
+    try { signoff_auto_assign($formRecordId); } catch (Throwable $e) { security_log($e, 'signoff_direct_submit'); }
+}
+
 /** People who can be named as approver: active users holding a position in the incident, plus SysAdmins. */
 function signoff_approver_candidates(int $incidentId, int $excludeUserId = 0): array
 {

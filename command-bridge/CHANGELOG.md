@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+* **Fix: the ICS 202 could not be approved while it was waiting for approval.** The new lock refused the Incident
+  Commander's **Approve** ("ICS 202 has been signed and is waiting for approval, so it is locked"). Approving is
+  now allowed on a locked ICS 202, as it already was for the ICS 204.
+* **Fix: the ICS 203, 205, 206, 208 and 210 locked with no signature and no approver.** Their own **Submit**
+  button marked the form submitted, but it didn't record who signed it or pick an approver, so nobody was notified.
+  They now sign and route to the approver like the other forms: new `signoff_record_direct_submit()` in
+  `includes/signoff.php`. The smoke test checks both fixes.
 * **Dashboard panels per position.** The dashboard is now made of panels, and each position sees the ones that
   matter to it:
   - **Everyone:** My action items, My forms, My ICS 214 and Scheduled meetings.

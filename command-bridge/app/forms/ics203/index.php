@@ -171,6 +171,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $incidentId > 0 && ($_POST['action'
             $pdo->prepare("UPDATE form_records SET status='submitted', prepared_by_user_id=?, prepared_at=COALESCE(prepared_at,NOW()), updated_at=NOW() WHERE id=?")
                 ->execute([(int)($user['id'] ?? 0), $formRecordId]);
         } catch (Throwable $e) {}
+        require_once dirname(dirname(__DIR__)) . '/includes/signoff.php';
+        signoff_record_direct_submit($formRecordId, 'ICS203', $incidentId, (int)($user['id'] ?? 0));
         audit_log((int)($user['id'] ?? 0), 'submit', 'ICS203', $formRecordId, 'Submitted ICS 203 by '.$submitterName);
         flash('success', 'ICS 203 submitted.');
         header('Location: '.app_url('/forms/ics203/index.php'));
