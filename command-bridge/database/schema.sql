@@ -1494,7 +1494,7 @@ CREATE TABLE `users` (
   `password_hash` varchar(255) DEFAULT NULL,
   `pin_encrypted` varbinary(512) DEFAULT NULL,
   `pin_last_reset_at` datetime DEFAULT NULL,
-  `is_tsc_admin` tinyint(1) NOT NULL DEFAULT 0,
+  `is_sysadmin` tinyint(1) NOT NULL DEFAULT 0,
   `is_active` tinyint(1) NOT NULL DEFAULT 1,
   `first_login_completed` tinyint(1) NOT NULL DEFAULT 0,
   `failed_login_count` int(10) unsigned NOT NULL DEFAULT 0,

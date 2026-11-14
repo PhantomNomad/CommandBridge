@@ -42,6 +42,7 @@ function dashboard_get_notifications(int $incidentId): array {
     try {
         $roleCodes = get_user_role_codes($incidentId, (int)(current_user()['id'] ?? 0));
         $roleCodes[] = 'ALL_AUTHENTICATED';
+        if (!empty(current_user()['is_sysadmin'])) { $roleCodes[] = 'SYSADMIN'; }   // notifications addressed to the SysAdmins
         $roleCodes = array_values(array_unique(array_filter(array_map('strtoupper', $roleCodes))));
         $params = [$incidentId, (int)(current_user()['id'] ?? 0)];
         $roleSql = '';
@@ -192,7 +193,7 @@ function dashboard_user_has_any_role(int $incidentId, array $roles): bool {
     foreach ($roles as $role) {
         if (in_array(strtoupper($role), $roleCodes, true)) { return true; }
     }
-    return !empty(current_user()['is_tsc_admin']);
+    return !empty(current_user()['is_sysadmin']);
 }
 
 function dashboard_get_213rr_action_items(int $incidentId): array {

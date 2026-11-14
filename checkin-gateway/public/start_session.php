@@ -29,7 +29,7 @@ if ($throttle['blocked']) {
 $user = gateway_companion_user_by_pin((int)$location['id'], $pin);
 if (!$user) {
     gateway_record_failed_pin_attempt((int)$location['id'], $ip, $fingerprint);
-    // If this failure just tripped a limit, leave a record so the TSC can see it.
+    // If this failure just tripped a limit, leave a record so the SysAdmin can see it.
     $after = gateway_pin_throttle_status((int)$location['id'], $ip, $fingerprint);
     if ($after['blocked']) {
         gateway_audit('pin_lockout_triggered', (int)$location['id'], [

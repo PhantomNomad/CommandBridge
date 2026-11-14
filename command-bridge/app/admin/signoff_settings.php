@@ -66,7 +66,7 @@ render_header('Sign-off Approvers');
 ?>
 <div class="card">
 <h2>Sign-off Approvers</h2>
-<p>When a form is signed, the system picks the approver from this list, whoever signed it. If nobody holds the position it moves up the chain of command (then IC, UC, and a TSC administrator). If the signer holds the approving position, it moves up one level. The signer can still change the suggested approver. Changes apply immediately and are written to the audit log. ICS 202 and ICS 204 keep their own approval steps; ICS 213RR keeps its own workflow.</p>
+<p>When a form is signed, the system picks the approver from this list, whoever signed it. If nobody holds the position it moves up the chain of command (then IC, UC, and a SysAdmin). If the signer holds the approving position, it moves up one level. The signer can still change the suggested approver. Changes apply immediately and are written to the audit log. ICS 202 and ICS 204 keep their own approval steps; ICS 213RR keeps its own workflow.</p>
 <form method="post">
 <?= csrf_field() ?>
 <table class="table">

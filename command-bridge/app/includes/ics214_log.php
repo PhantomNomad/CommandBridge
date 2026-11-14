@@ -12,7 +12,7 @@ declare(strict_types=1);
  *
  * Who may do what (ics214_access):
  *   owner                      view, add entries, edit the header, sign and submit
- *   IC / UC, TSC administrator view, add entries
+ *   IC / UC, SysAdmin view, add entries
  *   the owner's supervisor     view, add entries (holder of the position the owner's position reports to)
  *   DOCL                       view, ask the owner to update it ("Request update")
  * A log is open for entries only while it is a draft (or returned). Once signed it is locked; once the supervisor
@@ -65,18 +65,18 @@ function ics214_access(int $incidentId, int $ownerId, int $opId): array
     if ($myId <= 0 || $incidentId <= 0 || $ownerId <= 0) { return $none; }
 
     $myRoles = ics214_role_codes($incidentId, $myId);
-    $isTsc = !empty($me['is_tsc_admin']);
+    $isSysadmin = !empty($me['is_sysadmin']);
     $isCommand = (bool)array_intersect($myRoles, ICS214_COMMAND_ROLES);
     $isDocl = in_array('DOCL', $myRoles, true);
-    $canList = $isTsc || $isCommand || $isDocl || ics214_supervises_anyone($incidentId, $myId, $opId);
+    $canList = $isSysadmin || $isCommand || $isDocl || ics214_supervises_anyone($incidentId, $myId, $opId);
 
     if ($ownerId === $myId) {
         $perms = get_current_user_form_permissions('ICS214', $incidentId);
-        $own = !empty($perms['can_view']) || $isTsc;
+        $own = !empty($perms['can_view']) || $isSysadmin;
         return ['view' => $own, 'add' => $own, 'edit_header' => $own, 'request_update' => false, 'list' => $canList, 'as' => 'owner'];
     }
-    if ($isTsc || $isCommand) {
-        return ['view' => true, 'add' => true, 'edit_header' => false, 'request_update' => true, 'list' => true, 'as' => $isTsc ? 'tsc' : 'command'];
+    if ($isSysadmin || $isCommand) {
+        return ['view' => true, 'add' => true, 'edit_header' => false, 'request_update' => true, 'list' => true, 'as' => $isSysadmin ? 'sysadmin' : 'command'];
     }
     if (in_array($myId, ics214_supervisor_ids($incidentId, $ownerId, $opId), true)) {
         return ['view' => true, 'add' => true, 'edit_header' => false, 'request_update' => true, 'list' => true, 'as' => 'supervisor'];

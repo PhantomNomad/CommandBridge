@@ -4,7 +4,7 @@ declare(strict_types=1);
  * ICS 214 Activity Log: one log per person per operational period (see includes/ics214_log.php).
  *
  *   index.php                      your own log for the selected operational period
- *   index.php?user_id=N[&op_id=N]  someone else's log (IC/UC, TSC, their supervisor, DOCL)
+ *   index.php?user_id=N[&op_id=N]  someone else's log (IC/UC, SysAdmin, their supervisor, DOCL)
  *   index.php?record_id=N          a specific log (used by sign-off and notification links)
  *
  * Entries are only ever added, never edited or deleted. A log takes entries while it is a draft or returned.
@@ -55,7 +55,7 @@ if (!$access['view']) {
     http_response_code(403);
     render_header('ICS 214 - Activity Log');
     echo '<div class="card"><h2>ICS 214 - Activity Log</h2><p>You can open your own activity log. Other people&rsquo;s logs can be opened by the '
-        . 'Incident Commander, a TSC administrator, their supervisor and the Documentation Unit Leader.</p>'
+        . 'Incident Commander, a SysAdmin, their supervisor and the Documentation Unit Leader.</p>'
         . '<p><a class="btn" href="' . e(ics214_url()) . '">Open my activity log</a></p></div>';
     render_footer(); exit;
 }
@@ -147,7 +147,7 @@ $header = [
 $canEditHeader = $access['edit_header'] && $isOpen;
 $statusLabels = ['not started' => 'Not started', 'draft' => 'Draft (open for entries)', 'rejected' => 'Returned for changes (open for entries)',
     'submitted' => 'Signed and submitted (locked)', 'approved' => 'Approved (locked)'];
-$viewingAs = ['owner' => '', 'tsc' => 'TSC administrator', 'command' => 'Incident Command', 'supervisor' => 'their supervisor',
+$viewingAs = ['owner' => '', 'sysadmin' => 'SysAdmin', 'command' => 'Incident Command', 'supervisor' => 'their supervisor',
     'docl' => 'Documentation Unit Leader (view only)'][$access['as']] ?? '';
 
 render_header('ICS 214 - Activity Log');
@@ -259,7 +259,7 @@ render_header('ICS 214 - Activity Log');
         <?php if ($recordId > 0): ?><input type="hidden" name="record_id" value="<?= (int)$recordId ?>"><?php endif; ?>
         <label>What needs updating?<textarea name="reason" required maxlength="1000" style="width:100%;min-height:60px"></textarea></label>
         <p><button type="submit" class="btn btn-secondary">Send request</button>
-          <span class="small"><?= e($ownerName) ?> gets a notification. If the log is already signed, its approver or a TSC administrator has to return it first.</span></p>
+          <span class="small"><?= e($ownerName) ?> gets a notification. If the log is already signed, its approver or a SysAdmin has to return it first.</span></p>
       </form>
     </details>
   <?php endif; ?>

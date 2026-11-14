@@ -67,7 +67,7 @@ render_header('New Operational Period');
 ?>
 <div class="card">
   <h2>Create New Operational Period</h2>
-  <p class="small muted">Admin/TSC, Incident Commander, and Planning Section Chief may create operational periods. Complete the current-period closeout check before copying forms forward.</p>
+  <p class="small muted">A SysAdmin, the Incident Commander, or the Planning Section Chief may create operational periods. Complete the current-period closeout check before copying forms forward.</p>
   <form method="post">
     <?= csrf_field() ?>
     <label>Period Number<br><input type="number" name="period_number" min="1" value="<?= e((string)$nextNumber) ?>" required></label><br>

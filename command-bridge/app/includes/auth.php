@@ -4,6 +4,12 @@ require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/helpers.php';
 
 function current_user(): ?array {
+    // Sessions started before the TSC -> SysAdmin rename carry the old flag name.
+    if (isset($_SESSION['user']) && is_array($_SESSION['user']) && !array_key_exists('is_sysadmin', $_SESSION['user'])
+        && array_key_exists('is_tsc_admin', $_SESSION['user'])) {
+        $_SESSION['user']['is_sysadmin'] = (int)$_SESSION['user']['is_tsc_admin'];
+        unset($_SESSION['user']['is_tsc_admin']);
+    }
     return $_SESSION['user'] ?? null;
 }
 
@@ -76,10 +82,10 @@ function auth_session_still_valid(): bool {
     return $result = true;
 }
 
-function require_tsc_admin(): void {
+function require_sysadmin(): void {
     require_login();
     $user = current_user();
-    if (empty($user['is_tsc_admin'])) {
+    if (empty($user['is_sysadmin'])) {
         http_response_code(403);
         echo 'Forbidden';
         exit;
@@ -92,7 +98,7 @@ function current_user_can_manage_users(): bool {
         return false;
     }
 
-    if (!empty($user['is_tsc_admin'])) {
+    if (!empty($user['is_sysadmin'])) {
         return true;
     }
 
@@ -149,7 +155,7 @@ function login_user(array $user): void {
         'email' => $user['email'] ?? '',
         'role_code' => $user['role_code'] ?? null,
         'incident_id' => $user['incident_id'] ?? null,
-        'is_tsc_admin' => (int)($user['is_tsc_admin'] ?? 0),
+        'is_sysadmin' => (int)($user['is_sysadmin'] ?? 0),
         // Entra accounts cannot change a credential here, so never trap them.
         'must_change_pin' => (!empty($user['must_change_pin']) && ($user['auth_provider'] ?? 'local') !== 'entra') ? 1 : 0,
     ];
@@ -160,8 +166,8 @@ function logout_user(): void {
     session_destroy();
 }
 
-function tsc_admin_exists(): bool {
-    $stmt = db()->query("SELECT COUNT(*) AS c FROM users WHERE is_tsc_admin = 1 AND deleted_at IS NULL");
+function sysadmin_exists(): bool {
+    $stmt = db()->query("SELECT COUNT(*) AS c FROM users WHERE is_sysadmin = 1 AND deleted_at IS NULL");
     $row = $stmt->fetch();
     return ((int)$row['c']) > 0;
 }
@@ -194,8 +200,8 @@ function current_user_can_create_operational_period(int $incidentId): bool {
         return false;
     }
 
-    // Admin/TSC (Technical Services Coordinator) is always authorized.
-    if (!empty($user['is_tsc_admin'])) {
+    // The SysAdmin is always authorized.
+    if (!empty($user['is_sysadmin'])) {
         return true;
     }
 
@@ -397,11 +403,11 @@ function entra_lookup_user(string $usernameOrEmail): array {
 
 
 function is_system_administrator(): bool {
-    return !empty(current_user()['is_tsc_admin']);
+    return !empty(current_user()['is_sysadmin']);
 }
 
 function require_system_administrator(): void {
-    require_tsc_admin();
+    require_sysadmin();
 }
 
 /**
@@ -430,7 +436,7 @@ function branding_settings(): array {
 function current_user_can_edit_operational_period(int $incidentId): bool {
     $user = current_user();
     if (!$user || $incidentId <= 0) return false;
-    if (!empty($user['is_tsc_admin'])) return true;
+    if (!empty($user['is_sysadmin'])) return true;
     $roleCodes = get_user_role_codes($incidentId, (int)($user['id'] ?? 0));
     $roleCodes = array_map('strtoupper', $roleCodes);
     foreach (['IC', 'INCIDENT_COMMANDER', 'DIC', 'DEPUTY_IC', 'DEPUTY_INCIDENT_COMMANDER'] as $role) {

@@ -72,7 +72,7 @@ if ($incidentId > 0 && !$canView) { http_response_code(403); render_header('ICS 
 
 function ics208_user_has_role(PDO $pdo, int $incidentId, array $codes): bool {
     $u = current_user(); if (!$u) return false;
-    if (!empty($u['is_tsc_admin'])) return true;
+    if (!empty($u['is_sysadmin'])) return true;
     $uid = (int)($u['id'] ?? 0); if ($incidentId <= 0 || $uid <= 0) return false;
     $codes = array_values(array_unique(array_map('strtoupper', $codes)));
     try {
@@ -82,7 +82,7 @@ function ics208_user_has_role(PDO $pdo, int $incidentId, array $codes): bool {
         return ((int)$st->fetchColumn()) > 0;
     } catch (Throwable $e) { return in_array(strtoupper((string)($u['role_code'] ?? '')), $codes, true); }
 }
-function ics208_can_submit(PDO $pdo, int $incidentId): bool { return ics208_user_has_role($pdo, $incidentId, ['SO','SOFR','IC','FSC','TSC']); }
+function ics208_can_submit(PDO $pdo, int $incidentId): bool { return ics208_user_has_role($pdo, $incidentId, ['SO','SOFR','IC','FSC']); }
 function ics208_op_label(?array $op): string {
     if (!$op) return 'No operational period selected';
     $parts=[]; if(!empty($op['period_number'])) $parts[]='OP '.(int)$op['period_number']; if(!empty($op['period_name'])) $parts[]=(string)$op['period_name'];

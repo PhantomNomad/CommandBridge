@@ -2,7 +2,7 @@
 declare(strict_types=1);
 /*
  * ICS 214 Activity Logs: everyone's log for the selected operational period that you are allowed to open
- * (IC/UC and TSC see everyone, supervisors see the people who report to them, the DOCL sees everyone read-only).
+ * (IC/UC and SysAdmins see everyone, supervisors see the people who report to them, the DOCL sees everyone read-only).
  */
 require_once __DIR__ . '/../../includes/security.php';
 require_once dirname(__DIR__, 2) . '/includes/layout.php';

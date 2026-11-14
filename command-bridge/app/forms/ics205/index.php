@@ -50,7 +50,7 @@ if ($incidentId > 0 && !$canView) { http_response_code(403); render_header('ICS 
 
 function ics205_user_has_role(PDO $pdo, int $incidentId, array $codes): bool {
     $u = current_user(); if (!$u) return false;
-    if (!empty($u['is_tsc_admin'])) return true;
+    if (!empty($u['is_sysadmin'])) return true;
     $uid = (int)($u['id'] ?? 0); if ($incidentId <= 0 || $uid <= 0) return false;
     try {
         $codes = array_values(array_unique(array_map('strtoupper', $codes)));
@@ -129,7 +129,7 @@ render_ics_form_status('ICS205', $formRecord, $preparer, $signature, [
   'pdf_url' => '/forms/ics205/pdf.php' . ($incidentId > 0
       ? '?incident_id=' . rawurlencode((string)$incidentId) . ($opId > 0 ? '&op_id=' . rawurlencode((string)$opId) : '')
       : ''),
-  'note' => $canSubmit ? 'This form remains editable while it is in draft.' : 'Submit is limited to IC, COML, or Technical Services Coordinator/Admin.'
+  'note' => $canSubmit ? 'This form remains editable while it is in draft.' : 'Submit is limited to IC, COML, or SysAdmin.'
 ]);
 ?>
 <div class="card">

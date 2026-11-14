@@ -2,7 +2,7 @@
 
 A list of the ICS 214 activity logs you are allowed to open for the selected operational period. Change the period from the top bar to see earlier logs.
 
-- **Incident Commander / Unified Command** and **TSC administrators** see everyone.
+- **Incident Commander / Unified Command** and **SysAdmins** see everyone.
 - **Supervisors** see the people who report to their position.
 - The **Documentation Unit Leader** sees everyone, read only.
 

@@ -10,15 +10,15 @@ if (!in_array($step, [1, 2, 3, 4], true)) {
     $step = 1;
 }
 
-if (tsc_admin_exists() && empty(current_user()['is_tsc_admin'])) {
+if (sysadmin_exists() && empty(current_user()['is_sysadmin'])) {
     header('Location: ' . app_url('/login.php'));
     exit;
 }
 
 // The installer (or bin/create_admin.php) creates the first administrator. Step 1 is only
 // available while no administrator exists; afterwards it skips ahead to the incident step.
-if ($step === 1 && tsc_admin_exists()) {
-    header('Location: ' . app_url('/setup/setup_tsc.php?step=2'));
+if ($step === 1 && sysadmin_exists()) {
+    header('Location: ' . app_url('/setup/setup_sysadmin.php?step=2'));
     exit;
 }
 
@@ -45,13 +45,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $cellPhone = trim($_POST['cell_phone'] ?? '');
 
         if ($password !== $passwordConfirm) {
-            flash('error', 'The Technical Services Coordinator passwords did not match. Please enter them again.');
-            header('Location: ' . app_url('/setup/setup_tsc.php?step=1'));
+            flash('error', 'The SysAdmin passwords did not match. Please enter them again.');
+            header('Location: ' . app_url('/setup/setup_sysadmin.php?step=1'));
             exit;
         }
 
         $stmt = $pdo->prepare("
-            INSERT INTO users (username, password_hash, real_name, email, is_tsc_admin, created_at, updated_at)
+            INSERT INTO users (username, password_hash, real_name, email, is_sysadmin, created_at, updated_at)
             VALUES (?, ?, ?, ?, 1, NOW(), NOW())
         ");
         $stmt->execute([$username, password_hash($password, PASSWORD_DEFAULT), $realName, $email ?: null]);
@@ -63,15 +63,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'real_name' => $realName,
             'email' => $email,
             'incident_id' => null,
-            'is_tsc_admin' => 1,
-            'role_code' => 'TSC',
+            'is_sysadmin' => 1,
+            'role_code' => null,
         ]);
 
         save_contact_value($userId, 'email', $email);
         save_contact_value($userId, 'cell_phone', $cellPhone);
 
-        flash('success', 'Technical Services Coordinator administrator created.');
-        header('Location: ' . app_url('/setup/setup_tsc.php?step=2'));
+        flash('success', 'SysAdmin account created.');
+        header('Location: ' . app_url('/setup/setup_sysadmin.php?step=2'));
         exit;
     }
 
@@ -116,15 +116,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute([$name, $number ?: null, $type ?: null, $status ?: 'Active', $incidentStart]);
             $incidentId = (int)$pdo->lastInsertId();
 
-            $stmt = $pdo->query("SELECT id FROM users WHERE is_tsc_admin = 1 AND deleted_at IS NULL ORDER BY id ASC LIMIT 1");
-            $tscUserId = (int)(($stmt->fetch())['id'] ?? 0);
+            $stmt = $pdo->query("SELECT id FROM users WHERE is_sysadmin = 1 AND deleted_at IS NULL ORDER BY id ASC LIMIT 1");
+            $sysadminUserId = (int)(($stmt->fetch())['id'] ?? 0);
 
-            $stmt = $pdo->query("SELECT id FROM roles WHERE role_code = 'TSC' LIMIT 1");
-            $tscRoleId = (int)(($stmt->fetch())['id'] ?? 0);
-
-            if ($tscUserId > 0 && $tscRoleId > 0) {
-                sync_user_roles($incidentId, $tscUserId, [$tscRoleId]);
-            }
+            // The SysAdmin manages the application; it is not an ICS position, so it is not assigned in the incident
+            // or checked in on the ICS 211. Assign real positions on Users & Roles.
 
             // Create Operational Period 1 before creating any ICS forms/check-in records.
             // ICS 211 and ICS 205A require an operational period.
@@ -164,8 +160,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $opStart,
                     $opEnd,
                     $initialOperationalPeriodStatus,
-                    $tscUserId > 0 ? $tscUserId : null,
-                    $tscUserId > 0 ? $tscUserId : null,
+                    $sysadminUserId > 0 ? $sysadminUserId : null,
+                    $sysadminUserId > 0 ? $sysadminUserId : null,
                 ]);
                 $operationalPeriodId = (int)$pdo->lastInsertId();
             } else {
@@ -178,12 +174,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['selected_operational_period_id'] = $operationalPeriodId;
             }
 
-            if ($tscUserId > 0 && $tscRoleId > 0) {
-                sync_user_checkin_records($incidentId, $tscUserId, true);
-            }
-
-            flash('success', 'Incident and Initial Operational Period created. The Technical Services Coordinator has been added to ICS 211 and ICS 205A.');
-            header('Location: ' . app_url('/setup/setup_tsc.php?step=3'));
+            flash('success', 'Incident and Initial Operational Period created. Assign people to positions on Users & Roles.');
+            header('Location: ' . app_url('/setup/setup_sysadmin.php?step=3'));
             exit;
         }
     }
@@ -232,7 +224,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ? 'Initial IC user created and checked in to ICS 211 / ICS 205A.'
             : 'Initial IC user created. You can check them in later from Users / Roles.'
         );
-        header('Location: ' . app_url('/setup/setup_tsc.php?step=4'));
+        header('Location: ' . app_url('/setup/setup_sysadmin.php?step=4'));
         exit;
     }
 
@@ -247,12 +239,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 render_header('First-Run Setup');
 ?>
 <div class="card">
-  <p>This setup flow prioritizes the minimum needed to start the website: Technical Services Coordinator admin, incident, and initial Incident Commander assignment. Microsoft Entra / M365 sign-in can be configured later from Settings &gt; Entra Settings after the first incident is created.</p>
+  <p>This setup flow prioritizes the minimum needed to start the website: SysAdmin, incident, and initial Incident Commander assignment. Microsoft Entra / M365 sign-in can be configured later from Settings &gt; Entra Settings after the first incident is created.</p>
 </div>
 
 <?php if ($step === 1): ?>
 <div class="card">
-  <h2>Create Technical Services Coordinator Administrator</h2>
+  <h2>Create SysAdmin Account</h2>
   <form method="post">
     <?= csrf_field() ?>
     <label>Username</label><input name="username" required>

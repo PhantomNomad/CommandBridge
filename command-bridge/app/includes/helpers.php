@@ -57,22 +57,22 @@ function touch_user_credentials(int $userId): void {
     if ($userId === (int)(current_user()['id'] ?? 0)) { $_SESSION['auth_at'] = time(); }
 }
 
-/** Tell every TSC administrator that an account was locked after repeated failed sign-ins. */
-function notify_tsc_account_locked(array $lockedUser, string $ip, string $remaining): void {
+/** Tell every SysAdmin that an account was locked after repeated failed sign-ins. */
+function notify_sysadmin_account_locked(array $lockedUser, string $ip, string $remaining): void {
     try {
         $incidentId = (int)(active_incident()['id'] ?? 0);
         if ($incidentId <= 0) { return; }
         $name = trim((string)($lockedUser['real_name'] ?? '')) ?: (string)($lockedUser['username'] ?? 'a user');
         $title = 'Account locked: ' . $name;
         $body = $name . ' was locked out for ' . $remaining . ' after repeated failed sign-ins from ' . $ip . '. Unlock or reset the PIN from User Management if this is the real user.';
-        $admins = db()->query('SELECT id FROM users WHERE is_tsc_admin = 1 AND is_active = 1 AND deleted_at IS NULL')->fetchAll();
+        $admins = db()->query('SELECT id FROM users WHERE is_sysadmin = 1 AND is_active = 1 AND deleted_at IS NULL')->fetchAll();
         $ins = db()->prepare("INSERT INTO notifications
             (incident_id, user_id, role_code, form_record_id, notification_type, title, subject, body, link_url, related_table, related_id, urgency, is_read, created_at)
             VALUES (?, ?, NULL, NULL, 'account_locked', ?, ?, ?, ?, 'users', ?, 'high', 0, NOW())");
         foreach ($admins as $a) {
             $ins->execute([$incidentId, (int)$a['id'], $title, $title, $body, app_url('/admin/users.php'), (int)$lockedUser['id']]);
         }
-    } catch (Throwable $e) { security_log($e, 'notify_tsc_account_locked'); }
+    } catch (Throwable $e) { security_log($e, 'notify_sysadmin_account_locked'); }
 }
 
 function audit_log(?int $userId, string $action, string $entityType = '', ?int $entityId = null, string $details = ''): void {
@@ -646,7 +646,7 @@ function get_user_with_roles(int $userId, ?int $incidentId = null): ?array {
     $pdo = db();
     $incidentId = $incidentId ?: (int)(active_incident()['id'] ?? 0);
     $stmt = $pdo->prepare("
-        SELECT id, username, real_name, email, is_tsc_admin, is_active,
+        SELECT id, username, real_name, email, is_sysadmin, is_active,
                auth_provider, entra_object_id, entra_user_principal_name
         FROM users
         WHERE id = ? AND deleted_at IS NULL
@@ -966,7 +966,7 @@ function current_user_has_any_role_codes(array $roleCodes, ?int $incidentId = nu
         return false;
     }
 
-    if (!empty($user['is_tsc_admin'])) {
+    if (!empty($user['is_sysadmin'])) {
         return true;
     }
 
@@ -1144,11 +1144,11 @@ function get_submitter_role_for_form(int $incidentId, int $userId, string $formT
     $formType = strtoupper($formType);
     $normalizedFormType = normalize_ics_form_type($formType);
 
-    // The TSC/Admin setup account is the application break-glass/master account.
+    // The SysAdmin setup account is the application break-glass/master account.
     // It must be able to test, edit, submit, and sign every form even when it is
     // not assigned to the normal ICS preparer/signing position for that form.
-    if (!empty($user['is_tsc_admin']) && (int)($user['id'] ?? 0) === $userId) {
-        return 'TSC';
+    if (!empty($user['is_sysadmin']) && (int)($user['id'] ?? 0) === $userId) {
+        return 'SYSADMIN';
     }
 
     // Honour the form permissions matrix for final submit/sign decisions.
@@ -1241,14 +1241,14 @@ function get_current_user_form_permissions(string $formCode, ?int $incidentId = 
         return $perms;
     }
 
-    if (!empty($user['is_tsc_admin'])) {
+    if (!empty($user['is_sysadmin'])) {
         $perms['can_view'] = true;
         $perms['can_create'] = true;
         $perms['can_edit'] = true;
         $perms['can_submit_final'] = true;
         $perms['can_manage_permissions'] = true;
         $perms['effective_non_editor_mode'] = 'read_only';
-        $perms['source'] = 'tsc_admin';
+        $perms['source'] = 'sysadmin';
         return $perms;
     }
 
@@ -1339,7 +1339,7 @@ function current_user_can_access_permissions_admin(): bool {
     if (!$user) {
         return false;
     }
-    if (!empty($user['is_tsc_admin'])) {
+    if (!empty($user['is_sysadmin'])) {
         return true;
     }
     foreach (get_manageable_form_codes() as $formCode) {
@@ -2150,7 +2150,7 @@ function user_has_role_code(string $roleCode, ?int $incidentId = null, ?int $use
     $userId = $userId ?: (int)($user['id'] ?? 0);
     $incidentId = $incidentId ?: (int)($user['incident_id'] ?? 0) ?: active_incident_id();
     if ($userId <= 0 || $incidentId <= 0) { return false; }
-    if (!empty($user['is_tsc_admin'])) { return true; }
+    if (!empty($user['is_sysadmin'])) { return true; }
     try {
         return in_array(strtoupper($roleCode), get_user_role_codes($incidentId, $userId), true);
     } catch (Throwable $e) { return false; }
@@ -2229,7 +2229,7 @@ function ics213rr_log_status(int $headerId, ?string $from, string $to, string $c
 function current_user_can_ics213rr_action(string $action, ?int $incidentId = null): bool {
     $user = current_user();
     if (!$user) { return false; }
-    if (!empty($user['is_tsc_admin'])) { return true; }
+    if (!empty($user['is_sysadmin'])) { return true; }
     $incidentId = $incidentId ?: (int)($user['incident_id'] ?? 0) ?: active_incident_id();
     $perms = get_current_user_form_permissions('ICS213RR', $incidentId);
     if ($action === 'view') { return true; }
@@ -2247,7 +2247,7 @@ function current_user_can_ics213rr_action(string $action, ?int $incidentId = nul
 function current_user_can_resources_view(?int $incidentId = null): bool {
     $user = current_user();
     if (!$user) { return false; }
-    if (!empty($user['is_tsc_admin'])) { return true; }
+    if (!empty($user['is_sysadmin'])) { return true; }
     $incidentId = $incidentId ?: (int)($user['incident_id'] ?? 0) ?: active_incident_id();
 
     // Database-driven permission. Configure rows for form_code RESOURCES_UNIT in form_permissions.
@@ -2258,10 +2258,10 @@ function current_user_can_resources_view(?int $incidentId = null): bool {
 function current_user_can_resources_manage(?int $incidentId = null): bool {
     $user = current_user();
     if (!$user) { return false; }
-    if (!empty($user['is_tsc_admin'])) { return true; }
+    if (!empty($user['is_sysadmin'])) { return true; }
     $incidentId = $incidentId ?: (int)($user['incident_id'] ?? 0) ?: active_incident_id();
 
-    // Database-driven permission. RESL/TSC should normally have can_edit/can_submit_final.
+    // Database-driven permission. RESL should normally have can_edit/can_submit_final.
     $perms = get_current_user_form_permissions('RESOURCES_UNIT', $incidentId);
     return !empty($perms['can_edit']) || !empty($perms['can_submit_final']);
 }
@@ -2269,7 +2269,7 @@ function current_user_can_resources_manage(?int $incidentId = null): bool {
 function current_user_can_finance_view(?int $incidentId = null): bool {
     $user = current_user();
     if (!$user) { return false; }
-    if (!empty($user['is_tsc_admin'])) { return true; }
+    if (!empty($user['is_sysadmin'])) { return true; }
     $incidentId = $incidentId ?: (int)($user['incident_id'] ?? 0) ?: active_incident_id();
 
     // Database-driven permission. Configure rows for form_code FINANCE_ADMIN in form_permissions.
@@ -2280,10 +2280,10 @@ function current_user_can_finance_view(?int $incidentId = null): bool {
 function current_user_can_finance_manage(?int $incidentId = null): bool {
     $user = current_user();
     if (!$user) { return false; }
-    if (!empty($user['is_tsc_admin'])) { return true; }
+    if (!empty($user['is_sysadmin'])) { return true; }
     $incidentId = $incidentId ?: (int)($user['incident_id'] ?? 0) ?: active_incident_id();
 
-    // Database-driven permission. FSC/Finance subordinates/TSC should normally have can_edit/can_submit_final.
+    // Database-driven permission. FSC/Finance subordinates should normally have can_edit/can_submit_final.
     $perms = get_current_user_form_permissions('FINANCE_ADMIN', $incidentId);
     return !empty($perms['can_edit']) || !empty($perms['can_submit_final']);
 }
@@ -2372,7 +2372,7 @@ function create_copied_form_review_notifications(int $incidentId, int $operation
         $slug = strtolower(str_replace('ICS', 'ics', (string)$form['form_type']));
         $link = app_url('/forms/' . $slug . '/index.php');
 
-        $roleTargets = ['IC','PSC','PLANNING_SECTION_CHIEF','TSC','ADMIN'];
+        $roleTargets = ['IC','PSC','PLANNING_SECTION_CHIEF','SYSADMIN','ADMIN'];
         foreach ($roleTargets as $roleCode) {
             try {
                 $stmt = $pdo->prepare("
@@ -2428,7 +2428,7 @@ function create_form_closeout_notifications(int $incidentId, int $operationalPer
             $link = app_url('/forms/ics214/index.php') . '?record_id=' . $formId;
             $body = 'Your ICS 214 activity log is still in ' . (string)$form['status'] . ' status for the current operational period. Please review it and sign it before the operational period ends.';
         }
-        foreach ($isPersonalLog ? [] : ['IC','PSC','PLANNING_SECTION_CHIEF','TSC','ADMIN'] as $roleCode) {
+        foreach ($isPersonalLog ? [] : ['IC','PSC','PLANNING_SECTION_CHIEF','SYSADMIN','ADMIN'] as $roleCode) {
             try {
                 $stmt = $pdo->prepare("
                     INSERT INTO notifications (incident_id, user_id, role_code, form_record_id, notification_type, title, subject, body, link_url, related_table, related_id, urgency, is_read, created_at)
@@ -2458,7 +2458,7 @@ function closeout_submit_forms_on_behalf(int $incidentId, int $operationalPeriod
     if ($incidentId <= 0 || $operationalPeriodId <= 0 || !$formRecordIds) { return 0; }
     $user = current_user() ?: [];
     $submitterName = (string)($user['display_name'] ?? $user['username'] ?? 'System user');
-    $submitterPosition = !empty($user['is_tsc_admin']) ? 'Admin/TSC' : (string)($user['role_code'] ?? 'Authorized user');
+    $submitterPosition = !empty($user['is_sysadmin']) ? 'SysAdmin' : (string)($user['role_code'] ?? 'Authorized user');
     $pdo = db();
     $columns = table_columns('form_records');
     $updated = 0;
@@ -2867,7 +2867,7 @@ function copied_forms_assigned_to_current_user(int $incidentId, int $operational
 function current_user_can_external_checkin_view(?int $incidentId = null): bool {
     $user = current_user();
     if (!$user) { return false; }
-    if (!empty($user['is_tsc_admin'])) { return true; }
+    if (!empty($user['is_sysadmin'])) { return true; }
     $incidentId = $incidentId ?: (int)($user['incident_id'] ?? 0) ?: active_incident_id();
     $perms = get_current_user_form_permissions('EXTERNAL_CHECKIN', $incidentId);
     return !empty($perms['can_view']);
@@ -2876,7 +2876,7 @@ function current_user_can_external_checkin_view(?int $incidentId = null): bool {
 function current_user_can_external_checkin_manage(?int $incidentId = null): bool {
     $user = current_user();
     if (!$user) { return false; }
-    if (!empty($user['is_tsc_admin'])) { return true; }
+    if (!empty($user['is_sysadmin'])) { return true; }
     $incidentId = $incidentId ?: (int)($user['incident_id'] ?? 0) ?: active_incident_id();
     $perms = get_current_user_form_permissions('EXTERNAL_CHECKIN', $incidentId);
     return !empty($perms['can_edit']) || !empty($perms['can_submit_final']);

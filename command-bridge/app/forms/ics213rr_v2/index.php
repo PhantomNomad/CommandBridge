@@ -162,9 +162,6 @@ function rr_submit_routing_for_current_user(int $incidentId): array {
     if (array_intersect($codes, ['LOFR','SOFR','IOFR'])) {
         return ['status' => 'section_chief_review', 'role_code' => 'IC', 'type' => 'ics213rr_ic_approval', 'subject' => 'ICS 213RR requires IC approval', 'message' => 'is from Command Staff and is awaiting Incident Commander approval.', 'flash' => 'Submitted to the Incident Commander for approval.'];
     }
-    if (in_array('TSC', $codes, true)) {
-        return ['status' => 'section_chief_review', 'role_code' => 'PSC', 'type' => 'ics213rr_section_approval', 'subject' => 'ICS 213RR requires Planning approval', 'message' => 'is from Technical Services and is awaiting Planning Section Chief approval.', 'flash' => 'Submitted to the Planning Section Chief for approval.'];
-    }
     return ['status' => 'section_chief_review', 'role_code' => null, 'type' => 'ics213rr_section_approval', 'subject' => 'ICS 213RR requires approval', 'message' => 'is awaiting Section Chief approval.', 'flash' => 'Submitted for Section Chief approval.'];
 }
 

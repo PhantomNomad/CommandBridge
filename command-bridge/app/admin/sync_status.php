@@ -9,10 +9,10 @@ require_login();
 require_user_management_access();
 
 $pdo = db();
-$isTsc = !empty(current_user()['is_tsc_admin']);
+$isSysadmin = !empty(current_user()['is_sysadmin']);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'retry_failed') {
-    if (!$isTsc) {
+    if (!$isSysadmin) {
         http_response_code(403);
         echo 'Forbidden';
         exit;
@@ -64,7 +64,7 @@ render_header('Check-in Sync Status');
       <?php endif; ?>
     </table>
 
-    <?php if ($isTsc && (int)$status['queue']['failed'] > 0): ?>
+    <?php if ($isSysadmin && (int)$status['queue']['failed'] > 0): ?>
       <form method="post" style="margin-top:12px">
         <?= csrf_field() ?>
         <input type="hidden" name="action" value="retry_failed">

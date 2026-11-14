@@ -2,7 +2,7 @@
 --  * form_214_activity_log records who added each entry (entries are never edited or deleted).
 --  * Existing logs are tied to the person who prepared them.
 --  * Every signed-in user can open, add to and sign their OWN ICS 214 (other people's logs are limited in code to
---    IC/UC, TSC, the person's supervisor, and the Documentation Unit Leader read-only).
+--    IC/UC, SysAdmin, the person's supervisor, and the Documentation Unit Leader read-only).
 -- Same as database/schema.sql and database/seed.sql. Safe to run more than once.
 
 ALTER TABLE form_214_activity_log

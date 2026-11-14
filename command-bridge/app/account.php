@@ -13,7 +13,7 @@ $currentUser = current_user();
 $userId = (int)($currentUser['id'] ?? 0);
 
 $stmt = $pdo->prepare("
-    SELECT id, username, real_name, is_tsc_admin, auth_provider, password_hash, pin_encrypted
+    SELECT id, username, real_name, is_sysadmin, auth_provider, password_hash, pin_encrypted
     FROM users
     WHERE id = ? AND deleted_at IS NULL AND is_active = 1
     LIMIT 1
@@ -28,8 +28,8 @@ if (!$user) {
 }
 
 $forcedChange = !empty($currentUser['must_change_pin']);
-$isTscAdmin = !empty($user['is_tsc_admin']);
-$usesEntra = !$isTscAdmin && (($user['auth_provider'] ?? 'local') === 'entra');
+$isSysadmin = !empty($user['is_sysadmin']);
+$usesEntra = !$isSysadmin && (($user['auth_provider'] ?? 'local') === 'entra');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($usesEntra) {
@@ -43,22 +43,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $newSecret = (string)($_POST['new_secret'] ?? '');
     $newSecretConfirm = (string)($_POST['new_secret_confirm'] ?? '');
 
-    $currentSecretValid = $isTscAdmin
+    $currentSecretValid = $isSysadmin
         ? (!empty($user['password_hash']) && password_verify($currentSecret, (string)$user['password_hash']))
         : (!empty($user['pin_encrypted']) && verify_pin($currentSecret, (string)$user['pin_encrypted']));
 
     if (!$currentSecretValid) {
-        flash('error', $isTscAdmin ? 'Your current password is incorrect.' : 'Your current PIN is incorrect.');
+        flash('error', $isSysadmin ? 'Your current password is incorrect.' : 'Your current PIN is incorrect.');
     } elseif ($newSecret === '' || $newSecret !== $newSecretConfirm) {
-        flash('error', $isTscAdmin ? 'The new password and confirmation do not match.' : 'The new PIN and confirmation do not match.');
-    } elseif (!$isTscAdmin && !preg_match('/^\d{6}$/', $newSecret)) {
+        flash('error', $isSysadmin ? 'The new password and confirmation do not match.' : 'The new PIN and confirmation do not match.');
+    } elseif (!$isSysadmin && !preg_match('/^\d{6}$/', $newSecret)) {
         flash('error', 'Your new PIN must contain exactly 6 digits.');
     } elseif ($newSecret === $currentSecret) {
-        flash('error', $isTscAdmin ? 'Choose a new password that is different from the current one.' : 'Choose a new PIN that is different from the current one.');
-    } elseif (!$isTscAdmin && pin_is_too_obvious($newSecret)) {
+        flash('error', $isSysadmin ? 'Choose a new password that is different from the current one.' : 'Choose a new PIN that is different from the current one.');
+    } elseif (!$isSysadmin && pin_is_too_obvious($newSecret)) {
         flash('error', 'That PIN is too easy to guess (for example 123456 or 111111). Choose a different six digits.');
     } else {
-        if ($isTscAdmin) {
+        if ($isSysadmin) {
             $stmt = $pdo->prepare("UPDATE users SET password_hash = ?, must_change_pin = 0, failed_login_count = 0, lockout_level = 0, locked_until = NULL, updated_at = NOW() WHERE id = ?");
             $stmt->execute([password_hash($newSecret, PASSWORD_DEFAULT), $userId]);
             touch_user_credentials($userId);
@@ -96,13 +96,13 @@ render_header('My Account');
 <div class="card" style="max-width:620px;">
   <h2>My Account</h2>
   <?php if ($forcedChange): ?>
-    <div class="flash error">An administrator reset your <?= $isTscAdmin ? 'password' : 'PIN' ?>. Choose your own new <?= $isTscAdmin ? 'password' : '6-digit PIN' ?> now to continue. Enter the temporary <?= $isTscAdmin ? 'password' : 'PIN' ?> you were given as the current one.</div>
+    <div class="flash error">An administrator reset your <?= $isSysadmin ? 'password' : 'PIN' ?>. Choose your own new <?= $isSysadmin ? 'password' : '6-digit PIN' ?> now to continue. Enter the temporary <?= $isSysadmin ? 'password' : 'PIN' ?> you were given as the current one.</div>
   <?php endif; ?>
   <p><strong>User:</strong> <?= e((string)$user['real_name']) ?> (<?= e((string)$user['username']) ?>)</p>
 
   <?php if ($usesEntra): ?>
     <p>Your account uses Microsoft Entra sign-in. Change your Microsoft password through your organization’s Microsoft 365 account management process.</p>
-  <?php elseif ($isTscAdmin): ?>
+  <?php elseif ($isSysadmin): ?>
     <p class="small">Enter your current password and a new password. Your password is not displayed or recoverable.</p>
     <form method="post">
       <?= csrf_field() ?>

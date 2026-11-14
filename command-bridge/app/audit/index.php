@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 /*
- * Audit Log viewer for TSC administrators and the Incident Commander / Unified Command.
+ * Audit Log viewer for SysAdmins and the Incident Commander / Unified Command.
  * Filters: person, category, date range and text; 25/50/100/250/All rows per page. Read-only, no export.
  */
 require_once dirname(__DIR__) . '/includes/layout.php';
@@ -13,12 +13,12 @@ $incident = active_incident();
 $incidentId = (int)($incident['id'] ?? 0);
 $me = current_user();
 $myId = (int)($me['id'] ?? 0);
-$isTsc = is_system_administrator();
+$isSysadmin = is_system_administrator();
 $isCommand = $incidentId > 0 && (bool)array_intersect(['IC', 'UC'], array_map('strtoupper', get_user_role_codes($incidentId, $myId)));
-if (!$isTsc && !$isCommand) {
+if (!$isSysadmin && !$isCommand) {
     http_response_code(403);
     render_header('Audit Log');
-    echo '<div class="card"><h2>Audit Log</h2><p>The audit log is available to TSC administrators and the Incident Commander.</p></div>';
+    echo '<div class="card"><h2>Audit Log</h2><p>The audit log is available to SysAdmins and the Incident Commander.</p></div>';
     render_footer(); exit;
 }
 
@@ -33,7 +33,7 @@ $f = [
     'from' => preg_match('/^\d{4}-\d{2}-\d{2}$/', (string)($_GET['from'] ?? '')) ? (string)$_GET['from'] : '',
     'to' => preg_match('/^\d{4}-\d{2}-\d{2}$/', (string)($_GET['to'] ?? '')) ? (string)$_GET['to'] : '',
     'q' => mb_substr(trim((string)($_GET['q'] ?? '')), 0, 100),
-    'scope' => ($isTsc && ($_GET['scope'] ?? '') === 'all') ? 'all' : 'incident',
+    'scope' => ($isSysadmin && ($_GET['scope'] ?? '') === 'all') ? 'all' : 'incident',
     'per' => array_key_exists((string)($_GET['per'] ?? ''), $pageSizes) ? (string)$_GET['per'] : '50',
 ];
 $page = max(1, (int)($_GET['page'] ?? 1));
@@ -138,7 +138,7 @@ render_header('Audit Log');
     <label>From<input type="date" name="from" value="<?= e($f['from']) ?>"></label>
     <label>To<input type="date" name="to" value="<?= e($f['to']) ?>"></label>
     <label>Contains<input type="search" name="q" value="<?= e($f['q']) ?>" maxlength="100"></label>
-    <?php if ($isTsc): ?>
+    <?php if ($isSysadmin): ?>
       <label>Incidents
         <select name="scope"><option value="incident">This incident</option><option value="all"<?= $f['scope'] === 'all' ? ' selected' : '' ?>>All incidents</option></select></label>
     <?php endif; ?>

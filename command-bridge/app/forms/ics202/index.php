@@ -30,7 +30,7 @@ $canEdit = !empty($permissions['can_edit']) || !empty($permissions['can_create']
 $formRecord = $incidentId > 0 ? ics202_get_form_record($pdo, $incidentId) : null;
 $formRecordId = (int)($formRecord['id'] ?? 0);
 $user = current_user();
-$canApprove = current_user_is_ic_or_tsc($pdo, $incidentId);
+$canApprove = current_user_is_ic_or_sysadmin($pdo, $incidentId);
 $error = null;
 
 function first_table(PDO $pdo, array $names): ?string {
@@ -44,10 +44,10 @@ function table_cols(PDO $pdo, string $table): array {
 }
 function pick_col(array $cols, array $candidates): ?string { foreach ($candidates as $c) if (in_array($c,$cols,true)) return $c; return null; }
 
-function current_user_is_ic_or_tsc(PDO $pdo, int $incidentId): bool {
+function current_user_is_ic_or_sysadmin(PDO $pdo, int $incidentId): bool {
     $user = current_user();
     if (!$user) return false;
-    if (!empty($user['is_tsc_admin'])) return true;
+    if (!empty($user['is_sysadmin'])) return true;
     $userId = (int)($user['id'] ?? 0);
     if ($incidentId <= 0 || $userId <= 0) return false;
     try {
@@ -248,7 +248,7 @@ render_header($isPrintView ? 'ICS 202 - Incident Objectives Print View' : 'ICS 2
 <?php if (!empty($data['approved_at'])): ?>
   <p><strong>Approved By:</strong> <?=h($data['approved_by_ic_name'] ?? '')?> on <?=h($data['approved_at'] ?? '')?></p>
 <?php else: ?>
-  <p class="small">ICS 202 remains in draft until the Incident Commander or Technical Services Coordinator/Admin approves it. Approval is locked until the required IAP forms are detected.</p>
+  <p class="small">ICS 202 remains in draft until the Incident Commander or SysAdmin approves it. Approval is locked until the required IAP forms are detected.</p>
 <?php endif; ?>
 <p class="small">Attachments accepted here: BMP, JPG, JPEG, PNG, PDF, and TXT.</p>
 </div>
@@ -296,7 +296,7 @@ render_header($isPrintView ? 'ICS 202 - Incident Objectives Print View' : 'ICS 2
 <?php elseif ($canApprove): ?>
   <p class="small">Use the Form Actions Approve / Submit button below.</p>
 <?php else: ?>
-  <p class="small">Only the assigned Incident Commander or Technical Services Coordinator/Admin can approve this form.</p>
+  <p class="small">Only the assigned Incident Commander or SysAdmin can approve this form.</p>
 <?php endif; ?>
 </fieldset>
 <?php

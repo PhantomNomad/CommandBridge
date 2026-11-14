@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 /*
- * Creates the first Technical Services Coordinator (TSC) administrator from the
+ * Creates the first SysAdmin (system administrator) from the
  * command line. Used by install.sh; also useful for recovery.
  *
  *   CB_ADMIN_PASSWORD='...' php bin/create_admin.php --username=admin --name="Full Name" --email=a@b.c
@@ -52,7 +52,7 @@ try {
         exit(1);
     }
     $pdo->beginTransaction();
-    $pdo->prepare('INSERT INTO users (username, password_hash, real_name, email, is_tsc_admin, created_at, updated_at) VALUES (?, ?, ?, ?, 1, NOW(), NOW())')
+    $pdo->prepare('INSERT INTO users (username, password_hash, real_name, email, is_sysadmin, created_at, updated_at) VALUES (?, ?, ?, ?, 1, NOW(), NOW())')
         ->execute([$username, password_hash($password, PASSWORD_DEFAULT), $name, $email !== '' ? $email : null]);
     $id = (int)$pdo->lastInsertId();
     if ($email !== '') {

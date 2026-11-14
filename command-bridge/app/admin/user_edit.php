@@ -56,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $companionAction = 'save';
     }
 
-    if (!empty($user['is_tsc_admin'])) {
+    if (!empty($user['is_sysadmin'])) {
         if ($newPassword !== '' || $newPasswordConfirm !== '') {
             if ($newPassword === '' || $newPassword !== $newPasswordConfirm) {
                 flash('error', 'The new password and confirmation do not match.');
@@ -150,7 +150,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($changes) { $auditDetails .= ' (' . implode('; ', $changes) . ')'; }
     $successMessage = 'User updated.';
     if ($passwordHash !== null) {
-        $auditDetails .= '; reset Technical Services Coordinator password';
+        $auditDetails .= '; reset SysAdmin password';
         $successMessage = 'User and password updated.';
     } elseif ($pinHash !== null) {
         $auditDetails .= '; reset local PIN';
@@ -201,8 +201,8 @@ render_header('Edit User');
         <label class="checkbox-row"><input type="checkbox" name="check_in_now" value="1" checked> Refresh ICS 211 / ICS 205A from current assignments</label>
       </div>
     </div>
-    <?php if (!empty($user['is_tsc_admin'])): ?>
-      <h3>Technical Services Coordinator Password</h3>
+    <?php if (!empty($user['is_sysadmin'])): ?>
+      <h3>SysAdmin Password</h3>
       <p class="small">Leave these fields blank to keep the current password.</p>
       <div class="grid">
         <div><label>New Password</label><input name="new_password" type="password" autocomplete="new-password"></div>

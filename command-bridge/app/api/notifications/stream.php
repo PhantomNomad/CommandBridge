@@ -18,6 +18,7 @@ $lastId = isset($_SERVER['HTTP_LAST_EVENT_ID']) ? (int)$_SERVER['HTTP_LAST_EVENT
 $roleCodes = [];
 try { $roleCodes = get_user_role_codes($incidentId, $userId); } catch (Throwable $e) {}
 $roleCodes[] = 'ALL_AUTHENTICATED';
+if (!empty(current_user()['is_sysadmin'])) { $roleCodes[] = 'SYSADMIN'; }   // notifications addressed to the SysAdmins
 $roleCodes = array_values(array_unique(array_filter(array_map('strtoupper', $roleCodes))));
 
 for ($i = 0; $i < 6; $i++) {

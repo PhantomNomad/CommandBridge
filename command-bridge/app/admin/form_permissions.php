@@ -13,7 +13,7 @@ if (!isset($formCatalog[$formCode])) {
     $formCode = 'ICS201';
 }
 
-if (!current_user_can_manage_form_permissions($formCode) && empty(current_user()['is_tsc_admin'])) {
+if (!current_user_can_manage_form_permissions($formCode) && empty(current_user()['is_sysadmin'])) {
     http_response_code(403);
     echo 'Forbidden';
     exit;
@@ -56,7 +56,7 @@ render_header('Form Permissions');
 ?>
 <div class="card">
   <h2>Permissions Matrix</h2>
-  <p>Use this page to manage who can view, create, edit, submit final, and manage permissions for each form. Intended for Technical Services Coordinator-controlled administration.</p>
+  <p>Use this page to manage who can view, create, edit, submit final, and manage permissions for each form. Intended for SysAdmin-controlled administration.</p>
   <form method="get" class="inline-form">
     <label>Form</label>
     <select name="form_code" onchange="this.form.submit()">

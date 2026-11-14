@@ -118,7 +118,7 @@ DETECT_TZ="$(cat /etc/timezone 2>/dev/null || timedatectl show -p Timezone --val
 ui_ask TZ_NAME "Time zone" "Time zone for incident times (for example America/Edmonton):" "${CB_TIMEZONE:-$DETECT_TZ}"
 [ "$TZ_NAME" = UTC ] || [ -e "/usr/share/zoneinfo/$TZ_NAME" ] || [ "${CB_SKIP_PACKAGES:-0}" = 1 ] || die "Unknown time zone '$TZ_NAME' (see: timedatectl list-timezones)."
 
-ui_ask ADMIN_USER "Administrator" "Username for the first administrator (Technical Services Coordinator):" "${CB_ADMIN_USER:-admin}"
+ui_ask ADMIN_USER "Administrator" "Username for the first administrator (SysAdmin):" "${CB_ADMIN_USER:-admin}"
 [[ $ADMIN_USER =~ ^[A-Za-z0-9._-]{3,64}$ ]] || die "Username must be 3-64 characters (letters, digits . _ -)."
 ui_ask ADMIN_NAME "Administrator" "Full name of the administrator:" "${CB_ADMIN_NAME:-Administrator}"
 ui_ask ADMIN_EMAIL "Administrator" "Email address (optional - leave blank to skip):" "${CB_ADMIN_EMAIL:-}"
