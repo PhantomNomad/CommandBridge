@@ -207,6 +207,19 @@ if ($want('env')) {
         t_ok('Every form page refuses changes to a signed form', $unguarded === [], 'no lock check in: ' . implode(', ', $unguarded));
     } catch (Throwable $e) { t_ok('Form lock checks', false, $e->getMessage()); }
 
+    // Dashboard panels per position (includes/dashboard_panels.php, migration 0006).
+    try {
+        require_once $appRoot . '/includes/dashboard_panels.php';
+        $rawPanels = (string)get_app_setting('dashboard_panel_map', '');
+        $decoded = $rawPanels !== '' ? json_decode($rawPanels, true) : null;
+        t_ok('Dashboard panel choices are stored (app_settings.dashboard_panel_map)', is_array($decoded) && isset($decoded['_ALL']),
+            $rawPanels === '' ? 'missing; run update.sh (migration 0006). The built-in defaults are used meanwhile.' : 'not valid JSON');
+        $unknown = [];
+        foreach ((array)$decoded as $role => $list) { foreach ((array)$list as $k) { if (!isset(cb_dashboard_panel_catalogue()[$k])) { $unknown[] = $role . ':' . $k; } } }
+        t_ok('Dashboard panel choices only name known panels', $unknown === [], implode(', ', $unknown));
+        t_ok('File present: app/admin/dashboard_settings.php', is_file($appRoot . '/admin/dashboard_settings.php'));
+    } catch (Throwable $e) { t_ok('Dashboard panel checks', false, $e->getMessage()); }
+
     $logoSetting = (string)get_app_setting('branding_logo_file', '');
     if ($logoSetting !== '' && branding_logo_file_if_present($logoSetting) === '') {
         t_info("The saved organization logo ($logoSetting) is missing from storage/branding; the default icon is shown. Upload the logo again in Organization & Branding.");

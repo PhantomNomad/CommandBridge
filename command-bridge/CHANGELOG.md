@@ -2,6 +2,27 @@
 
 ## Unreleased
 
+* **Dashboard panels per position.** The dashboard is now made of panels, and each position sees the ones that
+  matter to it:
+  - **Everyone:** My action items, My forms, My ICS 214 and Scheduled meetings.
+    - **My forms** is new. It shows forms waiting for your approval, your unsigned forms this operational period,
+      and copied forms assigned to you.
+    - **My ICS 214** is new.
+  - **IC/UC, Deputy IC, PSC:** also operational period form status, forms to submit before the period ends,
+    staffing, and copied forms to review.
+  - **SITL and DOCL:** also the form status, closeout and review panels.
+  - **RESL:** also the Resources Unit intake (a count) and staffing. **OSC:** also staffing.
+  - **LSC and Supply:** resource requests waiting for Logistics. These used to be mixed into the notifications.
+  - **FSC, Procurement and Cost:** a Finance/Admin review count.
+
+  Someone holding several positions gets every panel from each one. SysAdmins see everything. **Show everything**
+  on the dashboard shows all panels to anyone; panels don't change what people may open. The operational period
+  buttons moved to the top of the dashboard, so they stay visible even if the meetings panel is hidden.
+  - **New settings page: Settings > Dashboard Panels** (`admin/dashboard_settings.php`). A grid of positions and
+    panels, with Save and Reset to defaults; changes are audit logged.
+  - Database: the defaults are stored in `app_settings.dashboard_panel_map`, in `seed.sql` and the new migration
+    `0006_dashboard_panels.sql` (which keeps a map an administrator has already saved).
+  - The dashboard help page is written. The 213RR Logistics items now show their real "updated" time.
 * **Phones and tablets, part 3: every other page.** The rest of the app now works on phones.
   - **More tables become labelled cards on phones:**
     - the editable rows on the ICS 201 (actions, resources), 204 (resources), 205 (channels), 206 (aid stations,

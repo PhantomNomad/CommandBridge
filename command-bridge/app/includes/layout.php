@@ -149,6 +149,7 @@ function render_header(string $title, ?string $helpTopic = null): void {
           <a href="<?= e(app_url('/admin/entra_settings.php')) ?>">Entra Settings</a>
           <a href="<?= e(app_url('/admin/smtp.php')) ?>">Email / SMTP</a>
           <a href="<?= e(app_url('/admin/signoff_settings.php')) ?>">Sign-off Approvers</a>
+          <a href="<?= e(app_url('/admin/dashboard_settings.php')) ?>">Dashboard Panels</a>
           <a href="<?= e(app_url('/admin/lookups.php')) ?>">Lookup Lists</a>
           <a href="<?= e(app_url('/admin/resource_catalogue.php')) ?>">Resource Catalogue</a>
           <a href="<?= e(app_url('/admin/ecc_display.php')) ?>">ECC Display</a>
