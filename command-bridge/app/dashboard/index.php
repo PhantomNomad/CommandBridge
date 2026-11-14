@@ -259,7 +259,7 @@ function dashboard_render_notification_panels(int $incidentId): void {
       <?php if (!$notifications && !$actionItems): ?>
         <p class="muted">No unread notifications or role action items.</p>
       <?php else: ?>
-        <table><thead><tr><th>Notification / Action Item</th><th>Urgency</th><th>Created/Updated</th><th>Action</th></tr></thead><tbody>
+        <table class="cb-cards"><thead><tr><th>Notification / Action Item</th><th>Urgency</th><th>Created/Updated</th><th>Action</th></tr></thead><tbody>
         <?php foreach ($actionItems as $n): ?>
           <tr>
             <td><strong><?= e((string)$n['title']) ?></strong><br><span class="small"><?= e((string)$n['body']) ?></span></td>
@@ -295,7 +295,7 @@ function dashboard_render_notification_panels(int $incidentId): void {
         <p class="muted">No copied-forward forms are specifically assigned to your current position/user account.</p>
       <?php else: ?>
         <p class="small muted">These copied-forward forms are assigned to your current operational-period position or directly to you.</p>
-        <table><thead><tr><th>Form</th><th>Responsible position</th><th>Status</th><th>Action</th></tr></thead><tbody>
+        <table class="cb-cards"><thead><tr><th>Form</th><th>Responsible position</th><th>Status</th><th>Action</th></tr></thead><tbody>
         <?php foreach ($myReviewRequiredForms as $f): ?>
           <tr>
             <td><?= e('ICS ' . (string)$f['form_number'] . ' - ' . (string)($f['form_name'] ?: $f['form_type'])) ?></td>
@@ -311,7 +311,7 @@ function dashboard_render_notification_panels(int $incidentId): void {
       <?php if (!$positionAssignments): ?>
         <p class="muted">No operational-period-specific position assignments have been set yet.</p>
       <?php else: ?>
-        <table><thead><tr><th>Position</th><th>Assigned person</th><th>Status</th></tr></thead><tbody>
+        <table class="cb-cards"><thead><tr><th>Position</th><th>Assigned person</th><th>Status</th></tr></thead><tbody>
         <?php foreach ($positionAssignments as $a): ?>
           <tr>
             <td><?= e((string)$a['position_title']) ?></td>
@@ -327,7 +327,7 @@ function dashboard_render_notification_panels(int $incidentId): void {
         <p class="muted">No copied-forward forms currently require review.</p>
       <?php else: ?>
         <p class="small muted">These forms were copied from the previous operational period. They must be reviewed, updated if needed, and submitted/approved for the current operational period.</p>
-        <table><thead><tr><th>Form</th><th>Status</th><th>Copied from</th><th>Current preparer</th><th>Action</th></tr></thead><tbody>
+        <table class="cb-cards"><thead><tr><th>Form</th><th>Status</th><th>Copied from</th><th>Current preparer</th><th>Action</th></tr></thead><tbody>
         <?php foreach ($reviewRequiredForms as $f): ?>
           <?php
             $fromPeriod = '';
@@ -352,7 +352,7 @@ function dashboard_render_notification_panels(int $incidentId): void {
         <p class="muted">No current-period draft or rejected forms requiring submission.</p>
       <?php else: ?>
         <p class="small muted">These forms are not submitted as final for the current operational period<?php if ($currentOp): ?> ending <?= e(format_datetime_display((string)($currentOp['op_end'] ?? ''))) ?><?php endif; ?>.</p>
-        <table><thead><tr><th>Form</th><th>Status</th><th>Prepared by</th><th>Action</th></tr></thead><tbody>
+        <table class="cb-cards"><thead><tr><th>Form</th><th>Status</th><th>Prepared by</th><th>Action</th></tr></thead><tbody>
         <?php foreach ($closeoutForms as $f): ?>
           <tr>
             <td><?= e('ICS ' . (string)$f['form_number'] . ' - ' . (string)($f['form_name'] ?: $f['form_type'])) ?></td>
@@ -369,7 +369,7 @@ function dashboard_render_notification_panels(int $incidentId): void {
       <?php if (!$currentOpForms): ?>
         <p class="muted">No current operational period form status is available.</p>
       <?php else: ?>
-        <table><thead><tr><th>Form</th><th>Status</th><th>Last activity</th><th>Action</th></tr></thead><tbody>
+        <table class="cb-cards"><thead><tr><th>Form</th><th>Status</th><th>Last activity</th><th>Action</th></tr></thead><tbody>
         <?php foreach ($currentOpForms as $f): ?>
           <?php
             $status = (string)$f['status'];

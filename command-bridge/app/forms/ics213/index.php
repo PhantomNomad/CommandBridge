@@ -122,7 +122,7 @@ if ($messageId <= 0 && !$isNewMessage):
   <?php if ($canEdit): ?>
     <p><a class="btn btn-primary" href="<?= e(app_url('/forms/ics213/index.php?operational_period_id=' . $opId . '&new=1')) ?>">Create New Message</a></p>
   <?php endif; ?>
-  <table class="data-table">
+  <table class="data-table cb-cards">
     <thead>
       <tr>
         <th>Date/Time</th>

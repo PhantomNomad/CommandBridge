@@ -40,6 +40,33 @@
     if (narrow.addEventListener) { narrow.addEventListener('change', onChange); } else if (narrow.addListener) { narrow.addListener(onChange); }
   }
 
+  // List tables marked .cb-cards become one card per row on phones (CSS in app.css). Each cell is labelled with its
+  // column heading so the card still reads "Status: Approved" and so on.
+  document.querySelectorAll('table.cb-cards').forEach(function (table) {
+    var headRow = table.querySelector('thead tr');
+    if (!headRow) {
+      var first = table.querySelector('tr');
+      if (first && first.querySelectorAll('td').length === 0) { headRow = first; first.classList.add('cb-cards-head'); }
+    }
+    if (!headRow) { return; }
+    var labels = [];
+    headRow.querySelectorAll('th, td').forEach(function (th) {
+      var span = parseInt(th.getAttribute('colspan') || '1', 10) || 1;
+      for (var i = 0; i < span; i++) { labels.push((th.textContent || '').trim()); }
+    });
+    table.querySelectorAll('tr').forEach(function (tr) {
+      if (tr === headRow || tr.parentNode.tagName === 'THEAD') { return; }
+      var col = 0;
+      Array.prototype.forEach.call(tr.children, function (cell) {
+        var span = parseInt(cell.getAttribute('colspan') || '1', 10) || 1;
+        if (span > 1 || labels.length <= 1) { cell.classList.add('cb-cards-full'); }
+        else if (!cell.hasAttribute('data-label') && labels[col]) { cell.setAttribute('data-label', labels[col]); }
+        col += span;
+      });
+    });
+    table.classList.add('cb-cards-ready');
+  });
+
   // Sideways scrolling for wide tables. Tables already inside a scroll box (help pages) or marked
   // .no-scroll-wrap are left alone.
   document.querySelectorAll('main.content table').forEach(function (table) {

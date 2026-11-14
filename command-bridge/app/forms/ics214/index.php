@@ -219,7 +219,7 @@ if ($recordId > 0) { cb_form_status_banner('ICS214', (int)$incidentId, (int)$opI
       <label style="display:inline;margin-left:8px"><input type="checkbox" data-cat-filter="<?= e($cat) ?>" checked> <?= e($label) ?></label>
     <?php endforeach; ?>
   </p>
-  <table class="ics214-log">
+  <table class="ics214-log cb-cards">
     <thead><tr><th>Date/Time</th><th>Notable Activities</th><th>Source</th></tr></thead>
     <tbody>
       <?php if (!$rows): ?><tr><td colspan="3" class="muted">Nothing recorded yet for this operational period.</td></tr><?php endif; ?>

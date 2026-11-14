@@ -761,7 +761,6 @@ body.help-open .content{margin-right:440px}
 @media (max-width: 760px) {
   .cb-form-hero { display:block; }
   .cb-form-hero-side { text-align:left; margin-top:1rem; }
-  .cb-form-steps { grid-template-columns:1fr !important; }
 }
 
 
@@ -832,8 +831,26 @@ img,video{max-width:100%;height:auto}
   .cb-form-steps{grid-template-columns:1fr 1fr !important}
   .cb-form-next{padding:.85rem}
   .cb-form-reason input[type=text]{flex-basis:100%;max-width:none}
-  .form-actions-card .d-flex{flex-direction:column;align-items:stretch !important}
+  .form-actions-card .d-flex{flex-direction:column;align-items:stretch !important;gap:8px}
   .form-actions-card .btn,.form-actions-card button{width:100%;text-align:center;justify-content:center}
+}
+
+@media (max-width: 599px){
+  .notification-toast-container{left:10px;right:10px;bottom:10px;max-width:none}
+}
+
+/* List tables (class cb-cards, labelled by assets/js/app_shell.js): one card per row on phones. */
+@media (max-width: 599px){
+  table.cb-cards-ready,table.cb-cards-ready tbody,table.cb-cards-ready tr,table.cb-cards-ready td{display:block;width:auto}
+  table.cb-cards-ready{border:0;background:transparent;min-width:0 !important}
+  table.cb-cards-ready thead,table.cb-cards-ready tr.cb-cards-head{display:none}
+  table.cb-cards-ready tr{background:#fff;border:1px solid #d9e2ec;border-radius:6px;padding:8px 10px;margin:0 0 10px}
+  table.cb-cards-ready td{border:0 !important;padding:5px 0 !important;min-height:0;white-space:normal !important;width:auto !important}
+  table.cb-cards-ready td[data-label]::before{content:attr(data-label);display:block;font-size:12px;font-weight:700;color:#52606d;
+    text-transform:uppercase;letter-spacing:.03em;margin-bottom:2px}
+  table.cb-cards-ready td:empty{display:none}
+  table.cb-cards-ready td .table-actions,table.cb-cards-ready td form{margin-top:4px}
+  .table-scroll > table.cb-cards-ready{margin-bottom:0}
 }
 
 @media print{

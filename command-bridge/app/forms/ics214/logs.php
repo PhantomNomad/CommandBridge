@@ -37,7 +37,7 @@ render_header('ICS 214 - Activity Logs');
     Change the operational period from the top bar to see earlier logs.</p>
   <p class="small">Every person has their own activity log for each operational period. This list shows the logs you are allowed to open.
     <a href="<?= e(ics214_url()) ?>">Open my own log</a></p>
-  <table class="table">
+  <table class="table cb-cards">
     <thead><tr><th>Person</th><th>Position(s)</th><th>Status</th><th>Entries</th><th>Last update</th><th></th></tr></thead>
     <tbody>
     <?php if (!$people): ?><tr><td colspan="6" class="muted">No one is assigned to this incident yet.</td></tr><?php endif; ?>
