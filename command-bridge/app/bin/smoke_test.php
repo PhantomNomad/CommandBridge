@@ -532,7 +532,7 @@ if ($want('pdf')) {
     // Every form's PDF fills the official template: build each mapper with sample data, check its field names exist on
     // the template, and make the PDF.
     t_run('Official PDFs for every form', function () use ($appRoot, $isPdf, $pages) {
-        foreach (['ics201/Ics201', 'ics203/Ics203', 'ics204/Ics204', 'ics206/Ics206', 'ics208/Ics208', 'ics214/Ics214', 'ics215a/Ics215A', 'ics230/Ics230'] as $m) {
+        foreach (['ics201/Ics201', 'ics202/Ics202', 'ics203/Ics203', 'ics204/Ics204', 'ics206/Ics206', 'ics208/Ics208', 'ics214/Ics214', 'ics215a/Ics215A', 'ics230/Ics230'] as $m) {
             require_once $appRoot . '/forms/' . $m . 'OfficialPdfFieldMapper.php';
         }
         require_once $appRoot . '/forms/ics218/Ics218OfficialPdfOverlay.php';
@@ -544,6 +544,9 @@ if ($want('pdf')) {
         $b = Ics201OfficialPdfFieldMapper::build(['datetime_prepared' => $now, 'situation_summary' => $long, 'current_organization' => 'IC: Smoke'], $incident,
             [['action_time' => '07:00', 'action_text' => 'Establish perimeter']], [], [['resources_ordered' => 'Engine', 'resource_identification' => 'E-1']], 'Smoke IC', '', 0);
         $cases['ICS201'] = [[$b['fields']], $b['continuations'], null];
+        $b = Ics202OfficialPdfFieldMapper::build(['objectives' => $long, 'site_safety_plan_required' => 1, 'iap_include_ics203' => 1, 'iap_include_ics208' => 1],
+            $incident, $op, ['Situation map.png']);
+        $cases['ICS202'] = [[$b['fields']], $b['continuations'], null];
         $b = Ics203OfficialPdfFieldMapper::build(['IC' => ['Smoke IC'], 'SITL' => ['A Person', 'Another Person With A Long Name', 'Third']], $incident, $op, 'Smoke RESL', $now);
         $cases['ICS203'] = [[$b['fields']], $b['continuations'], null];
         $res = [];
@@ -587,6 +590,8 @@ if ($want('pdf')) {
         for ($i = 1; $i <= 13; $i++) { $entries[] = ['order_request_number' => 'R-' . $i, 'equipment_description' => 'Pickup', 'status' => 'assigned', 'created_at' => $now]; }
         [$overlay, $n] = Ics218OfficialPdfOverlay::write($incident, ['prepared_at' => $now, 'prepared_by_name' => 'Smoke GSUL'], $entries, sys_get_temp_dir());
         $path = $exporter->stampTemplate('ICS218', $overlay, $n);
+        $t202 = (string)shell_exec('pdftotext -l 1 ' . escapeshellarg(OfficialPdfTemplateRegistry::get('ICS202')['path']) . ' - 2>/dev/null');
+        t_ok('ICS 202 template is the ICS Canada form (ICS 202-CAN)', str_contains($t202, '202-CAN'), 'replace assets/pdf/official/ICS202.pdf with ICS Canada Form-202.pdf');
         t_ok('ICS218 official PDF (stamped) is valid and has 2 pages for 13 vehicles', $isPdf($path) && $pages($path) === 2, $pages($path) . ' page(s)');
         @unlink($path);
     });

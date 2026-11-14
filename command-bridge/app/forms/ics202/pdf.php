@@ -220,28 +220,21 @@ foreach ($pdfAutoIncludes as $field => $detected) {
 /*
  * The ICS 202 is always the official ICS Canada form. Uploaded attachments follow it as pages of their own.
  */
-require_once $appRoot . '/includes/pdf/OfficialPdfTemplateExporter.php';
 require_once __DIR__ . '/Ics202OfficialPdfFieldMapper.php';
 $attachPdf = '';
 try {
-    $officialExporter = new OfficialPdfTemplateExporter();
-    $officialPdfPath = $officialExporter->create('ICS202', Ics202OfficialPdfFieldMapper::map($record, $incident, $op));
     if ($attachments) {
         $layout = require $appRoot . '/includes/pdf/ics202_layout.php';
         $attachPdf = (string)tempnam(sys_get_temp_dir(), 'cb202att_');
-        if ($attachPdf !== '' && (new Ics202PdfRenderer($layout))->writeAttachmentsPdf($attachments, $attachPdf)) {
-            $officialPdfPath = $officialExporter->appendPdf($officialPdfPath, $attachPdf);
-        } else {
+        if ($attachPdf === '' || !(new Ics202PdfRenderer($layout))->writeAttachmentsPdf($attachments, $attachPdf)) {
             @unlink($attachPdf);
+            $attachPdf = '';
         }
-        $attachPdf = '';
     }
-    $officialFilename = 'ICS202_Incident_' . $incidentId . '.pdf';
-    if ($preview) {
-        $officialExporter->sendInline($officialPdfPath, $officialFilename);
-    } else {
-        $officialExporter->sendDownload($officialPdfPath, $officialFilename);
-    }
+    $names = array_map(static fn ($a) => (string)($a['original_name'] ?? ''), $attachments);
+    $built = Ics202OfficialPdfFieldMapper::build($record, $incident, $op, $names);
+    ics_pdf_send_official_with_continuation('ICS202', [$built['fields']], $built['continuations'],
+        ics_pdf_header_lines($incident, $op), 'ICS 202', 'ICS202_Incident_' . $incidentId . '.pdf', null, $attachPdf !== '' ? [$attachPdf] : []);
     exit;
 } catch (Throwable $e) {
     if ($attachPdf !== '') { @unlink($attachPdf); }

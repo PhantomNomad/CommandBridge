@@ -9,10 +9,10 @@
     },
     "ICS202.pdf": {
       "modified_by_command_bridge": false,
-      "notes": "",
-      "sha256": "36508936f551eb0557c6be3ffcdac5322618c05aa55561505da7d30b75282034",
-      "upstream_sha256": "",
-      "upstream_url": ""
+      "notes": "Downloaded from ICS Canada 2026-11-14; unmodified.",
+      "sha256": "c1684b1d7076ac1142d1c1646c6a897e0911e539e45a85e86aa10308272923d8",
+      "upstream_sha256": "c1684b1d7076ac1142d1c1646c6a897e0911e539e45a85e86aa10308272923d8",
+      "upstream_url": "https://icscanada.ca/wp-content/uploads/2023/07/Form-202.pdf"
     },
     "ICS203.pdf": {
       "modified_by_command_bridge": false,
@@ -65,10 +65,10 @@
     },
     "ICS208.pdf": {
       "modified_by_command_bridge": false,
-      "notes": "",
-      "sha256": "695e7fdd57f8284b776b7422eb783cdbdb82dd336d753af95e6e91c61b98ea89",
-      "upstream_sha256": "",
-      "upstream_url": ""
+      "notes": "Downloaded from ICS Canada 2026-11-14; unmodified.",
+      "sha256": "f6d677dddcc4adc0b5adb6d8d9bb5389fa16f0ab3660f24be4e1763db2c97911",
+      "upstream_sha256": "f6d677dddcc4adc0b5adb6d8d9bb5389fa16f0ab3660f24be4e1763db2c97911",
+      "upstream_url": "https://icscanada.ca/wp-content/uploads/2026/06/Form-208.pdf"
     },
     "ICS209-wf.pdf": {
       "modified_by_command_bridge": true,
@@ -184,10 +184,10 @@
     },
     "ICS230.pdf": {
       "modified_by_command_bridge": false,
-      "notes": "",
-      "sha256": "c9a108d07aec1d5c53d9eb58b544996450a77ce6a51157739f9ce102cf2d438a",
-      "upstream_sha256": "",
-      "upstream_url": ""
+      "notes": "Downloaded from ICS Canada 2026-11-14; unmodified.",
+      "sha256": "288e84a178c032ca41c95b67984e2515ac9f068bc9affb5424282699e4b35913",
+      "upstream_sha256": "288e84a178c032ca41c95b67984e2515ac9f068bc9affb5424282699e4b35913",
+      "upstream_url": "https://icscanada.ca/wp-content/uploads/2026/04/Form-230-fillable-2.pdf"
     },
     "ICS232.pdf": {
       "modified_by_command_bridge": false,
