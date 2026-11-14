@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+* **ICS 213 messages reach the person they are for.** "2. To" used to be free text only, so nobody was told about
+  a message.
+  - Now you pick the position from those filled in the incident. Everyone holding it gets a dashboard notification
+    under **My action items**, and opening the message clears it.
+  - When a message gets its first reply, the sender is notified.
+  - People outside the incident organization can still be typed in by name (no notification).
+  - Database: migration `0007_ics213_addressee.sql` adds `form_213_messages.to_role_code` and `from_user_id`.
+  - New file `includes/ics213_messages.php`. Help updated.
 * **Fix: the ICS 202 could not be approved while it was waiting for approval.** The new lock refused the Incident
   Commander's **Approve** ("ICS 202 has been signed and is waiting for approval, so it is locked"). Approving is
   now allowed on a locked ICS 202, as it already was for the ICS 204.

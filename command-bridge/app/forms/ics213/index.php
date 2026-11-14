@@ -7,6 +7,7 @@ require_once __DIR__ . '/../../includes/form_action_buttons.php'; ?>
 <?php
 
 require_once dirname(dirname(__DIR__)) . '/includes/layout.php';
+require_once dirname(dirname(__DIR__)) . '/includes/ics213_messages.php';
 require_login();
 
 $pdo = db();
@@ -64,6 +65,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $canEdit && $formRecordId > 0) {
     try {
         if ($messageId > 0 && !$isNewMessage) {
             // Existing messages are locked except for reply information.
+            $before = $pdo->prepare("SELECT * FROM form_213_messages WHERE id=? AND form_record_id=?");
+            $before->execute([$messageId, $formRecordId]);
+            $before = $before->fetch() ?: [];
             $stmt = $pdo->prepare("UPDATE form_213_messages SET reply=?, reply_by=?, reply_position=?, reply_date_time=?, updated_at=NOW() WHERE id=? AND form_record_id=?");
             $stmt->execute([
                 trim($_POST['reply'] ?? ''),
@@ -73,18 +77,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $canEdit && $formRecordId > 0) {
                 $messageId,
                 $formRecordId
             ]);
+            $newReply = trim((string)($_POST['reply'] ?? ''));
+            if ($before && trim((string)($before['reply'] ?? '')) === '' && $newReply !== '') {
+                ics213_notify_reply($incidentId, $opId, $before, trim((string)($_POST['reply_by'] ?? '')), $newReply);
+            }
+            ics213_mark_read($messageId);
         } else {
             // New message: save the originating message fields. Reply can be added later from the details screen.
-            $stmt = $pdo->prepare("INSERT INTO form_213_messages (form_record_id, to_name, from_name, subject, date_time, message, approved_by, created_at, updated_at) VALUES (?,?,?,?,?,?,?,NOW(),NOW())");
+            $filled = ics213_filled_positions($incidentId);
+            $toRole = strtoupper(trim((string)($_POST['to_role_code'] ?? '')));
+            if ($toRole !== '' && !isset($filled[$toRole])) { $toRole = ''; }
+            $toName = trim((string)($_POST['to_name'] ?? ''));
+            if ($toName === '' && $toRole !== '') { $toName = implode(' / ', $filled[$toRole]['names']) . ' (' . $filled[$toRole]['title'] . ')'; }
+            if ($toName === '') { throw new RuntimeException('Enter who the message is for (2. To).'); }
+            $stmt = $pdo->prepare("INSERT INTO form_213_messages (form_record_id, to_name, to_role_code, from_name, from_user_id, subject, date_time, message, approved_by, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,NOW(),NOW())");
             $stmt->execute([
                 $formRecordId,
-                trim($_POST['to_name'] ?? ''),
+                $toName,
+                $toRole !== '' ? $toRole : null,
                 trim($_POST['from_name'] ?? ''),
+                (int)($user['id'] ?? 0) ?: null,
                 trim($_POST['subject'] ?? ''),
                 ($_POST['date_time'] ?? '') ?: null,
                 trim($_POST['message'] ?? ''),
                 trim($_POST['approved_by'] ?? '')
             ]);
+            $newId = (int)$pdo->lastInsertId();
+            ics213_notify_new_message($incidentId, $opId, $newId, $toRole, trim((string)($_POST['from_name'] ?? '')),
+                trim((string)($_POST['subject'] ?? '')), trim((string)($_POST['message'] ?? '')));
+            audit_log((int)($user['id'] ?? 0), 'create', 'ICS213', $formRecordId, 'ICS 213 message #' . $newId . ' to ' . $toName
+                . ($toRole !== '' ? ' (' . $toRole . ', notified)' : ''));
         }
         flash('success', 'ICS 213 saved.');
         header('Location: ' . app_url('/forms/ics213/index.php?operational_period_id=' . $opId));
@@ -158,6 +180,7 @@ if ($messageId <= 0 && !$isNewMessage):
         $stmt->execute([$messageId, $formRecordId]);
         $msg = $stmt->fetch() ?: [];
         $locked = true;
+        if ($msg) { ics213_mark_read((int)$msg['id']); }
     }
     $dateValue = isset($msg['date_time']) && $msg['date_time'] !== null && $msg['date_time'] !== ''
         ? str_replace(' ', 'T', substr((string)$msg['date_time'], 0, 16))
@@ -178,7 +201,22 @@ if ($messageId <= 0 && !$isNewMessage):
 
     <h3>Original Message</h3>
     <div class="grid-2">
-      <label>2. To<input name="to_name" value="<?= e($msg['to_name'] ?? '') ?>" <?= $locked ? 'readonly' : '' ?>></label>
+      <?php if ($locked): ?>
+        <label>2. To<input name="to_name" value="<?= e($msg['to_name'] ?? '') ?>" readonly></label>
+      <?php else: $filled = ics213_filled_positions($incidentId); ?>
+        <div>
+          <label>2. To (position)
+            <select name="to_role_code" id="ics213_to_role">
+              <option value="">-- Not in the incident organization (type the name below) --</option>
+              <?php foreach ($filled as $code => $p): ?>
+                <option value="<?= e($code) ?>" data-to="<?= e(implode(' / ', $p['names']) . ' (' . $p['title'] . ')') ?>"><?= e($code . ' - ' . $p['title'] . ': ' . implode(', ', $p['names'])) ?></option>
+              <?php endforeach; ?>
+            </select>
+          </label>
+          <label>Name and position<input name="to_name" id="ics213_to_name" value="" placeholder="Filled in from the position, or type a name"></label>
+          <p class="small">Picking a position sends the message to the dashboard of everyone holding it.</p>
+        </div>
+      <?php endif; ?>
       <label>3. From<input name="from_name" value="<?= e($msg['from_name'] ?? ($user['real_name'] ?? $user['display_name'] ?? $user['username'] ?? '')) ?>" <?= $locked ? 'readonly' : '' ?>></label>
     </div>
     <div class="grid-2">
@@ -201,6 +239,18 @@ if ($messageId <= 0 && !$isNewMessage):
     <p>
       <a class="btn" href="<?= e(app_url('/forms/ics213/index.php?operational_period_id=' . $opId)) ?>">Back to List</a>
     </p>
+    <?php if (!$locked): ?>
+    <script>
+    (function () {
+      var sel = document.getElementById('ics213_to_role'), name = document.getElementById('ics213_to_name'), auto = '';
+      if (!sel || !name) { return; }
+      sel.addEventListener('change', function () {
+        var opt = sel.options[sel.selectedIndex], v = opt ? (opt.getAttribute('data-to') || '') : '';
+        if (name.value === '' || name.value === auto) { name.value = v; auto = v; }
+      });
+    }());
+    </script>
+    <?php endif; ?>
   <?php
 if (function_exists('render_ics_form_actions')) {
     $faPerms = $permissions ?? $formPermissions ?? ['can_view'=>true,'can_create'=>true,'can_edit'=>true,'can_submit_final'=>true];

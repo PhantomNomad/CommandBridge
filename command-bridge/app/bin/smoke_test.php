@@ -218,6 +218,10 @@ if ($want('env')) {
         t_ok('Page-level Submit records the signature and approver', $noSig === [], 'missing in: ' . implode(', ', $noSig));
     } catch (Throwable $e) { t_ok('Form lock checks', false, $e->getMessage()); }
 
+    t_ok('ICS 213 messages know who they are for (form_213_messages.to_role_code, from_user_id)',
+        count(array_intersect(['to_role_code', 'from_user_id'], table_columns('form_213_messages'))) === 2, 'run update.sh (migration 0007)');
+    t_ok('File present: app/includes/ics213_messages.php', is_file($appRoot . '/includes/ics213_messages.php'));
+
     // Dashboard panels per position (includes/dashboard_panels.php, migration 0006).
     try {
         require_once $appRoot . '/includes/dashboard_panels.php';

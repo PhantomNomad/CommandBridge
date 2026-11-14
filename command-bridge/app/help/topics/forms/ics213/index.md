@@ -16,7 +16,7 @@ The first page lists the messages for the operational period with their date, To
 | Block | What to enter |
 |---|---|
 | 1. Incident Name | Filled in for you. |
-| 2. To | The name and position of the person it's for. Use at least a first initial and last name. Under Unified Command, include the agency. |
+| 2. To | Pick the **position** it's for from the list of positions filled in the incident. The name and position fill in for you, and everyone holding that position gets a dashboard notification. For someone outside the incident organization, leave the position blank and type the name. Use at least a first initial and last name. Under Unified Command, include the agency. |
 | 3. From | Your name and position. Filled in from your account. |
 | 4. Subject | A short subject. |
 | 5. Date/Time | When the message was written. Defaults to now. |
@@ -31,5 +31,7 @@ Open the message and fill in **8. Reply**, **Reply By**, **ICS Position** and **
 
 ## Tips
 
-- Command Bridge does not send the message for you. Deliver it, or hand it to the Communications Unit, the way you normally would.
+- When you pick a position in **2. To**, the message shows up in that person's **My action items** on the dashboard. Opening the message clears the notice.
+- When someone writes the first reply, the sender gets a dashboard notification.
+- For anyone outside the incident organization, Command Bridge doesn't send anything. Deliver the message yourself, or hand it to the Communications Unit.
 - To order resources, use the [ICS 213RR](help:forms/ics213rr_v2/index) instead. It follows the request through approval, ordering and delivery.
