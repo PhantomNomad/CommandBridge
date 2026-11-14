@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+* **Meeting reminders can be answered.** The "Was this meeting held?" reminder said to mark the meeting on the ICS 230,
+  but there was no way to do it once the ICS 230 was signed, for meetings in an earlier operational period, or for a
+  chair who can't edit the ICS 230. The reminder now opens a new page, `forms/ics230/meeting_status.php`, with
+  **Completed** and **Cancelled** buttons and an optional note. The ICS 230 list also shows a **Was it held?** button
+  for past meetings. The chair, IC/UC, PSC, anyone who can edit the ICS 230 and a SysAdmin can use it; each change is
+  written to the audit log. No database changes. Reminders already sent still link to the ICS 230.
 * **ICS 201: clearer message when the form is locked.** A submitted or approved ICS 201 told the Incident Commander
   "You do not have permission to edit this form". It now says the form is submitted (or approved) and locked, and shows the Preview PDF and
   Download PDF buttons, which were hidden along with the edit form, so a locked ICS 201 can still be read.

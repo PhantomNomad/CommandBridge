@@ -34,11 +34,13 @@ Each meeting has a status:
 | Completed | The meeting was held |
 | Cancelled | It won't happen; it no longer shows under upcoming meetings on the dashboard |
 
-**Only Completed meetings count as held.** Each one shows as "Meeting held: ..." on everyone's [ICS 214](help:forms/ics214/index) for that operational period. Anyone who can edit the ICS 230 can change the status, normally the meeting chair or the Planning Section Chief.
+**Only Completed meetings count as held.** Each one shows as "Meeting held: ..." on everyone's [ICS 214](help:forms/ics214/index) for that operational period. While the ICS 230 is a draft, anyone who can edit it can change a meeting's status with **Edit**.
+
+Once a meeting's start time has passed and it is still Scheduled or Tentative, a **Was it held?** button shows next to its status. It opens a page with **Completed (meeting was held)** and **Cancelled** buttons and an optional note. This works even after the ICS 230 has been signed, because it records what happened rather than changing the plan. The chair, the Incident Commander, the Planning Section Chief and anyone who can edit the ICS 230 can use it.
 
 ## Reminders
 
-If a meeting is still Scheduled or Tentative an hour after its start time, the **chair**, the **Incident Commander** (or Unified Command) and the **Planning Section Chief** each get a dashboard notification asking them to mark it Completed or Cancelled. The reminder disappears as soon as the status is changed.
+If a meeting is still Scheduled or Tentative an hour after its start time, the **chair**, the **Incident Commander** (or Unified Command) and the **Planning Section Chief** each get a dashboard notification asking whether it was held. Opening it shows the same **Was it held?** page, which also works for meetings in an earlier operational period. The reminder disappears as soon as the status is changed.
 
 ## ECC display
 

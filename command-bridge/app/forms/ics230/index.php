@@ -5,6 +5,7 @@ require_csrf_for_post();
 
 require_once dirname(dirname(__DIR__)) . '/includes/layout.php';
 require_once dirname(dirname(__DIR__)) . '/includes/form_action_buttons.php';
+require_once dirname(dirname(__DIR__)) . '/includes/meetings.php';
 require_login();
 
 $pdo = db();
@@ -384,7 +385,14 @@ render_header('ICS 230 - Daily Meeting Schedule');
               <div class="small">Chair: <?= e((string)$meeting['chair_name']) ?><?php if (!empty($meeting['chair_position_title'])): ?> (<?= e((string)$meeting['chair_position_title']) ?>)<?php endif; ?></div>
             <?php endif; ?>
           </td>
-          <td><?= e(ucfirst((string)$meeting['status'])) ?></td>
+          <td>
+            <?= e(ucfirst((string)$meeting['status'])) ?>
+            <?php if (in_array(strtolower((string)$meeting['status']), CB_MEETING_OPEN_STATUSES, true)
+                && strtotime((string)$meeting['scheduled_at']) <= time()
+                && cb_meeting_user_can_set_status($incidentId, $meeting)): ?>
+              <div><a class="btn btn-secondary" href="<?= e(cb_meeting_status_url((int)$meeting['id']) . '&return_to=ics230') ?>">Was it held?</a></div>
+            <?php endif; ?>
+          </td>
           <?php if ($canEdit && $formStatus !== 'submitted'): ?>
             <td>
               <div class="table-actions">

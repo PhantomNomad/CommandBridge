@@ -182,7 +182,7 @@ if ($want('env')) {
         $orphans = (int)$pdo->query("SELECT COUNT(*) FROM form_records fr LEFT JOIN form_214_headers h ON h.form_record_id = fr.id
             WHERE UPPER(REPLACE(fr.form_type, ' ', '')) = 'ICS214' AND fr.is_deleted = 0 AND COALESCE(h.user_id, fr.prepared_by_user_id) IS NULL")->fetchColumn();
         t_ok('Every ICS 214 log has an owner', $orphans === 0, $orphans . ' log(s) without a person');
-        foreach (['/includes/ics214_log.php', '/includes/meetings.php', '/forms/ics214/logs.php', '/audit/index.php'] as $rel) {
+        foreach (['/includes/ics214_log.php', '/includes/meetings.php', '/forms/ics230/meeting_status.php', '/forms/ics214/logs.php', '/audit/index.php'] as $rel) {
             t_ok("File present: app$rel", is_file($appRoot . $rel));
         }
     } catch (Throwable $e) { t_ok('ICS 214 checks', false, $e->getMessage()); }

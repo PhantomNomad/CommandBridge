@@ -32,6 +32,63 @@ function cb_meeting_reminder_recipients(int $incidentId, array $meeting): array
     return array_values(array_unique(array_filter($ids)));
 }
 
+/** Meeting statuses that mean the meeting is still to happen (and can still get a reminder). */
+const CB_MEETING_OPEN_STATUSES = ['scheduled', 'tentative'];
+
+/** Loads one meeting of an incident (not deleted), or null. */
+function cb_meeting_load(int $incidentId, int $meetingId): ?array
+{
+    if ($incidentId <= 0 || $meetingId <= 0) { return null; }
+    $st = db()->prepare("SELECT m.*, mt.name AS meeting_type_name, op.period_number
+        FROM operational_period_meetings m
+        LEFT JOIN meeting_types mt ON mt.id = m.meeting_type_id
+        LEFT JOIN operational_periods op ON op.id = m.operational_period_id
+        WHERE m.id = ? AND m.incident_id = ? AND m.deleted_at IS NULL LIMIT 1");
+    $st->execute([$meetingId, $incidentId]);
+    $row = $st->fetch();
+    return $row ?: null;
+}
+
+/**
+ * Who may record whether a meeting was held (completed / cancelled): anyone who can edit the ICS 230, the
+ * people who get the reminder (chair, IC/UC, PSC) and a SysAdmin. This works even after the ICS 230 is
+ * signed, because it records what happened rather than changing the plan.
+ */
+function cb_meeting_user_can_set_status(int $incidentId, array $meeting): bool
+{
+    $user = current_user();
+    if (!$user) { return false; }
+    if (!empty($user['is_sysadmin'])) { return true; }
+    $perms = get_current_user_form_permissions('ICS230', $incidentId);
+    if (!empty($perms['can_edit'])) { return true; }
+    return in_array((int)$user['id'], cb_meeting_reminder_recipients($incidentId, $meeting), true);
+}
+
+/** Marks a meeting completed or cancelled. Returns false if the status is not allowed. */
+function cb_meeting_set_status(int $incidentId, array $meeting, string $status, string $note = ''): bool
+{
+    if (!in_array($status, ['completed', 'cancelled'], true)) { return false; }
+    $userId = (int)(current_user()['id'] ?? 0);
+    $note = trim($note);
+    $notes = (string)($meeting['notes'] ?? '');
+    if ($note !== '') {
+        $notes = trim($notes . "\n" . ($status === 'completed' ? 'Held' : 'Cancelled') . ': ' . $note);
+    }
+    $st = db()->prepare("UPDATE operational_period_meetings SET status = ?, notes = ?, updated_by_user_id = ?, updated_at = NOW()
+        WHERE id = ? AND incident_id = ? AND deleted_at IS NULL");
+    $st->execute([$status, $notes !== '' ? $notes : null, $userId ?: null, (int)$meeting['id'], $incidentId]);
+    audit_log($userId ?: null, 'meeting_' . $status, 'operational_period_meetings', (int)$meeting['id'],
+        'Meeting "' . (string)$meeting['title'] . '" (' . (string)$meeting['scheduled_at'] . ') marked ' . $status
+        . ($note !== '' ? ': ' . $note : ''));
+    return true;
+}
+
+/** Link to the page that records whether a meeting was held. */
+function cb_meeting_status_url(int $meetingId): string
+{
+    return app_url('/forms/ics230/meeting_status.php') . '?' . http_build_query(['meeting_id' => $meetingId]);
+}
+
 /**
  * Sends "mark the meeting" reminders for meetings that started more than an hour ago (within the last day)
  * and are still scheduled/tentative. Each person is reminded once per meeting. Returns how many were created.
@@ -62,9 +119,9 @@ function cb_meeting_reminders_run(int $incidentId): int
             $mid = (int)$m['id'];
             $title = 'Was this meeting held? ' . mb_substr(trim((string)$m['title']), 0, 180);
             $body = trim((string)$m['title']) . ' was scheduled for ' . date('Y-m-d H:i', (int)strtotime((string)$m['scheduled_at']))
-                . ' and is still marked ' . strtolower((string)$m['status']) . '. Open the ICS 230 and mark it completed or cancelled.'
+                . ' and is still marked ' . strtolower((string)$m['status']) . '. Open this reminder to mark it completed (held) or cancelled.'
                 . ' Only completed meetings are shown as "Meeting held" on everyone\'s ICS 214.';
-            $link = app_url('/forms/ics230/index.php') . '?' . http_build_query(['op_id' => (int)$m['operational_period_id']]);
+            $link = cb_meeting_status_url($mid);
             foreach (cb_meeting_reminder_recipients($incidentId, $m) as $uid) {
                 $exists->execute([$incidentId, $uid, $mid]);
                 if ($exists->fetchColumn()) { continue; }
