@@ -36,6 +36,8 @@
   - Database: migration `0005_form_revisions.sql` adds `form_records.revision` and the `form_revisions` table.
     Smoke test: checks the migration and that every form page has the lock check, and runs a revise on its test
     form.
+  - Style sheets and scripts are now loaded with a `?v=` version stamp, so browsers pick up new styles right after
+    an update instead of showing a cached copy (the new banner showed up unstyled until the cache was cleared).
 * **Meeting reminders can be answered.** The "Was this meeting held?" reminder said to mark the meeting on the ICS 230,
   but there was no way to do it once the ICS 230 was signed, for meetings in an earlier operational period, or for a
   chair who can't edit the ICS 230. The reminder now opens a new page, `forms/ics230/meeting_status.php`, with

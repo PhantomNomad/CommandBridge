@@ -70,7 +70,8 @@ function render_header(string $title, ?string $helpTopic = null): void {
   <title><?= e($title) ?> - <?= e($branding['application_name']) ?></title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/svg+xml" href="<?= e(app_url('/assets/img/command-bridge-icon.svg')) ?>">
-  <link rel="stylesheet" href="<?= e(app_url('/assets/css/app.css')) ?>">
+  <?php // ?v= changes whenever the file changes, so browsers fetch the new styles after an update instead of a cached copy. ?>
+  <link rel="stylesheet" href="<?= e(app_url('/assets/css/app.css') . '?v=' . (string)@filemtime(dirname(__DIR__) . '/assets/css/app.css')) ?>">
 </head>
 <body>
 <div class="app">
@@ -260,7 +261,7 @@ function render_footer(): void {
   </div>
   <div class="help-panel-body help-doc" tabindex="-1"></div>
 </aside>
-<script src="<?= e(app_url('/assets/js/help_panel.js')) ?>" defer></script>
+<script src="<?= e(app_url('/assets/js/help_panel.js') . '?v=' . (string)@filemtime(dirname(__DIR__) . '/assets/js/help_panel.js')) ?>" defer></script>
 <?php
     ?>
 
