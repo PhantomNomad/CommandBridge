@@ -67,28 +67,35 @@ if (!in_array($mode, ['full', 'posting'], true)) {
     $mode = 'full';
 }
 
-try {
-    $renderer = new Ics230PdfRenderer([
-        'incident' => $incident,
-        'operational_period' => $operationalPeriod,
-        'meetings' => $meetings,
-        'prepared_by_name' => $preparedName,
-        'prepared_by_position' => $preparedPosition,
-        'prepared_at' => $preparedAt,
-        'mode' => $mode,
-    ]);
-
-    $filename = $mode === 'posting'
-        ? 'ICS230_meeting_posting.pdf'
-        : 'ICS230_full.pdf';
-
-    $renderer->renderDocument();
-    $renderer->Output($filename, ics_pdf_output_mode());
-    exit;
-} catch (Throwable $e) {
-    http_response_code(500);
-    render_header('ICS 230 PDF');
-    echo '<div class="card"><p>' . e($e->getMessage()) . '</p></div>';
-    render_footer();
+if ($mode === 'posting') {
+    // The meeting posting is Command Bridge's own wall sheet, not an ICS form, so it keeps its own layout.
+    try {
+        $renderer = new Ics230PdfRenderer([
+            'incident' => $incident,
+            'operational_period' => $operationalPeriod,
+            'meetings' => $meetings,
+            'prepared_by_name' => $preparedName,
+            'prepared_by_position' => $preparedPosition,
+            'prepared_at' => $preparedAt,
+            'mode' => 'posting',
+        ]);
+        $renderer->renderDocument();
+        $renderer->Output('ICS230_meeting_posting.pdf', ics_pdf_output_mode());
+    } catch (Throwable $e) {
+        error_log('ICS 230 posting PDF failed: ' . $e->getMessage());
+        ics_pdf_fail(500, 'The meeting posting PDF could not be generated. Please contact the system administrator.');
+    }
     exit;
 }
+
+// The ICS 230 itself: the official ICS Canada form.
+require_once __DIR__ . '/Ics230OfficialPdfFieldMapper.php';
+try {
+    $built = Ics230OfficialPdfFieldMapper::build($incident, $operationalPeriod, $meetings, $preparedName, $preparedPosition, $preparedAt);
+    ics_pdf_send_official_with_continuation('ICS230', $built['pages'], $built['continuations'],
+        ics_pdf_header_lines($incident, $operationalPeriod), 'ICS 230', 'ICS230_Incident_' . $incidentId . '.pdf');
+} catch (Throwable $e) {
+    error_log('ICS 230 official PDF export failed: ' . $e->getMessage());
+    ics_pdf_fail(500, 'The ICS 230 PDF could not be generated. Please contact the system administrator.');
+}
+exit;

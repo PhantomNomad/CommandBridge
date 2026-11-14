@@ -125,6 +125,27 @@ class Ics202PdfRenderer
     }
 
 
+    /**
+     * Writes only the uploaded attachments as pages of their own, for appending after the official ICS 202.
+     * Returns false when there was nothing to write.
+     */
+    public function writeAttachmentsPdf(array $attachments, string $outPath): bool
+    {
+        if (!$attachments || !command_bridge_require_tcpdf()) {
+            return false;
+        }
+        require_once __DIR__ . '/BaseTcpdfRenderer.php';
+        $pdf = new class($this->layout, 'ICS 202 attachments') extends BaseTcpdfRenderer {};
+        foreach ($attachments as $attachment) {
+            $this->appendAttachment($pdf, (array)$attachment);
+        }
+        if ($pdf->getNumPages() === 0) {
+            return false;
+        }
+        $pdf->Output($outPath, 'F');
+        return is_file($outPath) && filesize($outPath) > 0;
+    }
+
     private function ics202AttachmentAbsolutePath(array $attachment): string
     {
         $incidentId = (int)($attachment['incident_id'] ?? 0);

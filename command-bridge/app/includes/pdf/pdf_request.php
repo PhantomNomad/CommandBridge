@@ -141,3 +141,56 @@ if (!function_exists('ics_pdf_incident_name')) {
         return trim((string)($incident['incident_name'] ?? $incident['name'] ?? ''));
     }
 }
+
+if (!function_exists('ics_pdf_send_official_with_continuation')) {
+    /**
+     * Fill an official template once per page of data, append a continuation sheet for text that did not fit
+     * (OfficialPdfText::fit()), and send it.
+     *
+     * @param array<int, array<string, mixed>> $pages one field map per output page
+     * @param array<int, array{heading: string, text: string}> $continuations
+     * @param array<int, string> $headerLines printed at the top of each continuation page (incident, period)
+     * @param array<int, string>|null $keepPages per output page, which template pages to keep ("1", "2"); null = all
+     * @param array<int, string> $appendFiles temporary PDFs to add at the end (deleted afterwards)
+     */
+    function ics_pdf_send_official_with_continuation(string $formCode, array $pages, array $continuations, array $headerLines,
+        string $title, string $filename, ?array $keepPages = null, array $appendFiles = []): void
+    {
+        require_once __DIR__ . '/OfficialPdfTemplateExporter.php';
+        require_once __DIR__ . '/SimpleTextPdf.php';
+        $exporter = new OfficialPdfTemplateExporter();
+        $path = $exporter->createPaged($formCode, $pages ?: [[]], $keepPages);
+        if ($continuations) {
+            $extra = tempnam(sys_get_temp_dir(), 'cbcont_');
+            if ($extra === false || file_put_contents($extra, SimpleTextPdf::render($title . ' - Continuation Sheet', $headerLines, $continuations)) === false) {
+                @unlink($path);
+                throw new RuntimeException('Unable to prepare the continuation sheet.');
+            }
+            $path = $exporter->appendPdf($path, $extra);
+        }
+        foreach ($appendFiles as $file) {
+            // Temporary PDFs made by the caller (e.g. ICS 201 maps); appendPdf() deletes them.
+            if (is_string($file) && is_file($file) && filesize($file) > 0) {
+                $path = $exporter->appendPdf($path, $file);
+            }
+        }
+        if (ics_pdf_preview_requested()) {
+            $exporter->sendInline($path, $filename);
+        } else {
+            $exporter->sendDownload($path, $filename);
+        }
+    }
+}
+
+if (!function_exists('ics_pdf_header_lines')) {
+    /** Incident and operational period lines for the top of a continuation sheet. */
+    function ics_pdf_header_lines(array $incident, array $op): array
+    {
+        $lines = ['Incident: ' . ics_pdf_incident_name($incident)];
+        $start = ics_pdf_fmt($op['op_start'] ?? $op['start_time'] ?? '');
+        if ($start !== '') {
+            $lines[] = 'Operational period: ' . trim((string)($op['period_name'] ?? '')) . ' ' . $start . ' to ' . ics_pdf_fmt($op['op_end'] ?? $op['end_time'] ?? '');
+        }
+        return $lines;
+    }
+}

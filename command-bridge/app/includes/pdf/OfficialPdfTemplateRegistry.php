@@ -4,8 +4,8 @@ declare(strict_types=1);
 /**
  * Central registry for the official ICS Canada PDF templates bundled with Command Bridge.
  *
- * Templates marked as non-fillable require a purpose-built renderer until a fillable
- * replacement is approved. Do not accept user-supplied paths here.
+ * Templates marked as non-fillable (ICS 218) are filled by stamping a text overlay onto the official page
+ * (OfficialPdfTemplateExporter::stampTemplate()). Do not accept user-supplied paths here.
  */
 final class OfficialPdfTemplateRegistry
 {
@@ -31,7 +31,7 @@ final class OfficialPdfTemplateRegistry
         'ICS215A'  => ['file' => 'ICS215A.pdf',   'fillable' => true],
         'ICS216'   => ['file' => 'ICS216.pdf',    'fillable' => true],
         'ICS217'   => ['file' => 'ICS217.pdf',    'fillable' => true],
-        'ICS218'   => ['file' => 'ICS218.pdf',    'fillable' => false],
+        'ICS218'   => ['file' => 'ICS218.pdf',    'fillable' => false, 'pages' => 3],
         'ICS220'   => ['file' => 'ICS220.pdf',    'fillable' => true],
         'ICS221'   => ['file' => 'ICS221.pdf',    'fillable' => true],
         'ICS224'   => ['file' => 'ICS224.pdf',    'fillable' => true],
@@ -50,7 +50,7 @@ final class OfficialPdfTemplateRegistry
     }
 
     /**
-     * @return array{form_code: string, file: string, path: string, fillable: bool}
+     * @return array{form_code: string, file: string, path: string, fillable: bool, pages: int}
      */
     public static function get(string $formCode): array
     {
@@ -71,6 +71,7 @@ final class OfficialPdfTemplateRegistry
             'file' => $template['file'],
             'path' => $path,
             'fillable' => (bool)$template['fillable'],
+            'pages' => (int)($template['pages'] ?? 1),
         ];
     }
 

@@ -2,6 +2,25 @@
 
 ## Unreleased
 
+* **Every form's PDF is now the official ICS Canada form.** Before, only the ICS 202, 205, 205A, 207, 209, 209-WF,
+  210, 211, 213 and 213-RR filled the official PDF; the ICS 201, 203, 204, 206, 208, 214, 215A, 218 and 230 were
+  redrawn by the app. Now all of them fill the official ICS Canada template, so printouts look like the real forms.
+  - Text that does not fit a box is cut at a word with "... (cont.)" and printed in full on a continuation sheet at
+    the end. More rows than the form has (resources, check-ins, log entries, meetings, hospitals) continue on extra
+    copies of the form, with "Page x of y" on the ICS 214.
+  - Box sizes and fonts are read from `assets/pdf/official/fields/*.json`, made by the new developer tool
+    `tools/pdf_field_metadata.py`. Run it again whenever an ICS Canada PDF is replaced (see
+    `includes/pdf/PDF_EXPORT_METHOD.md`).
+  - ICS 218 has no fillable fields on the official PDF, so its text is drawn at the form's own positions and stamped on.
+  - ICS 201 maps/sketches and ICS 202 attachments now follow the official form as extra pages (the ICS 202 used to
+    switch to the app-drawn version when it had attachments).
+  - The ICS 230 "meeting posting" wall sheet is not an ICS form and keeps its own layout.
+  - Removed the old app-drawn renderers for the ICS 203, 204, 205, 206, 208 and 218. `forms/ics201/pdf_preview.php` now
+    opens the official blank ICS 201.
+  - Smoke test: builds every form's PDF, checks that each field name exists on the official template, and checks the
+    ICS 218 stamping.
+  - The PDFs need `pdftk` on the server (the installer adds it). Without it, these forms show an error instead of a
+    PDF.
 * **TSC is now SysAdmin, and it is no longer an ICS position.** ICS Canada does not list a Technical Services
   Coordinator, so the application administrator is now called **SysAdmin** everywhere (screens, help, setup, scripts).
   A SysAdmin manages the application and can open and approve every form, as before, but is not part of the incident's

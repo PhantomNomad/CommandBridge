@@ -52,25 +52,25 @@ $formStatus = (string)($formRecord['status'] ?? 'draft');
 $signedByName = trim((string)($signature['signer_name'] ?? ''));
 $signatureName = ($formStatus === 'submitted' && $signedByName !== '') ? $signedByName : trim((string)($record['signature_name'] ?? ''));
 
+require_once __DIR__ . '/Ics201OfficialPdfFieldMapper.php';
+$mapsPdf = '';
 try {
-    $layout = require dirname(dirname(__DIR__)) . '/includes/pdf/ics201_layout.php';
-    $renderer = new Ics201PdfRenderer($layout);
-    $renderer->renderFilled([
-        'incident' => $incident,
-        'record' => $record,
-        'attachments' => $attachments,
-        'current_actions' => $currentActions,
-        'planned_actions' => $plannedActions,
-        'resources' => $resources,
-        'prepared_by' => $preparedBy,
-        'signature_name' => $signatureName,
-        'inline' => ics_pdf_preview_requested(),
-    ]);
-    exit;
+    // Uploaded maps and sketches follow the official form as pages of their own.
+    if ($attachments) {
+        $layout = require dirname(dirname(__DIR__)) . '/includes/pdf/ics201_layout.php';
+        $mapsPdf = (string)tempnam(sys_get_temp_dir(), 'cb201maps_');
+        if ($mapsPdf === '' || !(new Ics201PdfRenderer($layout))->writeAttachmentsPdf($attachments, $mapsPdf)) {
+            @unlink($mapsPdf);
+            $mapsPdf = '';
+        }
+    }
+    $built = Ics201OfficialPdfFieldMapper::build($record, $incident, $currentActions, $plannedActions, $resources,
+        $preparedBy, $signatureName, count($attachments));
+    ics_pdf_send_official_with_continuation('ICS201', [$built['fields']], $built['continuations'],
+        ics_pdf_header_lines($incident, []), 'ICS 201', 'ICS201_Incident_' . $incidentId . '.pdf', null, $mapsPdf !== '' ? [$mapsPdf] : []);
 } catch (Throwable $e) {
-    http_response_code(500);
-    render_header('ICS 201 PDF');
-    echo '<div class="card"><p>' . e($e->getMessage()) . '</p></div>';
-    render_footer();
-    exit;
+    if ($mapsPdf !== '') { @unlink($mapsPdf); }
+    error_log('ICS 201 official PDF export failed: ' . $e->getMessage());
+    ics_pdf_fail(500, 'The ICS 201 PDF could not be generated. Please contact the system administrator.');
 }
+exit;

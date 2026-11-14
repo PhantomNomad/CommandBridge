@@ -1,0 +1,1073 @@
+{
+"1 INCIDENT NAME": [
+333.8,
+20.5,
+12.0,
+0,
+1
+],
+"11. PREPARED BY Name and Position": [
+229.3,
+28.8,
+12.0,
+0,
+3
+],
+"13. PREPARED BY Name and Position": [
+228.1,
+28.8,
+12.0,
+0,
+4
+],
+"2 DATE PREPARED": [
+108.4,
+23.2,
+12.0,
+0,
+1
+],
+"3 TIME PREPARED": [
+108.8,
+23.2,
+12.0,
+0,
+1
+],
+"4. MAP SKETCH": [
+539.9,
+365.6,
+12.0,
+1,
+1
+],
+"5. SITUATION SUMMARY AND SAFETY BRIEFING": [
+539.9,
+174.7,
+12.0,
+1,
+1
+],
+"6. PREPARED BY Name and Position": [
+229.9,
+28.8,
+12.0,
+1,
+1
+],
+"7. CURRENT AND PLANNED OBJECTIVES": [
+539.9,
+232.9,
+12.0,
+1,
+2
+],
+"9. CURRENT ORGANIZATION": [
+538.7,
+611.1,
+12.0,
+1,
+3
+],
+"9. PREPARED BY Name and Position": [
+229.3,
+28.8,
+12.0,
+0,
+2
+],
+"Action Row 1": [
+456.9,
+18.9,
+12.0,
+0,
+2
+],
+"Action Row 10": [
+456.9,
+18.9,
+12.0,
+0,
+2
+],
+"Action Row 11": [
+456.9,
+18.9,
+12.0,
+0,
+2
+],
+"Action Row 12": [
+456.9,
+18.9,
+12.0,
+0,
+2
+],
+"Action Row 13": [
+456.9,
+18.9,
+12.0,
+0,
+2
+],
+"Action Row 14": [
+456.9,
+18.9,
+12.0,
+0,
+2
+],
+"Action Row 15": [
+456.9,
+18.9,
+12.0,
+0,
+2
+],
+"Action Row 16": [
+456.9,
+18.9,
+12.0,
+0,
+2
+],
+"Action Row 2": [
+456.9,
+18.9,
+12.0,
+0,
+2
+],
+"Action Row 3": [
+456.9,
+18.9,
+12.0,
+0,
+2
+],
+"Action Row 4": [
+456.9,
+18.9,
+12.0,
+0,
+2
+],
+"Action Row 5": [
+456.9,
+18.9,
+12.0,
+0,
+2
+],
+"Action Row 6": [
+456.9,
+18.9,
+12.0,
+0,
+2
+],
+"Action Row 7": [
+456.9,
+18.9,
+12.0,
+0,
+2
+],
+"Action Row 8": [
+456.9,
+18.9,
+12.0,
+0,
+2
+],
+"Action Row 9": [
+456.9,
+18.9,
+12.0,
+0,
+2
+],
+"ETARow1": [
+34.9,
+25.0,
+12.0,
+0,
+4
+],
+"ETARow10": [
+34.3,
+25.4,
+12.0,
+0,
+4
+],
+"ETARow11": [
+34.9,
+25.4,
+12.0,
+0,
+4
+],
+"ETARow12": [
+34.3,
+25.4,
+12.0,
+0,
+4
+],
+"ETARow13": [
+34.3,
+25.4,
+12.0,
+0,
+4
+],
+"ETARow14": [
+34.9,
+25.4,
+12.0,
+0,
+4
+],
+"ETARow15": [
+34.3,
+25.4,
+12.0,
+0,
+4
+],
+"ETARow16": [
+34.3,
+25.4,
+12.0,
+0,
+4
+],
+"ETARow17": [
+34.3,
+25.4,
+12.0,
+0,
+4
+],
+"ETARow18": [
+34.9,
+25.4,
+12.0,
+0,
+4
+],
+"ETARow19": [
+33.7,
+25.4,
+12.0,
+0,
+4
+],
+"ETARow2": [
+34.3,
+25.4,
+12.0,
+0,
+4
+],
+"ETARow20": [
+34.9,
+25.4,
+12.0,
+0,
+4
+],
+"ETARow21": [
+35.5,
+25.4,
+12.0,
+0,
+4
+],
+"ETARow22": [
+34.9,
+25.1,
+12.0,
+0,
+4
+],
+"ETARow3": [
+34.9,
+25.4,
+12.0,
+0,
+4
+],
+"ETARow4": [
+34.3,
+25.4,
+12.0,
+0,
+4
+],
+"ETARow5": [
+34.3,
+25.4,
+12.0,
+0,
+4
+],
+"ETARow6": [
+34.9,
+25.4,
+12.0,
+0,
+4
+],
+"ETARow7": [
+34.9,
+25.4,
+12.0,
+0,
+4
+],
+"ETARow8": [
+34.3,
+25.4,
+12.0,
+0,
+4
+],
+"ETARow9": [
+34.3,
+25.4,
+12.0,
+0,
+4
+],
+"LocationAssignmentRow1": [
+175.8,
+25.0,
+12.0,
+0,
+4
+],
+"LocationAssignmentRow10": [
+175.8,
+25.4,
+12.0,
+0,
+4
+],
+"LocationAssignmentRow11": [
+175.8,
+25.4,
+12.0,
+0,
+4
+],
+"LocationAssignmentRow12": [
+175.8,
+25.4,
+12.0,
+0,
+4
+],
+"LocationAssignmentRow13": [
+175.8,
+25.4,
+12.0,
+0,
+4
+],
+"LocationAssignmentRow14": [
+175.8,
+25.4,
+12.0,
+0,
+4
+],
+"LocationAssignmentRow15": [
+175.8,
+25.4,
+12.0,
+0,
+4
+],
+"LocationAssignmentRow16": [
+175.8,
+25.4,
+12.0,
+0,
+4
+],
+"LocationAssignmentRow17": [
+175.8,
+25.4,
+12.0,
+0,
+4
+],
+"LocationAssignmentRow18": [
+175.8,
+25.4,
+12.0,
+0,
+4
+],
+"LocationAssignmentRow19": [
+175.8,
+25.4,
+12.0,
+0,
+4
+],
+"LocationAssignmentRow2": [
+175.8,
+25.4,
+12.0,
+0,
+4
+],
+"LocationAssignmentRow20": [
+175.8,
+25.4,
+12.0,
+0,
+4
+],
+"LocationAssignmentRow21": [
+175.8,
+25.4,
+12.0,
+0,
+4
+],
+"LocationAssignmentRow22": [
+175.8,
+25.1,
+12.0,
+0,
+4
+],
+"LocationAssignmentRow3": [
+175.8,
+25.4,
+12.0,
+0,
+4
+],
+"LocationAssignmentRow4": [
+175.8,
+25.4,
+12.0,
+0,
+4
+],
+"LocationAssignmentRow5": [
+175.8,
+25.4,
+12.0,
+0,
+4
+],
+"LocationAssignmentRow6": [
+175.8,
+25.4,
+12.0,
+0,
+4
+],
+"LocationAssignmentRow7": [
+175.8,
+25.4,
+12.0,
+0,
+4
+],
+"LocationAssignmentRow8": [
+175.8,
+25.4,
+12.0,
+0,
+4
+],
+"LocationAssignmentRow9": [
+175.8,
+25.4,
+12.0,
+0,
+4
+],
+"On SceneRow1": [
+49.8,
+25.0,
+12.0,
+0,
+4
+],
+"On SceneRow10": [
+50.4,
+25.0,
+12.0,
+0,
+4
+],
+"On SceneRow11": [
+49.8,
+25.0,
+12.0,
+0,
+4
+],
+"On SceneRow12": [
+50.4,
+25.0,
+12.0,
+0,
+4
+],
+"On SceneRow13": [
+49.8,
+25.0,
+12.0,
+0,
+4
+],
+"On SceneRow14": [
+49.8,
+25.0,
+12.0,
+0,
+4
+],
+"On SceneRow15": [
+49.2,
+25.0,
+12.0,
+0,
+4
+],
+"On SceneRow16": [
+50.4,
+25.0,
+12.0,
+0,
+4
+],
+"On SceneRow17": [
+49.8,
+25.0,
+12.0,
+0,
+4
+],
+"On SceneRow18": [
+51.0,
+25.0,
+12.0,
+0,
+4
+],
+"On SceneRow19": [
+49.8,
+25.0,
+12.0,
+0,
+4
+],
+"On SceneRow2": [
+49.8,
+25.0,
+12.0,
+0,
+4
+],
+"On SceneRow20": [
+49.8,
+25.0,
+12.0,
+0,
+4
+],
+"On SceneRow21": [
+49.8,
+25.0,
+12.0,
+0,
+4
+],
+"On SceneRow22": [
+50.4,
+25.0,
+12.0,
+0,
+4
+],
+"On SceneRow3": [
+49.2,
+25.0,
+12.0,
+0,
+4
+],
+"On SceneRow4": [
+49.8,
+25.0,
+12.0,
+0,
+4
+],
+"On SceneRow5": [
+51.0,
+25.0,
+12.0,
+0,
+4
+],
+"On SceneRow6": [
+51.0,
+25.0,
+12.0,
+0,
+4
+],
+"On SceneRow7": [
+49.8,
+25.0,
+12.0,
+0,
+4
+],
+"On SceneRow8": [
+49.8,
+25.0,
+12.0,
+0,
+4
+],
+"On SceneRow9": [
+49.8,
+25.0,
+12.0,
+0,
+4
+],
+"Resource IdentificationRow1": [
+142.1,
+25.0,
+12.0,
+0,
+4
+],
+"Resource IdentificationRow10": [
+142.1,
+25.4,
+12.0,
+0,
+4
+],
+"Resource IdentificationRow11": [
+142.1,
+25.4,
+12.0,
+0,
+4
+],
+"Resource IdentificationRow12": [
+142.1,
+25.4,
+12.0,
+0,
+4
+],
+"Resource IdentificationRow13": [
+141.5,
+25.4,
+12.0,
+0,
+4
+],
+"Resource IdentificationRow14": [
+142.1,
+25.4,
+12.0,
+0,
+4
+],
+"Resource IdentificationRow15": [
+142.1,
+25.4,
+12.0,
+0,
+4
+],
+"Resource IdentificationRow16": [
+142.1,
+25.4,
+12.0,
+0,
+4
+],
+"Resource IdentificationRow17": [
+142.1,
+25.4,
+12.0,
+0,
+4
+],
+"Resource IdentificationRow18": [
+142.1,
+25.4,
+12.0,
+0,
+4
+],
+"Resource IdentificationRow19": [
+142.7,
+25.4,
+12.0,
+0,
+4
+],
+"Resource IdentificationRow2": [
+142.1,
+25.4,
+12.0,
+0,
+4
+],
+"Resource IdentificationRow20": [
+142.1,
+25.4,
+12.0,
+0,
+4
+],
+"Resource IdentificationRow21": [
+141.5,
+25.4,
+12.0,
+0,
+4
+],
+"Resource IdentificationRow22": [
+142.1,
+25.1,
+12.0,
+0,
+4
+],
+"Resource IdentificationRow3": [
+141.5,
+25.4,
+12.0,
+0,
+4
+],
+"Resource IdentificationRow4": [
+141.5,
+25.4,
+12.0,
+0,
+4
+],
+"Resource IdentificationRow5": [
+142.1,
+25.4,
+12.0,
+0,
+4
+],
+"Resource IdentificationRow6": [
+142.1,
+25.4,
+12.0,
+0,
+4
+],
+"Resource IdentificationRow7": [
+141.5,
+25.4,
+12.0,
+0,
+4
+],
+"Resource IdentificationRow8": [
+142.1,
+25.4,
+12.0,
+0,
+4
+],
+"Resource IdentificationRow9": [
+142.7,
+25.4,
+12.0,
+0,
+4
+],
+"Resources OrderedRow1": [
+138.5,
+25.0,
+12.0,
+0,
+4
+],
+"Resources OrderedRow10": [
+137.3,
+25.4,
+12.0,
+0,
+4
+],
+"Resources OrderedRow11": [
+137.9,
+25.4,
+12.0,
+0,
+4
+],
+"Resources OrderedRow12": [
+137.3,
+25.4,
+12.0,
+0,
+4
+],
+"Resources OrderedRow13": [
+137.3,
+25.4,
+12.0,
+0,
+4
+],
+"Resources OrderedRow14": [
+137.3,
+25.4,
+12.0,
+0,
+4
+],
+"Resources OrderedRow15": [
+137.3,
+25.4,
+12.0,
+0,
+4
+],
+"Resources OrderedRow16": [
+137.3,
+25.4,
+12.0,
+0,
+4
+],
+"Resources OrderedRow17": [
+137.3,
+25.4,
+12.0,
+0,
+4
+],
+"Resources OrderedRow18": [
+137.3,
+25.4,
+12.0,
+0,
+4
+],
+"Resources OrderedRow19": [
+137.3,
+25.4,
+12.0,
+0,
+4
+],
+"Resources OrderedRow2": [
+137.3,
+25.4,
+12.0,
+0,
+4
+],
+"Resources OrderedRow20": [
+137.3,
+25.4,
+12.0,
+0,
+4
+],
+"Resources OrderedRow21": [
+137.9,
+25.4,
+12.0,
+0,
+4
+],
+"Resources OrderedRow22": [
+137.3,
+25.1,
+12.0,
+0,
+4
+],
+"Resources OrderedRow3": [
+137.3,
+25.4,
+12.0,
+0,
+4
+],
+"Resources OrderedRow4": [
+137.9,
+25.4,
+12.0,
+0,
+4
+],
+"Resources OrderedRow5": [
+137.3,
+25.4,
+12.0,
+0,
+4
+],
+"Resources OrderedRow6": [
+137.9,
+25.4,
+12.0,
+0,
+4
+],
+"Resources OrderedRow7": [
+137.3,
+25.4,
+12.0,
+0,
+4
+],
+"Resources OrderedRow8": [
+137.3,
+25.4,
+12.0,
+0,
+4
+],
+"Resources OrderedRow9": [
+137.3,
+25.4,
+12.0,
+0,
+4
+],
+"Time Row 1": [
+85.7,
+18.1,
+12.0,
+0,
+2
+],
+"Time Row 10": [
+85.7,
+18.1,
+12.0,
+0,
+2
+],
+"Time Row 11": [
+85.7,
+18.1,
+12.0,
+0,
+2
+],
+"Time Row 12": [
+85.7,
+18.1,
+12.0,
+0,
+2
+],
+"Time Row 13": [
+85.7,
+18.1,
+12.0,
+0,
+2
+],
+"Time Row 14": [
+85.7,
+18.1,
+12.0,
+0,
+2
+],
+"Time Row 15": [
+85.7,
+18.1,
+12.0,
+0,
+2
+],
+"Time Row 16": [
+85.7,
+18.1,
+12.0,
+0,
+2
+],
+"Time Row 2": [
+85.7,
+18.1,
+12.0,
+0,
+2
+],
+"Time Row 3": [
+85.7,
+18.1,
+12.0,
+0,
+2
+],
+"Time Row 4": [
+85.7,
+18.1,
+12.0,
+0,
+2
+],
+"Time Row 5": [
+85.7,
+18.1,
+12.0,
+0,
+2
+],
+"Time Row 6": [
+85.7,
+18.1,
+12.0,
+0,
+2
+],
+"Time Row 7": [
+85.7,
+18.1,
+12.0,
+0,
+2
+],
+"Time Row 8": [
+85.7,
+18.1,
+12.0,
+0,
+2
+],
+"Time Row 9": [
+85.7,
+18.1,
+12.0,
+0,
+2
+]
+}

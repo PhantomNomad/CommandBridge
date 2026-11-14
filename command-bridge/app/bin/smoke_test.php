@@ -29,6 +29,7 @@ require_once $appRoot . '/includes/external_checkin_sync.php';
 require_once $appRoot . '/includes/external_checkin_status.php';
 require_once $appRoot . '/includes/pdf/OfficialPdfTemplateExporter.php';
 require_once $appRoot . '/includes/pdf/SimpleTextPdf.php';
+require_once $appRoot . '/includes/pdf/pdf_request.php';
 require_once $appRoot . '/forms/ics209/Ics209OfficialPdfFieldMapper.php';
 require_once $appRoot . '/forms/ics209/Ics209WfOfficialPdfFieldMapper.php';
 require_once $appRoot . '/forms/ics213rr_v2/Ics213rrOfficialPdfFieldMapper.php';
@@ -526,6 +527,67 @@ if ($want('pdf')) {
         $exporter = new OfficialPdfTemplateExporter();
         $path = $exporter->create('ICS213RR', $built['fields']);
         t_ok('ICS 213RR PDF is valid', $isPdf($path), basename($path));
+        @unlink($path);
+    });
+    // Every form's PDF fills the official template: build each mapper with sample data, check its field names exist on
+    // the template, and make the PDF.
+    t_run('Official PDFs for every form', function () use ($appRoot, $isPdf, $pages) {
+        foreach (['ics201/Ics201', 'ics203/Ics203', 'ics204/Ics204', 'ics206/Ics206', 'ics208/Ics208', 'ics214/Ics214', 'ics215a/Ics215A', 'ics230/Ics230'] as $m) {
+            require_once $appRoot . '/forms/' . $m . 'OfficialPdfFieldMapper.php';
+        }
+        require_once $appRoot . '/forms/ics218/Ics218OfficialPdfOverlay.php';
+        $incident = ['incident_name' => 'TRAINING - smoke test', 'incident_number' => 'SMOKE-TEST'];
+        $op = ['period_name' => 'OP 1', 'op_start' => date('Y-m-d H:i:s', time() - 3600), 'op_end' => date('Y-m-d H:i:s', time() + 39600)];
+        $long = str_repeat('Long text that will not fit in the box on the form. ', 80);
+        $now = date('Y-m-d H:i:s');
+        $cases = [];
+        $b = Ics201OfficialPdfFieldMapper::build(['datetime_prepared' => $now, 'situation_summary' => $long, 'current_organization' => 'IC: Smoke'], $incident,
+            [['action_time' => '07:00', 'action_text' => 'Establish perimeter']], [], [['resources_ordered' => 'Engine', 'resource_identification' => 'E-1']], 'Smoke IC', '', 0);
+        $cases['ICS201'] = [[$b['fields']], $b['continuations'], null];
+        $b = Ics203OfficialPdfFieldMapper::build(['IC' => ['Smoke IC'], 'SITL' => ['A Person', 'Another Person With A Long Name', 'Third']], $incident, $op, 'Smoke RESL', $now);
+        $cases['ICS203'] = [[$b['fields']], $b['continuations'], null];
+        $res = [];
+        for ($i = 1; $i <= 11; $i++) { $res[] = ['resource_identifier' => 'E-' . $i, 'leader_name' => 'Leader', 'number_persons' => 4, 'contact_info' => 'Ch 1', 'reporting_location' => 'Staging']; }
+        $b = Ics204OfficialPdfFieldMapper::build(['branch_name' => 'I', 'division_group' => 'A', 'work_assignments' => $long, 'operations_personnel' => 'Operations Chief: Smoke OSC'], $incident, $op, $res);
+        $cases['ICS204'] = [$b['pages'], $b['continuations'], null];
+        $b = Ics206OfficialPdfFieldMapper::build(['medical_emergency_procedures' => 'Call 911'], $incident, $op, ['prepared_at' => $now],
+            [['name' => 'Aid 1', 'paramedics' => 1]], [['ambulance_service' => 'EMS', 'level_of_service' => 'ALS']], [['hospital_name' => 'General', 'helipad' => 1]]);
+        $cases['ICS206'] = [$b['pages'], $b['continuations'], null];
+        $b = Ics208OfficialPdfFieldMapper::build(['safety_message' => $long, 'site_safety_plan_required' => 1], $incident, $op, ['prepared_at' => $now]);
+        $cases['ICS208'] = [[$b['fields']], $b['continuations'], null];
+        $rows = [];
+        for ($i = 0; $i < 40; $i++) { $rows[] = ['time' => $now, 'text' => 'Activity ' . $i, 'manual' => false]; }
+        $b = Ics214OfficialPdfFieldMapper::build(['status' => 'draft'], ['name' => 'Smoke Person', 'position' => 'SITL'], $incident, $op, $rows);
+        $cases['ICS214'] = [$b['pages'], [], $b['keep']];
+        $b = Ics215AOfficialPdfFieldMapper::build(['date_time_prepared' => $now], $incident, $op, [['incident_area' => 'A', 'hazards_risks' => $long, 'mitigations' => 'PPE']]);
+        $cases['ICS215A'] = [$b['pages'], $b['continuations'], null];
+        $b = Ics230OfficialPdfFieldMapper::build($incident, $op, [['title' => 'Planning Meeting', 'scheduled_at' => $now, 'status' => 'scheduled', 'location' => 'ECC']], 'Smoke SITL', 'SITL', $now);
+        $cases['ICS230'] = [$b['pages'], $b['continuations'], null];
+
+        $exporter = new OfficialPdfTemplateExporter();
+        foreach ($cases as $code => [$pgs, $cont, $keep]) {
+            $names = [];
+            $dump = [];
+            @exec('pdftk ' . escapeshellarg(OfficialPdfTemplateRegistry::get($code)['path']) . ' dump_data_fields_utf8 2>/dev/null', $dump);
+            foreach ($dump as $line) { if (str_starts_with($line, 'FieldName: ')) { $names[substr($line, 11)] = true; } }
+            $unknown = [];
+            foreach ($pgs as $pg) { foreach (array_keys($pg) as $n) { if (!isset($names[$n])) { $unknown[$n] = true; } } }
+            t_ok("$code: every field the app fills exists on the official template", $names && !$unknown, $unknown ? 'unknown: ' . implode(' | ', array_slice(array_keys($unknown), 0, 5)) : '');
+            t_ok("$code: box sizes known (assets/pdf/official/fields)", OfficialPdfText::meta($code) !== [], 'run tools/pdf_field_metadata.py');
+            $path = $exporter->createPaged($code, $pgs, $keep);
+            if ($cont) {
+                $extra = tempnam(sys_get_temp_dir(), 'smkcont_');
+                file_put_contents($extra, SimpleTextPdf::render($code . ' - Continuation Sheet', ['Smoke test'], $cont));
+                $path = $exporter->appendPdf($path, $extra);
+            }
+            t_ok("$code official PDF is valid", $isPdf($path), $pages($path) . ' page(s)');
+            @unlink($path);
+        }
+        $entries = [];
+        for ($i = 1; $i <= 13; $i++) { $entries[] = ['order_request_number' => 'R-' . $i, 'equipment_description' => 'Pickup', 'status' => 'assigned', 'created_at' => $now]; }
+        [$overlay, $n] = Ics218OfficialPdfOverlay::write($incident, ['prepared_at' => $now, 'prepared_by_name' => 'Smoke GSUL'], $entries, sys_get_temp_dir());
+        $path = $exporter->stampTemplate('ICS218', $overlay, $n);
+        t_ok('ICS218 official PDF (stamped) is valid and has 2 pages for 13 vehicles', $isPdf($path) && $pages($path) === 2, $pages($path) . ' page(s)');
         @unlink($path);
     });
 }

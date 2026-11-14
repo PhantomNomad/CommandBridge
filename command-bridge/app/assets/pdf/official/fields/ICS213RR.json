@@ -1,0 +1,583 @@
+{
+"10 Logistics Order Number": [
+303.8,
+14.9,
+0.0,
+0,
+1
+],
+"11 Supplier PhoneFaxEmail": [
+222.9,
+21.3,
+0.0,
+0,
+1
+],
+"12 Name of SupplierPOC": [
+311.4,
+14.9,
+0.0,
+0,
+1
+],
+"13 Notes": [
+637.3,
+45.2,
+8.0,
+1,
+1
+],
+"14 Approval Signature of Auth Logistics Rep": [
+220.0,
+14.9,
+0.0,
+0,
+1
+],
+"15 DateTime": [
+174.1,
+14.9,
+0.0,
+0,
+1
+],
+"16 Order placed by check box SPUL PROC": [
+449.5,
+14.9,
+0.0,
+0,
+1
+],
+"17 ReplyComments from Finance": [
+517.9,
+45.2,
+8.0,
+1,
+1
+],
+"18 Finance Section Signature": [
+292.8,
+14.9,
+0.0,
+0,
+1
+],
+"19 DateTime": [
+174.1,
+14.9,
+0.0,
+0,
+1
+],
+"2 DateTime": [
+153.3,
+17.7,
+0.0,
+0,
+1
+],
+"3 Resource Request Number": [
+227.2,
+17.7,
+0.0,
+0,
+1
+],
+"4 Order Use additional forms when requesting different resource sources of supply": [
+304.2,
+14.9,
+0.0,
+0,
+1
+],
+"5 Requested DeliveryReporting Location": [
+484.0,
+28.8,
+0.0,
+0,
+1
+],
+"6 Suitable Substitutes andor Suggested Sources": [
+445.7,
+28.8,
+0.0,
+0,
+1
+],
+"7 Requested by NamePosition": [
+245.4,
+19.9,
+0.0,
+0,
+1
+],
+"8 Priority Urgent Routine Low": [
+180.8,
+19.6,
+0.0,
+0,
+1
+],
+"9 Section Chief Approval": [
+226.5,
+18.5,
+0.0,
+0,
+1
+],
+"Arrival Date and Time": [
+91.8,
+14.9,
+0.0,
+0,
+1
+],
+"CostRow1": [
+52.0,
+12.6,
+0.0,
+0,
+1
+],
+"CostRow2": [
+52.0,
+12.6,
+0.0,
+0,
+1
+],
+"CostRow3": [
+52.0,
+12.6,
+0.0,
+0,
+1
+],
+"CostRow4": [
+52.0,
+12.6,
+0.0,
+0,
+1
+],
+"CostRow5": [
+52.0,
+12.6,
+0.0,
+0,
+1
+],
+"CostRow6": [
+52.0,
+12.6,
+0.0,
+0,
+1
+],
+"CostRow7": [
+52.0,
+12.6,
+0.0,
+0,
+1
+],
+"CostRow8": [
+52.0,
+12.6,
+0.0,
+0,
+1
+],
+"CostRow9": [
+52.0,
+12.6,
+0.0,
+0,
+1
+],
+"Detailed Item Description Vital characteristics brand specs experience size etcRow1": [
+330.7,
+12.6,
+7.0,
+0,
+1
+],
+"Detailed Item Description Vital characteristics brand specs experience size etcRow2": [
+330.7,
+12.6,
+7.0,
+0,
+1
+],
+"Detailed Item Description Vital characteristics brand specs experience size etcRow3": [
+330.7,
+12.6,
+7.0,
+0,
+1
+],
+"Detailed Item Description Vital characteristics brand specs experience size etcRow4": [
+330.7,
+12.6,
+7.0,
+0,
+1
+],
+"Detailed Item Description Vital characteristics brand specs experience size etcRow5": [
+330.7,
+12.6,
+7.0,
+0,
+1
+],
+"Detailed Item Description Vital characteristics brand specs experience size etcRow6": [
+330.7,
+12.6,
+7.0,
+0,
+1
+],
+"Detailed Item Description Vital characteristics brand specs experience size etcRow7": [
+330.7,
+12.6,
+7.0,
+0,
+1
+],
+"Detailed Item Description Vital characteristics brand specs experience size etcRow8": [
+330.7,
+12.6,
+7.0,
+0,
+1
+],
+"Detailed Item Description Vital characteristics brand specs experience size etcRow9": [
+330.7,
+12.6,
+7.0,
+0,
+1
+],
+"EstimatedRow1": [
+75.1,
+12.6,
+0.0,
+0,
+1
+],
+"EstimatedRow2": [
+75.1,
+12.6,
+0.0,
+0,
+1
+],
+"EstimatedRow3": [
+75.1,
+12.6,
+0.0,
+0,
+1
+],
+"EstimatedRow4": [
+75.1,
+12.6,
+0.0,
+0,
+1
+],
+"EstimatedRow5": [
+75.1,
+12.6,
+0.0,
+0,
+1
+],
+"EstimatedRow6": [
+75.1,
+12.6,
+0.0,
+0,
+1
+],
+"EstimatedRow7": [
+75.1,
+12.6,
+0.0,
+0,
+1
+],
+"EstimatedRow8": [
+75.1,
+12.6,
+0.0,
+0,
+1
+],
+"EstimatedRow9": [
+75.1,
+12.6,
+0.0,
+0,
+1
+],
+"KindRow1": [
+36.0,
+12.6,
+6.0,
+0,
+1
+],
+"KindRow2": [
+36.0,
+12.6,
+6.0,
+0,
+1
+],
+"KindRow3": [
+36.0,
+12.6,
+6.0,
+0,
+1
+],
+"KindRow4": [
+36.0,
+12.6,
+6.0,
+0,
+1
+],
+"KindRow5": [
+36.0,
+12.6,
+6.0,
+0,
+1
+],
+"KindRow6": [
+36.0,
+12.6,
+6.0,
+0,
+1
+],
+"KindRow7": [
+36.0,
+12.6,
+6.0,
+0,
+1
+],
+"KindRow8": [
+36.0,
+12.6,
+6.0,
+0,
+1
+],
+"KindRow9": [
+36.0,
+12.6,
+6.0,
+0,
+1
+],
+"QtyRow1": [
+35.6,
+12.6,
+0.0,
+0,
+1
+],
+"QtyRow2": [
+35.6,
+12.6,
+0.0,
+0,
+1
+],
+"QtyRow3": [
+35.6,
+12.6,
+0.0,
+0,
+1
+],
+"QtyRow4": [
+35.6,
+12.6,
+0.0,
+0,
+1
+],
+"QtyRow5": [
+35.6,
+12.6,
+0.0,
+0,
+1
+],
+"QtyRow6": [
+35.6,
+12.6,
+0.0,
+0,
+1
+],
+"QtyRow7": [
+35.6,
+12.6,
+0.0,
+0,
+1
+],
+"QtyRow8": [
+35.6,
+12.6,
+0.0,
+0,
+1
+],
+"QtyRow9": [
+35.6,
+12.6,
+0.0,
+0,
+1
+],
+"RequestedRow1": [
+116.3,
+12.6,
+0.0,
+0,
+1
+],
+"RequestedRow2": [
+116.3,
+12.6,
+0.0,
+0,
+1
+],
+"RequestedRow3": [
+116.3,
+12.6,
+0.0,
+0,
+1
+],
+"RequestedRow4": [
+116.3,
+12.6,
+0.0,
+0,
+1
+],
+"RequestedRow5": [
+116.3,
+12.6,
+0.0,
+0,
+1
+],
+"RequestedRow6": [
+116.3,
+12.6,
+0.0,
+0,
+1
+],
+"RequestedRow7": [
+116.3,
+12.6,
+0.0,
+0,
+1
+],
+"RequestedRow8": [
+116.3,
+12.6,
+0.0,
+0,
+1
+],
+"RequestedRow9": [
+116.3,
+12.6,
+0.0,
+0,
+1
+],
+"Text1": [
+290.2,
+18.0,
+0.0,
+0,
+1
+],
+"TypeRow1": [
+35.9,
+12.6,
+6.0,
+0,
+1
+],
+"TypeRow2": [
+35.9,
+12.6,
+6.0,
+0,
+1
+],
+"TypeRow3": [
+35.9,
+12.6,
+6.0,
+0,
+1
+],
+"TypeRow4": [
+35.9,
+12.6,
+6.0,
+0,
+1
+],
+"TypeRow5": [
+35.9,
+12.6,
+6.0,
+0,
+1
+],
+"TypeRow6": [
+35.9,
+12.6,
+6.0,
+0,
+1
+],
+"TypeRow7": [
+35.9,
+12.6,
+6.0,
+0,
+1
+],
+"TypeRow8": [
+35.9,
+12.6,
+6.0,
+0,
+1
+],
+"TypeRow9": [
+35.9,
+12.6,
+6.0,
+0,
+1
+]
+}
