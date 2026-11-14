@@ -98,7 +98,7 @@ render_ics_form_status('ICS215A', $formRecord, $preparer, $signature, ['error'=>
 <label>3. Operational Period<input class="ics215a-readonly" value="<?= h($opText) ?>" readonly><input type="hidden" name="operational_period_id" value="<?= h((string)($op['id'] ?? $h['operational_period_id'] ?? '')) ?>"></label>
 </div>
 <h3>Risk Analysis</h3>
-<table class="ics215a-table"><thead><tr><th style="width:25%">4. Incident Area</th><th style="width:35%">5. Hazards / Risks</th><th>6. Mitigations</th></tr></thead><tbody>
+<table class="ics215a-table cb-cards"><thead><tr><th style="width:25%">4. Incident Area</th><th style="width:35%">5. Hazards / Risks</th><th>6. Mitigations</th></tr></thead><tbody>
 <?php foreach($rows as $r): ?><tr class="risk-row"><td><textarea name="area[]"><?= h($r['incident_area'] ?? '') ?></textarea></td><td><textarea name="hazards[]"><?= h($r['hazards_risks'] ?? '') ?></textarea></td><td><textarea name="mitigations[]"><?= h($r['mitigations'] ?? '') ?></textarea></td></tr><?php endforeach; ?>
 <tr class="risk-row"><td><textarea name="area[]"></textarea></td><td><textarea name="hazards[]"></textarea></td><td><textarea name="mitigations[]"></textarea></td></tr>
 </tbody></table>

@@ -51,7 +51,7 @@ render_header('Check-in Sync Status');
       </ul>
     <?php endif; ?>
 
-    <table class="table">
+    <table class="table cb-cards">
       <tr><th>Worker last ran</th><td><?= e($fmt((int)($hb['run_at'] ?? 0))) ?></td></tr>
       <tr><th>Last successful sync</th><td><?= e($fmt((int)($hb['success_at'] ?? 0))) ?></td></tr>
       <tr><th>Updates waiting to send</th><td><?= (int)$status['queue']['waiting'] ?></td></tr>

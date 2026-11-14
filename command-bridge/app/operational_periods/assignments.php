@@ -271,7 +271,7 @@ render_header('Operational Period Position Assignments');
         <h3>Filled Position Assignments</h3>
         <?php if ($filledAssignments): ?>
             <div style="overflow:auto;">
-                <table>
+                <table class="cb-cards">
                     <thead>
                         <tr>
                             <th>Position</th>
@@ -337,7 +337,7 @@ render_header('Operational Period Position Assignments');
 
         <h3 style="margin-top:1.5rem;">Add Position Assignment</h3>
         <div style="overflow:auto;">
-            <table>
+            <table class="cb-cards">
                 <thead>
                     <tr>
                         <th>Position</th>

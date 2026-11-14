@@ -284,7 +284,7 @@ if ((string)($_GET['action'] ?? '') === 'detail') {
     </select>
 </form>
 <div class="finance-table-wrap">
-<table class="table table-striped table-sm finance-queue-table">
+<table class="table table-striped table-sm finance-queue-table cb-cards">
     <thead><tr><th>213RR</th><th>Kind / Type</th><th>Finance Status</th><th>Resource Status</th><th>Workflow</th><th>Estimated</th><th>Actual</th><th>Vendor</th><th>Invoice</th><th>Detail</th></tr></thead>
     <tbody>
         <?php if (!$rows): ?><tr><td colspan="10">No 213RR records found for this Finance/Admin queue filter.</td></tr><?php endif; ?>

@@ -124,17 +124,17 @@ render_ics_form_status('ICS206', $formRecord, $preparer, $signature, [
     </div>
 
     <h3>4. Incident Medical Aid Station</h3>
-    <table class="ics-table" id="aidTable"><thead><tr><th>Medical Aid Stations</th><th>Location</th><th>Contact (number or frequency)</th><th>Paramedics</th><th></th></tr></thead><tbody>
+    <table class="ics-table cb-cards" id="aidTable"><thead><tr><th>Medical Aid Stations</th><th>Location</th><th>Contact (number or frequency)</th><th>Paramedics</th><th></th></tr></thead><tbody>
     <?php foreach($aid as $r): ?><tr><td><input name="aid[name][]" value="<?= h($r['name']??'') ?>"></td><td><input name="aid[location][]" value="<?= h($r['location']??'') ?>"></td><td><input name="aid[contact][]" value="<?= h($r['contact']??'') ?>"></td><td><select name="aid[paramedics][]"><option value="0">No</option><option value="1" <?= !empty($r['paramedics'])?'selected':'' ?>>Yes</option></select></td><td><button type="button" onclick="removeRow(this)">Remove</button></td></tr><?php endforeach; ?>
     </tbody></table><button type="button" onclick="addAid()">Add Medical Aid Station</button>
 
     <h3>5. Transportation (indicate air or ground)</h3>
-    <table class="ics-table" id="transportTable"><thead><tr><th>Ambulance Service</th><th>Location</th><th>Contact (number or frequency)</th><th>Level of Serv.</th><th></th></tr></thead><tbody>
+    <table class="ics-table cb-cards" id="transportTable"><thead><tr><th>Ambulance Service</th><th>Location</th><th>Contact (number or frequency)</th><th>Level of Serv.</th><th></th></tr></thead><tbody>
     <?php foreach($transport as $r): ?><tr><td><input name="transport[ambulance_service][]" value="<?= h($r['ambulance_service']??'') ?>"></td><td><input name="transport[location][]" value="<?= h($r['location']??'') ?>"></td><td><input name="transport[contact][]" value="<?= h($r['contact']??'') ?>"></td><td><input name="transport[level_of_service][]" value="<?= h($r['level_of_service']??'') ?>" placeholder="BLS / ALS / Air / Ground"></td><td><button type="button" onclick="removeRow(this)">Remove</button></td></tr><?php endforeach; ?>
     </tbody></table><button type="button" onclick="addTransport()">Add Transportation Resource</button>
 
     <h3>6. Hospitals</h3>
-    <table class="ics-table" id="hospitalTable"><thead><tr><th>Hospital Name</th><th>Address (Lat. and Long. if Helipad)</th><th>Travel Air Time</th><th>Travel Ground Time</th><th>Contact</th><th>Helipad</th><th>Burn Ctr.</th><th></th></tr></thead><tbody>
+    <table class="ics-table cb-cards" id="hospitalTable"><thead><tr><th>Hospital Name</th><th>Address (Lat. and Long. if Helipad)</th><th>Travel Air Time</th><th>Travel Ground Time</th><th>Contact</th><th>Helipad</th><th>Burn Ctr.</th><th></th></tr></thead><tbody>
     <?php foreach($hospitals as $r): ?><tr><td><input name="hospital[hospital_name][]" value="<?= h($r['hospital_name']??'') ?>"></td><td><input name="hospital[address][]" value="<?= h($r['address']??'') ?>"></td><td><input name="hospital[travel_time_air][]" value="<?= h($r['travel_time_air']??'') ?>"></td><td><input name="hospital[travel_time_ground][]" value="<?= h($r['travel_time_ground']??'') ?>"></td><td><input name="hospital[contact][]" value="<?= h($r['contact']??'') ?>"></td><td><select name="hospital[helipad][]"><option value="0">No</option><option value="1" <?= !empty($r['helipad'])?'selected':'' ?>>Yes</option></select></td><td><select name="hospital[burn_centre][]"><option value="0">No</option><option value="1" <?= !empty($r['burn_centre'])?'selected':'' ?>>Yes</option></select></td><td><button type="button" onclick="removeRow(this)">Remove</button></td></tr><?php endforeach; ?>
     </tbody></table><button type="button" onclick="addHospital()">Add Hospital</button>
 

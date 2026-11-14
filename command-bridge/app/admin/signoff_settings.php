@@ -69,7 +69,7 @@ render_header('Sign-off Approvers');
 <p>When a form is signed, the system picks the approver from this list, whoever signed it. If nobody holds the position it moves up the chain of command (then IC, UC, and a SysAdmin). If the signer holds the approving position, it moves up one level. The signer can still change the suggested approver. Changes apply immediately and are written to the audit log. ICS 202 and ICS 204 keep their own approval steps; ICS 213RR keeps its own workflow.</p>
 <form method="post">
 <?= csrf_field() ?>
-<table class="table">
+<table class="table cb-cards">
 <thead><tr><th>Form</th><th>Approved by</th><th>Fallback if vacant</th></tr></thead>
 <tbody>
 <?php foreach ($defaults as $form => $_): ?>

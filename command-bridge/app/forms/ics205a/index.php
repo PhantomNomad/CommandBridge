@@ -184,7 +184,7 @@ if (function_exists('render_ics_form_actions')) {
 
 <div class="card">
   <h2>Existing Entries</h2>
-  <table>
+  <table class="cb-cards">
     <tr><th>Contact</th><th>Position</th><th>Contact Methods</th></tr>
     <?php foreach ($rows as $r): ?>
       <tr>

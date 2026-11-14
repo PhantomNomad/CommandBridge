@@ -28,6 +28,6 @@ render_header('Lookup Lists'); settings_menu('lookups'); ?>
 <label>List<select name="category"><?php foreach($categories as $c): ?><option><?= e($c) ?></option><?php endforeach ?></select></label>
 <label>Value<input name="value" maxlength="150" required></label>
 <label>Description (optional)<input name="description" maxlength="255"></label><button class="btn">Add item</button></form></div>
-<div class="card"><h3>Configured values</h3><table><thead><tr><th>List</th><th>Value</th><th>Description</th><th>Status</th><th></th></tr></thead><tbody>
+<div class="card"><h3>Configured values</h3><table class="cb-cards"><thead><tr><th>List</th><th>Value</th><th>Description</th><th>Status</th><th></th></tr></thead><tbody>
 <?php foreach($items as $item): ?><tr><td><?=e($item['list_category'])?></td><td><?=e($item['item_value'])?></td><td><?=e($item['item_description'])?></td><td><?= $item['is_active']?'Active':'Disabled' ?></td><td><form method="post"><?=csrf_field()?><input type="hidden" name="action" value="toggle"><input type="hidden" name="id" value="<?= (int)$item['id'] ?>"><button class="btn btn-secondary"><?= $item['is_active']?'Disable':'Enable' ?></button></form></td></tr><?php endforeach ?></tbody></table></div>
 <?php render_footer(); ?>

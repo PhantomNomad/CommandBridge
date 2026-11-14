@@ -120,7 +120,7 @@ render_header('ICS 207 - Organization Assignment List');
 <div class="card">
   <h2>Current Assignments</h2>
   <p>This starter page provides the initial organization view generated from assigned incident users and roles.</p>
-  <table>
+  <table class="cb-cards">
     <tr><th>Role Code</th><th>Role Name</th><th>Assigned Person</th></tr>
     <?php foreach ($rows as $r): ?>
       <tr>

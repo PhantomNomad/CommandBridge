@@ -193,7 +193,7 @@ render_header($isPrintView ? 'ICS 203 - Organization Assignment List Print View'
 <div class="card">
   <h2>ICS203 - Organization Assignment List</h2>
   <p><a href="help.php">Help / Instructions</a></p>
-  <table>
+  <table class="cb-cards">
     <tr><th>Section</th><th>Position</th><th>Assigned Name</th></tr>
     <?php foreach($rows as $r): ?>
       <tr><td><?=h($r['section_name'])?></td><td><?=h($r['position_title'])?></td><td><?=h($r['assigned_name'])?></td></tr>

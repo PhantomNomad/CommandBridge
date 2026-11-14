@@ -148,7 +148,7 @@ render_ics_form_status('ICS205', $formRecord, $preparer, $signature, [
       <label>Operational Period<input value="<?= h(ics205_op_label($op)) ?>" readonly></label>
     </div>
     <h3>4. Basic Radio Channel Utilization</h3>
-    <table class="data-table" id="channelsTable">
+    <table class="data-table cb-cards" id="channelsTable">
       <thead><tr><th>System/Type</th><th>Channel</th><th>Function</th><th>Frequency/Tone</th><th>Assignment</th><th>Remarks</th><th></th></tr></thead>
       <tbody>
       <?php foreach($channels as $i=>$r): ?>

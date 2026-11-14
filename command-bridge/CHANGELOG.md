@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+* **Phones and tablets, part 3: every other page.** The rest of the app now works on phones.
+  - **More tables become labelled cards on phones:**
+    - the editable rows on the ICS 201 (actions, resources), 204 (resources), 205 (channels), 206 (aid stations,
+      ambulances, hospitals), 210 (status changes) and 215A (risk rows); rows added with the "Add row" buttons are
+      labelled as they appear
+    - the lists on the ICS 201/202 attachments, 203, 205A, 207 and 218
+    - the Resources Unit queues, the Finance/Admin queue and the audit log
+    - position assignments
+    - the admin lists: users, roles catalogue, lookups, locations, resource catalogue, sign-off approvers, sync status
+  - **Two- and four-column layouts drop to one column on phones:** ICS 209, 214, 215A, the 213RR, the role and
+    resource catalogues, and filter bars. Date pickers stay on screen.
+  - Grids that only make sense as grids stay as sideways-scrolling boxes: Form Permissions, and the ICS 209
+    casualty and resource tables.
+
+  The ECC displays, printing and the PDFs are unchanged. No database changes.
 * **Phones and tablets, part 2: lists as cards.** On phones, list tables turn into one card per row, and each value
   is labelled with its column name, so nothing needs sideways scrolling. This covers:
   - the dashboard lists
