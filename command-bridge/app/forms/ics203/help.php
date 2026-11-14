@@ -1,13 +1,9 @@
 <?php
 declare(strict_types=1);
+// The "Help / Instructions" link on the form. The instructions are kept in the help system
+// (app/help/topics/forms/ics203/index.md), so this page just sends the user there.
 require_once dirname(dirname(__DIR__)) . '/includes/layout.php';
+require_once dirname(dirname(__DIR__)) . '/includes/help.php';
 require_login();
-render_header('ICS 203 Help');
-?>
-<div class="card">
-<h2>ICS 203 Help / Instructions</h2>
-<p>ICS 203 lists the incident organization for the operational period. Use current user and incident-position assignments where possible. Keep it current as a living organization document and align Operations Section entries with approved ICS 204 assignments.</p>
-<p class="small">Source: ICS Canada Forms Catalogue.</p>
-<p><a href="index.php">Back to ICS 203</a></p>
-</div>
-<?php render_footer(); ?>
+header('Location: ' . cb_help_url('forms/ics203/index'));
+exit;

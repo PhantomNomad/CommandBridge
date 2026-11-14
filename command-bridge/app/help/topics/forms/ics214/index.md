@@ -2,7 +2,9 @@
 
 Every person has their **own** ICS 214 for each operational period. It is started when your login is created (or the first time you open it), so it shows when your account was made, your sign-ins and sign-outs, and everything you do after that.
 
-The form's own instructions are on its [Help / Instructions page](/forms/ics214/help.php).
+In ICS, the activity log records the notable things that happen at any level: decisions, assignments, contacts, briefings, status changes. It gives the incident a lasting record for handovers, after-action reviews and cost recovery. The signed logs go to the Documentation Unit.
+
+General steps for signing and printing are in [Working with ICS forms](help:forms/working_with_forms).
 
 ## What is recorded automatically
 

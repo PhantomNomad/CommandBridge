@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+* **Full help for every ICS form page.** The help for the ICS 201, 202, 203, 204, 205, 205A, 206, 207, 208, 209, 210,
+  211, 213, 213RR, 215A, 218 and 230, the Finance/Admin 213RR queue and the Resources Unit queue is now complete. Each
+  page covers what the form is for, who prepares it, who gets it, what goes in each block, and how Command Bridge fills
+  it in, signs it and prints it. The form guidance is based on the ICS Canada Forms Catalogue (2022), written in our
+  own words; no ICS Canada text is copied.
+  - New help pages: "Working with ICS forms" (saving, sign-off and default approvers, printing) and the ICS 209-WF.
+  - The "Help / Instructions" links on the forms now open the form's help page. The old short instruction pages are
+    gone, and the broken link on the ICS 210 now works.
+  - No database or code changes beyond the `forms/*/help.php` redirects.
+
 * **ICS 202 now uses the ICS Canada form.** The bundled `assets/pdf/official/ICS202.pdf` was not the ICS Canada
   version (no ICS logo or "ICS 202-CAN", and US-only items). It is replaced with ICS Canada's Form-202.pdf, and the field
   map is updated for it:
