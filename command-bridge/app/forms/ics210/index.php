@@ -140,7 +140,7 @@ render_ics_form_status('ICS210', $formRecord, $preparer, $signature, [
     </div>
 
     <h3>Resource Status Changes</h3>
-    <table class="data-table" id="statusRowsTable">
+    <table class="data-table cb-cards" id="statusRowsTable">
       <thead>
         <tr>
           <th>Resource Number</th>

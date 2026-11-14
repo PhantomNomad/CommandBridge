@@ -839,6 +839,17 @@ img,video{max-width:100%;height:auto}
   .notification-toast-container{left:10px;right:10px;bottom:10px;max-width:none}
 }
 
+/* Page-specific two- and four-column layouts drop to one column on phones; date pickers stay on screen. */
+@media (max-width: 599px){
+  .ics214-grid,.ics214-add,.ics215a-grid,.ics215a-sign,.catalogue-grid,.rc-grid,.s209-grid,.rr-v2-grid{grid-template-columns:1fr !important}
+  .s209-cell{grid-column:1 / -1 !important}
+  .ics201-dt-popover,.ics214-dt-popover,.ics215a-dt-popover,.govai-dt-popover{max-width:calc(100vw - 24px);box-sizing:border-box}
+  .ics201-dt-wrap,.ics214-dt-wrap,.ics215a-dt-wrap,.govai-dt-wrap{flex-wrap:wrap !important}
+  .rc-filter select{min-width:0}
+  .inline-form > *{flex:1 1 100%}
+  fieldset{min-width:0;margin-left:0;margin-right:0;padding-left:8px;padding-right:8px}
+}
+
 /* List tables (class cb-cards, labelled by assets/js/app_shell.js): one card per row on phones. */
 @media (max-width: 599px){
   table.cb-cards-ready,table.cb-cards-ready tbody,table.cb-cards-ready tr,table.cb-cards-ready td{display:block;width:auto}

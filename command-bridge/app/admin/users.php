@@ -563,7 +563,7 @@ render_header('Users / Roles');
   <?php if ($lockedCount > 0): ?>
     <div class="flash error"><?= e((string)$lockedCount) ?> account<?= $lockedCount === 1 ? ' is' : 's are' ?> currently locked after repeated failed sign-ins. Use <strong>Unlock</strong> to restore access immediately, or <strong>Reset PIN</strong> to issue a new temporary PIN. Locks also expire on their own.</div>
   <?php endif; ?>
-  <table>
+  <table class="cb-cards">
     <tr>
       <th>ID</th><th>Username</th><th>Name</th><th>Current Roles</th><th>OP Assignment(s)</th><th>Incident</th><th>Contact</th><th>Actions</th>
     </tr>

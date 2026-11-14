@@ -188,7 +188,7 @@ render_header('Locations');
       <?php if (!$locations): ?>
         <p>No locations have been created for this incident.</p>
       <?php else: ?>
-        <table>
+        <table class="cb-cards">
           <thead><tr><th>Name</th><th>Type</th><th>Address</th><th>Status</th><th>Public access</th><th>Update</th></tr></thead>
           <tbody>
           <?php foreach ($locations as $location): ?>

@@ -41,7 +41,21 @@
   }
 
   // List tables marked .cb-cards become one card per row on phones (CSS in app.css). Each cell is labelled with its
-  // column heading so the card still reads "Status: Approved" and so on.
+  // column heading so the card still reads "Status: Approved" and so on. Rows added later (the "Add row" buttons on
+  // the ICS 201/204/205/206/210/215A) are labelled as they appear.
+  function labelRows(table, headRow, labels) {
+    table.querySelectorAll('tr').forEach(function (tr) {
+      if (tr === headRow || tr.parentNode.tagName === 'THEAD' || tr.getAttribute('data-cb-labelled')) { return; }
+      var col = 0;
+      Array.prototype.forEach.call(tr.children, function (cell) {
+        var span = parseInt(cell.getAttribute('colspan') || '1', 10) || 1;
+        if (span > 1 || labels.length <= 1 || cell.tagName === 'TH') { cell.classList.add('cb-cards-full'); }
+        else if (!cell.hasAttribute('data-label') && labels[col]) { cell.setAttribute('data-label', labels[col]); }
+        col += span;
+      });
+      tr.setAttribute('data-cb-labelled', '1');
+    });
+  }
   document.querySelectorAll('table.cb-cards').forEach(function (table) {
     var headRow = table.querySelector('thead tr');
     if (!headRow) {
@@ -54,17 +68,11 @@
       var span = parseInt(th.getAttribute('colspan') || '1', 10) || 1;
       for (var i = 0; i < span; i++) { labels.push((th.textContent || '').trim()); }
     });
-    table.querySelectorAll('tr').forEach(function (tr) {
-      if (tr === headRow || tr.parentNode.tagName === 'THEAD') { return; }
-      var col = 0;
-      Array.prototype.forEach.call(tr.children, function (cell) {
-        var span = parseInt(cell.getAttribute('colspan') || '1', 10) || 1;
-        if (span > 1 || labels.length <= 1) { cell.classList.add('cb-cards-full'); }
-        else if (!cell.hasAttribute('data-label') && labels[col]) { cell.setAttribute('data-label', labels[col]); }
-        col += span;
-      });
-    });
+    labelRows(table, headRow, labels);
     table.classList.add('cb-cards-ready');
+    if (window.MutationObserver) {
+      new MutationObserver(function () { labelRows(table, headRow, labels); }).observe(table, { childList: true, subtree: true });
+    }
   });
 
   // Sideways scrolling for wide tables. Tables already inside a scroll box (help pages) or marked

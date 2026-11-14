@@ -880,7 +880,7 @@ try {
           <?php if (!$openRows): ?>
             <p>No open Resources Unit intake items exist for this incident.</p>
           <?php else: ?>
-            <table>
+            <table class="cb-cards">
               <thead><tr><th>Request #</th><th>Status</th><th>Category</th><th>Qty</th><th>Kind / Type</th><th>Initial location</th><th>Received at</th><th>Received by</th><th>Action</th></tr></thead>
               <tbody>
               <?php foreach ($openRows as $r): ?>
@@ -907,7 +907,7 @@ try {
           <?php if (!$activeRows): ?>
             <p>No received or active Resources Unit items exist for this incident.</p>
           <?php else: ?>
-            <table>
+            <table class="cb-cards">
               <thead><tr><th>Request #</th><th>Status</th><th>Category</th><th>Qty</th><th>Kind / Type</th><th>Location</th><th>Received at</th><th>Received by</th><th>Action</th></tr></thead>
               <tbody>
               <?php foreach ($activeRows as $r): ?>
@@ -933,7 +933,7 @@ try {
           <?php if (!$closedRows): ?>
             <p>No closed or resolved Resources Unit intake items exist for this incident.</p>
           <?php else: ?>
-            <table>
+            <table class="cb-cards">
               <thead><tr><th>Request #</th><th>Status</th><th>Category</th><th>Qty</th><th>Kind / Type</th><th>Updated</th><th>Action</th></tr></thead>
               <tbody>
               <?php foreach ($closedRows as $r): ?>

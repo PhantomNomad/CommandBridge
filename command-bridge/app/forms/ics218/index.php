@@ -65,7 +65,7 @@ render_ics_form_status('ICS218', $formRecord, $preparer, $signature, ['show_prin
   <a class="btn" href="<?= app_url('/forms/ics218/tcard.php') ?>" target="_blank" rel="noopener">Generate ICS 219 T-Cards</a>
 </div>
 <p class="small">Used to track support vehicles and equipment received for the incident. Resources Unit receipt of vehicle/equipment resources from 213RR creates entries here automatically.</p>
-<table><thead><tr><th>Description</th><th>Owner/Agency</th><th>Operator</th><th>Location</th><th>Order #</th><th>Status</th><th>Detailed Description</th><th>219 Card</th></tr></thead><tbody>
+<table class="cb-cards"><thead><tr><th>Description</th><th>Owner/Agency</th><th>Operator</th><th>Location</th><th>Order #</th><th>Status</th><th>Detailed Description</th><th>219 Card</th></tr></thead><tbody>
 <?php foreach($entries as $e): ?>
 <?php $kindType=trim((string)($e['kind'] ?? '').' / '.(string)($e['type'] ?? ''), ' /'); if ($kindType==='') { $kindType=(string)($e['equipment_description'] ?? ''); } ?>
 <tr><td><?= e($kindType) ?></td><td><?= e($e['owner_agency']) ?></td><td><?= e($e['operator_name']) ?></td><td><?= e($e['location']) ?></td><td><?= e($e['order_request_number']) ?></td><td><?= e($e['status']) ?></td><td><?= nl2br(e($e['equipment_description'])) ?></td><td><a class="btn small" href="<?= app_url('/forms/ics218/tcard.php?entry_id='.(int)$e['id']) ?>" target="_blank" rel="noopener">T-Card</a></td></tr><?php endforeach; ?>

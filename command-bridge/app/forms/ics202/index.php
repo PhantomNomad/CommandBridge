@@ -337,7 +337,7 @@ if (function_exists('render_ics_form_actions')) {
   <?php if (!$attachments): ?>
     <p style="margin-top:16px;">No attachments uploaded yet.</p>
   <?php else: ?>
-    <table style="margin-top:16px;">
+    <table class="cb-cards" style="margin-top:16px;">
       <tr><th>File</th><th>Type</th><th>Size</th><th>Uploaded</th><th>Open</th><?php if($canEdit): ?><th>Action</th><?php endif; ?></tr>
       <?php foreach($attachments as $attachment): ?>
       <tr>

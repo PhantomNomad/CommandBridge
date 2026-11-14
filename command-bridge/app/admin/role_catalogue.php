@@ -317,7 +317,7 @@ settings_menu('position_catalogue');
       </div>
       <p class="catalogue-note">Deactivating a position removes it from new assignment selectors while retaining historical records.</p>
       <div class="table-wrap">
-        <table>
+        <table class="cb-cards">
           <thead><tr><th>Code</th><th>Position</th><th>Group</th><th>Reports To</th><th>Status</th><th>Actions</th></tr></thead>
           <tbody>
           <?php foreach ($roles as $role): ?>

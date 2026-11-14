@@ -210,7 +210,7 @@ settings_menu('resource_catalogue');
     <section class="card rc-card">
       <h3>Resource List <span class="small rc-muted">(<?= count($entries) ?> shown)</span></h3>
       <div class="rc-table-wrap">
-        <table class="rc-table">
+        <table class="rc-table cb-cards">
           <thead><tr><th>Category</th><th>Resource Kind</th><th>Type / Capability</th><th>Primary Unit</th><th>Alternate Units</th><th>Level</th><th>Sort</th><th>Status</th><th></th></tr></thead>
           <tbody>
           <?php foreach ($entries as $entry): ?>

@@ -355,7 +355,7 @@ function datetime_local_value(?string $value): string {
     </div>
 
     <label>Current Actions, Strategies and Tactics</label>
-    <table class="repeatable-table" id="current-actions-table">
+    <table class="repeatable-table cb-cards" id="current-actions-table">
       <thead>
         <tr>
           <th style="width:180px;">Time</th>
@@ -376,7 +376,7 @@ function datetime_local_value(?string $value): string {
     <p><button type="button" class="btn btn-secondary js-add-row" data-target="current-actions-table" data-template="current-action-row-template">Add Current Action Row</button></p>
 
     <label>Planned Actions, Strategies and Tactics</label>
-    <table class="repeatable-table" id="planned-actions-table">
+    <table class="repeatable-table cb-cards" id="planned-actions-table">
       <thead>
         <tr>
           <th style="width:180px;">Time</th>
@@ -400,7 +400,7 @@ function datetime_local_value(?string $value): string {
     <textarea name="current_organization" rows="5"><?= e(field_value($record ?? [], 'current_organization')) ?></textarea>
 
     <label>Resource Summary</label>
-    <table class="repeatable-table" id="resources-table">
+    <table class="repeatable-table cb-cards" id="resources-table">
       <thead>
         <tr>
           <th style="width:120px;">Resources Ordered</th>
@@ -579,7 +579,7 @@ if (function_exists('render_ics_form_actions')) {
     <?php if (!$attachments): ?>
       <p style="margin-top:16px;">No attachments uploaded yet.</p>
     <?php else: ?>
-    <table style="margin-top:16px;">
+    <table class="cb-cards" style="margin-top:16px;">
       <tr>
         <th>File</th>
         <th>Type</th>

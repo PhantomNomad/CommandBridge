@@ -149,7 +149,7 @@ render_header('Audit Log');
   </form>
 
   <p class="small"><?= number_format($total) ?> matching entr<?= $total === 1 ? 'y' : 'ies' ?><?php if ($perPage === 0 && $total > AUDIT_VIEW_ALL_CAP): ?>; showing the newest <?= number_format(AUDIT_VIEW_ALL_CAP) ?> (narrow the filters to see older ones)<?php endif; ?>.</p>
-  <table class="table audit-table">
+  <table class="table audit-table cb-cards">
     <thead><tr><th>Date/time</th><th>Person</th><th>Category</th><th>What happened</th><th>Record</th></tr></thead>
     <tbody>
       <?php if (!$rows): ?><tr><td colspan="5" class="muted">No entries match these filters.</td></tr><?php endif; ?>
