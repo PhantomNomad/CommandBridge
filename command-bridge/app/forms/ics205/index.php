@@ -88,6 +88,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $incidentId > 0) {
             $statusSql = $action === 'submit' && $canSubmit ? ", status='submitted', submitted_by_user_id=?, submitted_at=NOW()" : '';
             if ($statusSql) {
                 try { $pdo->prepare("UPDATE form_records SET status='submitted' WHERE id=?")->execute([$formRecordId]); } catch(Throwable $e) {}
+                require_once dirname(dirname(__DIR__)) . '/includes/signoff.php';
+                signoff_record_direct_submit($formRecordId, 'ICS205', $incidentId, (int)($user['id'] ?? 0));
             }
             $stmt=$pdo->prepare("INSERT INTO form_205_headers (form_record_id, operational_period_id, special_instructions, prepared_by_name, prepared_by_position_title) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE operational_period_id=VALUES(operational_period_id), special_instructions=VALUES(special_instructions), prepared_by_name=VALUES(prepared_by_name), prepared_by_position_title=VALUES(prepared_by_position_title)");
             $stmt->execute([$formRecordId, $opId ?: null, trim($_POST['special_instructions'] ?? ''), trim($_POST['prepared_by_name'] ?? ''), trim($_POST['prepared_by_position_title'] ?? '')]);

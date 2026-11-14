@@ -140,7 +140,7 @@ if ($incidentId > 0 && !$canView) { http_response_code(403); render_header('ICS 
 
 // Signed or approved: locked until someone revises it (includes/form_lock.php).
 require_once dirname(dirname(__DIR__)) . '/includes/form_lock.php';
-cb_form_block_locked_post('ICS202', (int)($incidentId ?? 0), (int)($opId ?? 0), (int)($formRecordId ?? 0));
+cb_form_block_locked_post('ICS202', (int)($incidentId ?? 0), (int)($opId ?? 0), (int)($formRecordId ?? 0), ['action' => ['approve_ics202']]);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $incidentId > 0 && ($_POST['action'] ?? '') === 'approve_ics202') {
     if (!$canApprove) { http_response_code(403); render_header('ICS 202'); echo '<div class="card"><p>Forbidden</p></div>'; render_footer(); exit; }

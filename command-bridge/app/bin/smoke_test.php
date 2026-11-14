@@ -205,6 +205,17 @@ if ($want('env')) {
             if (strpos((string)file_get_contents($page), 'cb_form_block_locked_post(') === false) { $unguarded[] = $dir; }
         }
         t_ok('Every form page refuses changes to a signed form', $unguarded === [], 'no lock check in: ' . implode(', ', $unguarded));
+        // The ICS 202 and 204 approve on their own page while the form is locked (waiting for approval).
+        foreach (['ics202' => 'approve_ics202', 'ics204' => 'approve_psc'] as $dir => $action) {
+            $src = (string)@file_get_contents($appRoot . '/forms/' . $dir . '/index.php');
+            t_ok(strtoupper($dir) . ' approval is allowed on a locked form', (bool)preg_match("/cb_form_block_locked_post\\([^;]*'" . $action . "'/", $src));
+        }
+        // Forms that submit on their own page record the signature and pick the approver.
+        $noSig = [];
+        foreach (['ics203', 'ics205', 'ics206', 'ics208', 'ics210'] as $dir) {
+            if (strpos((string)@file_get_contents($appRoot . '/forms/' . $dir . '/index.php'), 'signoff_record_direct_submit(') === false) { $noSig[] = $dir; }
+        }
+        t_ok('Page-level Submit records the signature and approver', $noSig === [], 'missing in: ' . implode(', ', $noSig));
     } catch (Throwable $e) { t_ok('Form lock checks', false, $e->getMessage()); }
 
     // Dashboard panels per position (includes/dashboard_panels.php, migration 0006).
