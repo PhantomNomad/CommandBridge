@@ -1,6 +1,27 @@
 # ICS 230 - Daily Meeting Schedule
 
-How to fill in, save, submit and print this form in Command Bridge. Who can see and change it is set in [Form permissions](help:admin/form_permissions).
+The ICS 230 lists the meetings and briefings planned for the operational period, with their times and places, so everyone on the incident management team knows when and where to be. It is optional and is often posted as a wall chart.
+
+- **Usually prepared by:** the Situation Unit, at the start of each operational period.
+- **Who gets it:** the Command Staff and each Section, and it is posted on information boards. The signed original goes to the Documentation Unit.
+
+General steps for signing and printing are in [Working with ICS forms](help:forms/working_with_forms).
+
+## Adding a meeting
+
+| Field | What to enter |
+|---|---|
+| Meeting Type | The kind of meeting, for example a briefing or the planning meeting. |
+| Scheduled Date/Time | When it starts (24-hour clock). |
+| Meeting Title, Purpose | A short name and what it is for. |
+| Location | Where it is held, or the call-in details. |
+| Chair Name, Chair Position/Title | Who runs it. The chair gets the reminder described below. |
+| Attendees Summary | Who should attend. |
+| Status | See below. |
+| Display Order | Use this to change the order of meetings that start at the same time. |
+| Notes | Anything else. |
+
+The meeting list shows each meeting's time, title and purpose, location and chair. **Delete** removes a meeting added by mistake; for a meeting that won't happen, set it to Cancelled instead so the record stays.
 
 ## Meeting status
 
@@ -23,4 +44,3 @@ If a meeting is still Scheduled or Tentative an hour after its start time, the *
 
 The Meetings tab on the ECC display lists the period's meetings. It scrolls to the **last meeting held** (the most recent Completed one), so the upcoming meetings are on screen. Older meetings are dimmed above it.
 
-> More detailed help for this form is still being written. See [all help topics](help:index).

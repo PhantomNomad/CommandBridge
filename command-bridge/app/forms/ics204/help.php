@@ -1,13 +1,9 @@
 <?php
 declare(strict_types=1);
+// The "Help / Instructions" link on the form. The instructions are kept in the help system
+// (app/help/topics/forms/ics204/index.md), so this page just sends the user there.
 require_once dirname(dirname(__DIR__)) . '/includes/layout.php';
+require_once dirname(dirname(__DIR__)) . '/includes/help.php';
 require_login();
-render_header('ICS 204 Help');
-?>
-<div class="card">
-<h2>ICS 204 Help / Instructions</h2>
-<p>ICS 204 provides tactical assignments for each Branch, Division, Group, Strike Team, Task Force, or resource grouping. Complete operational period, assignment area, operations personnel, resources, work assignments, special instructions, communications, safety/medical references, prepared by, and approval/review details.</p>
-<p class="small">Source: ICS Canada Forms Catalogue.</p>
-<p><a href="index.php">Back to ICS 204</a></p>
-</div>
-<?php render_footer(); ?>
+header('Location: ' . cb_help_url('forms/ics204/index'));
+exit;

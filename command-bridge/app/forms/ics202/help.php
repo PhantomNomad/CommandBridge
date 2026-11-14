@@ -1,13 +1,9 @@
 <?php
 declare(strict_types=1);
+// The "Help / Instructions" link on the form. The instructions are kept in the help system
+// (app/help/topics/forms/ics202/index.md), so this page just sends the user there.
 require_once dirname(dirname(__DIR__)) . '/includes/layout.php';
+require_once dirname(dirname(__DIR__)) . '/includes/help.php';
 require_login();
-render_header('ICS 202 Help');
-?>
-<div class="card">
-<h2>ICS 202 Help / Instructions</h2>
-<p>ICS 202 documents incident objectives for the operational period. It is prepared by Planning after the Command and General Staff meeting and approved by the Incident Commander. Complete incident name, operational period, objectives, command emphasis, situational awareness, site safety plan requirement/location, included IAP forms, prepared by, and IC approval.</p>
-<p class="small">Source: ICS Canada Forms Catalogue.</p>
-<p><a href="index.php">Back to ICS 202</a></p>
-</div>
-<?php render_footer(); ?>
+header('Location: ' . cb_help_url('forms/ics202/index'));
+exit;
