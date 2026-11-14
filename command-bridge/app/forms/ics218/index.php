@@ -36,6 +36,10 @@ if ($headerId<=0 && $canEdit) {
   $headerId=(int)$pdo->lastInsertId();
 }
 
+// Signed or approved: locked until someone revises it (includes/form_lock.php).
+require_once dirname(dirname(__DIR__)) . '/includes/form_lock.php';
+cb_form_block_locked_post('ICS218', (int)($incidentId ?? 0), (int)($opId ?? 0), (int)($formRecordId ?? 0));
+
 if ($_SERVER['REQUEST_METHOD']==='POST' && $canEdit) {
   if (($_POST['post_action'] ?? '')==='save_entry') {
     $id=(int)($_POST['entry_id'] ?? 0);

@@ -35,6 +35,10 @@ if ($incidentId > 0 && !$canView) {
     exit;
 }
 
+// Signed or approved: locked until someone revises it (includes/form_lock.php).
+require_once dirname(dirname(__DIR__)) . '/includes/form_lock.php';
+cb_form_block_locked_post('ICS205A', (int)($incidentId ?? 0), (int)($opId ?? 0), (int)($formRecordId ?? 0));
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $incidentId > 0) {
     if (!$canEdit) {
         $error = 'You do not have permission to edit ICS 205A.';
@@ -113,7 +117,7 @@ if ($incidentId > 0 && !$canView) {
     render_footer();
     exit;
 }
-$canSubmit = $incidentId > 0 && $formStatus !== 'submitted' && !empty($permissions['can_submit_final']);
+$canSubmit = $incidentId > 0 && !cb_form_is_locked_status($formStatus) && !empty($permissions['can_submit_final']);
 
 $rows = [];
 if ($incidentId > 0) {
@@ -137,24 +141,16 @@ if ($incidentId > 0) {
 
 render_header('ICS 205A - Communications List');
 ?>
-<div class="card">
-  <h2>ICS205A - Communications List</h2>
-  <?php if ($error): ?><div class="flash error"><?= e($error) ?></div><?php endif; ?>
-  <p><strong>Status:</strong> <?= e(ucfirst($formStatus)) ?></p>
-  <p><strong>Prepared By:</strong> <?= e((string)($preparer['name'] ?? 'TBD')) ?> (<?= e((string)($preparer['position_title'] ?? 'CUL')) ?>)</p>
-  <?php if ($signature): ?>
-    <p><strong>Digitally Signed By:</strong> <?= e($signature['signer_name']) ?> (<?= e($signature['signer_position_title']) ?>) on <?= e($signature['signed_at']) ?></p>
-  <?php else: ?>
-    <p class="small">This form remains editable while it is in draft. Submit it when ready for the operational period handoff or IAP package.</p>
-  <?php endif; ?>
-</div>
+<?php if ($error): ?><div class="flash error"><?= e($error) ?></div><?php endif; ?>
+<?php cb_form_status_banner('ICS205A', (int)$incidentId, (int)($formRecord['operational_period_id'] ?? (current_operational_period((int)$incidentId)['id'] ?? 0)), (int)$formRecordId,
+    ['subtitle' => 'Contact list for the incident (contains personal information)']); ?>
 
 <div class="card">
   <h2>Add Communications Contact</h2>
   <?php if (!$canEdit): ?>
     <p>You have view-only access to this form.</p>
-  <?php elseif ($formStatus === 'submitted'): ?>
-    <p>This form has been submitted and is now locked.</p>
+  <?php elseif (cb_form_is_locked_status($formStatus)): ?>
+    <p>This form is signed and locked. To add or change contacts, use <strong>Revise</strong> at the top of the form.</p>
   <?php else: ?>
   <form method="post">
     <?= csrf_field() ?>

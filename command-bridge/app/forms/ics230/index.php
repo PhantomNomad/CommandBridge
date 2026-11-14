@@ -6,6 +6,7 @@ require_csrf_for_post();
 require_once dirname(dirname(__DIR__)) . '/includes/layout.php';
 require_once dirname(dirname(__DIR__)) . '/includes/form_action_buttons.php';
 require_once dirname(dirname(__DIR__)) . '/includes/meetings.php';
+require_once dirname(dirname(__DIR__)) . '/includes/form_lock.php';
 require_login();
 
 $pdo = db();
@@ -25,6 +26,7 @@ $canEdit = !empty($permissions['can_edit']);
 $formRecord = ($incidentId > 0 && $operationalPeriodId > 0) ? get_form_record($incidentId, 'ICS230', $operationalPeriodId) : null;
 $formRecordId = (int)($formRecord['id'] ?? 0);
 $formStatus = (string)($formRecord['status'] ?? 'draft');
+$isLocked = cb_form_is_locked_status($formStatus);
 $preparer = $incidentId > 0 ? resolve_form_preparer($incidentId, 'ICS230') : ['name' => 'TBD', 'position_title' => 'SITL'];
 $signature = $formRecordId > 0 ? get_form_signature($formRecordId) : null;
 
@@ -50,15 +52,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $incidentId > 0) {
             apply_form_preparer_defaults($formRecordId, resolve_form_preparer($incidentId, 'ICS230'));
 
             if ($action === 'submit') {
-                if ($formStatus === 'submitted') {
-                    throw new RuntimeException('ICS 230 has already been submitted.');
-                }
+                cb_form_assert_editable($formRecord, 'ICS230');
                 submit_form_record($formRecordId, 'ICS230', $incidentId, (int)(current_user()['id'] ?? 0));
                 flash('success', 'ICS 230 submitted and digitally signed.');
             } elseif ($action === 'delete_meeting') {
-                if ($formStatus === 'submitted') {
-                    throw new RuntimeException('ICS 230 is already submitted and can no longer be edited.');
-                }
+                cb_form_assert_editable($formRecord, 'ICS230');
                 $stmt = $pdo->prepare("
                     UPDATE operational_period_meetings
                     SET deleted_at = NOW(), updated_at = NOW(), updated_by_user_id = ?
@@ -75,9 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $incidentId > 0) {
                 ]);
                 flash('success', 'Meeting removed from the schedule.');
             } else {
-                if ($formStatus === 'submitted') {
-                    throw new RuntimeException('ICS 230 is already submitted and can no longer be edited.');
-                }
+                cb_form_assert_editable($formRecord, 'ICS230');
 
                 $meetingTypeId = (int)($_POST['meeting_type_id'] ?? 0);
                 $scheduledAtRaw = trim((string)($_POST['scheduled_at'] ?? ''));
@@ -196,9 +192,10 @@ $canEdit = !empty($permissions['can_edit']);
 $formRecord = ($incidentId > 0 && $operationalPeriodId > 0) ? get_form_record($incidentId, 'ICS230', $operationalPeriodId) : null;
 $formRecordId = (int)($formRecord['id'] ?? 0);
 $formStatus = (string)($formRecord['status'] ?? 'draft');
+$isLocked = cb_form_is_locked_status($formStatus);
 $preparer = $incidentId > 0 ? resolve_form_preparer($incidentId, 'ICS230') : ['name' => 'TBD', 'position_title' => 'SITL'];
 $signature = $formRecordId > 0 ? get_form_signature($formRecordId) : null;
-$canSubmit = $incidentId > 0 && $operationalPeriodId > 0 && $formStatus !== 'submitted' && !empty($permissions['can_submit_final']);
+$canSubmit = $incidentId > 0 && $operationalPeriodId > 0 && !$isLocked && !empty($permissions['can_submit_final']);
 
 $meetingTypes = get_meeting_types_catalog();
 $hasMeetingTypes = false;
@@ -238,23 +235,14 @@ if ($incidentId > 0 && $operationalPeriodId > 0) {
 }
 
 render_header('ICS 230 - Daily Meeting Schedule');
+if ($error): ?><div class="flash error"><?= e($error) ?></div><?php endif;
+if ($currentOperationalPeriod) {
+    cb_form_status_banner('ICS230', $incidentId, $operationalPeriodId, $formRecordId,
+        ['subtitle' => operational_period_label($currentOperationalPeriod)]);
+} else {
+    echo '<div class="card"><p class="muted">No operational period is currently available.</p></div>';
+}
 ?>
-<div class="card">
-  <h2>ICS230 - Daily Meeting Schedule</h2>
-  <?php if ($error): ?><div class="flash error"><?= e($error) ?></div><?php endif; ?>
-  <p><strong>Status:</strong> <span class="status-pill"><?= e(ucfirst($formStatus)) ?></span></p>
-  <?php if ($currentOperationalPeriod): ?>
-    <p><strong>Operational Period:</strong> <?= e(operational_period_label($currentOperationalPeriod)) ?></p>
-  <?php else: ?>
-    <p class="muted">No operational period is currently available.</p>
-  <?php endif; ?>
-  <p><strong>Prepared By:</strong> <?= e((string)($preparer['name'] ?? 'TBD')) ?> (<?= e((string)($preparer['position_title'] ?? 'SITL')) ?>)</p>
-  <?php if ($signature): ?>
-    <p><strong>Digitally Signed By:</strong> <?= e($signature['signer_name']) ?> (<?= e($signature['signer_position_title']) ?>) on <?= e($signature['signed_at']) ?></p>
-  <?php else: ?>
-    <p class="small">This form remains a live draft until submitted.</p>
-  <?php endif; ?>
-</div>
 
 <div class="card">
   <h2>Meeting Schedule</h2>
@@ -263,7 +251,7 @@ render_header('ICS 230 - Daily Meeting Schedule');
     <p class="muted">Create an operational period before using ICS 230.</p>
   <?php elseif (!$hasMeetingTypes): ?>
     <p class="muted">No active meeting types are configured in the database yet.</p>
-  <?php elseif ($canEdit && $formStatus !== 'submitted'): ?>
+  <?php elseif ($canEdit && !$isLocked): ?>
     <form method="post">
     <?= csrf_field() ?>
       <input type="hidden" name="meeting_id" value="<?= e((string)($editingMeeting['id'] ?? 0)) ?>">
@@ -365,10 +353,10 @@ render_header('ICS 230 - Daily Meeting Schedule');
       <th>Title / Purpose</th>
       <th style="width:180px;">Location / Chair</th>
       <th style="width:110px;">Status</th>
-      <?php if ($canEdit && $formStatus !== 'submitted'): ?><th style="width:150px;">Actions</th><?php endif; ?>
+      <?php if ($canEdit && !$isLocked): ?><th style="width:150px;">Actions</th><?php endif; ?>
     </tr>
     <?php if (!$meetings): ?>
-      <tr><td colspan="<?= ($canEdit && $formStatus !== 'submitted') ? '6' : '5' ?>">No meetings scheduled for this operational period.</td></tr>
+      <tr><td colspan="<?= ($canEdit && !$isLocked) ? '6' : '5' ?>">No meetings scheduled for this operational period.</td></tr>
     <?php else: ?>
       <?php foreach ($meetings as $meeting): ?>
         <tr>
@@ -393,7 +381,7 @@ render_header('ICS 230 - Daily Meeting Schedule');
               <div><a class="btn btn-secondary" href="<?= e(cb_meeting_status_url((int)$meeting['id']) . '&return_to=ics230') ?>">Was it held?</a></div>
             <?php endif; ?>
           </td>
-          <?php if ($canEdit && $formStatus !== 'submitted'): ?>
+          <?php if ($canEdit && !$isLocked): ?>
             <td>
               <div class="table-actions">
                 <a class="btn btn-secondary" href="<?= e(app_url('/forms/ics230/index.php?op_id=' . $operationalPeriodId . '&edit_meeting_id=' . (int)$meeting['id'])) ?>">Edit</a>

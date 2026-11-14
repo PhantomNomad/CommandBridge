@@ -35,6 +35,10 @@ if ($incidentId > 0 && !$canView) {
     exit;
 }
 
+// Signed or approved: locked until someone revises it (includes/form_lock.php).
+require_once dirname(dirname(__DIR__)) . '/includes/form_lock.php';
+cb_form_block_locked_post('ICS211', (int)($incidentId ?? 0), (int)($opId ?? 0), (int)($formRecordId ?? 0));
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $incidentId > 0) {
     if (!$canEdit) {
         $error = 'You do not have permission to edit ICS 211.';

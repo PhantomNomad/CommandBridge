@@ -229,6 +229,10 @@ $preparer = resolve_form_preparer($incidentId, S209_FORM);
 // ---------------------------------------------------------------------------------------------------------------------
 // Save / submit
 // ---------------------------------------------------------------------------------------------------------------------
+// Signed or approved: locked until someone revises it (includes/form_lock.php).
+require_once dirname(dirname(__DIR__)) . '/includes/form_lock.php';
+cb_form_block_locked_post(S209_FORM, (int)($incidentId ?? 0), (int)($opId ?? 0), (int)($formRecordId ?? 0));
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = (string)($_POST['action'] ?? 'save');
     try {

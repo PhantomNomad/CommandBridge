@@ -138,6 +138,10 @@ if ($incidentId && $opTable) {
 
 if ($incidentId > 0 && !$canView) { http_response_code(403); render_header('ICS 202'); echo '<div class="card"><p>Forbidden</p></div>'; render_footer(); exit; }
 
+// Signed or approved: locked until someone revises it (includes/form_lock.php).
+require_once dirname(dirname(__DIR__)) . '/includes/form_lock.php';
+cb_form_block_locked_post('ICS202', (int)($incidentId ?? 0), (int)($opId ?? 0), (int)($formRecordId ?? 0));
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $incidentId > 0 && ($_POST['action'] ?? '') === 'approve_ics202') {
     if (!$canApprove) { http_response_code(403); render_header('ICS 202'); echo '<div class="card"><p>Forbidden</p></div>'; render_footer(); exit; }
     try {
@@ -241,17 +245,14 @@ function checked($v){ return !empty($v) ? 'checked' : ''; }
 $isPrintView = (string)($_GET['view'] ?? '') === 'print';
 render_header($isPrintView ? 'ICS 202 - Incident Objectives Print View' : 'ICS 202 - Incident Objectives');
 ?>
-<div class="card no-print">
-<h2>ICS202 - Incident Objectives</h2>
-<?php if(isset($_GET['saved'])):?><p class="notice">Saved.</p><?php endif; ?><?php if(isset($_GET['approved'])):?><p class="notice">Approved.</p><?php endif; ?><?php if($error):?><p class="error"><?=h($error)?></p><?php endif;?>
-<p><strong>Status:</strong> <?=h(ucfirst((string)($formRecord['status'] ?? 'draft')))?></p>
-<?php if (!empty($data['approved_at'])): ?>
-  <p><strong>Approved By:</strong> <?=h($data['approved_by_ic_name'] ?? '')?> on <?=h($data['approved_at'] ?? '')?></p>
-<?php else: ?>
-  <p class="small">ICS 202 remains in draft until the Incident Commander or SysAdmin approves it. Approval is locked until the required IAP forms are detected.</p>
-<?php endif; ?>
-<p class="small">Attachments accepted here: BMP, JPG, JPEG, PNG, PDF, and TXT.</p>
-</div>
+<?php if(isset($_GET['saved'])):?><p class="notice no-print">Saved.</p><?php endif; ?><?php if(isset($_GET['approved'])):?><p class="notice no-print">Approved.</p><?php endif; ?><?php if($error):?><p class="error"><?=h($error)?></p><?php endif;?>
+<?php if (!$isPrintView) {
+    cb_form_status_banner('ICS202', (int)$incidentId, (int)($selectedOpId ?? 0), (int)$formRecordId, [
+        'subtitle' => 'Incident Action Plan cover sheet',
+        'approve' => ['can' => $canApprove, 'field' => 'action', 'value' => 'approve_ics202', 'label' => 'Approve / Submit ICS202'],
+    ]);
+} ?>
+<p class="small no-print">Attachments accepted here: BMP, JPG, JPEG, PNG, PDF, and TXT.</p>
 <div class="card">
 <h2>ICS202 - Incident Objectives</h2>
 <p><a href="help.php">Help / Instructions</a></p>

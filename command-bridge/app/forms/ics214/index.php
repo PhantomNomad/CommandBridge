@@ -177,6 +177,8 @@ render_header('ICS 214 - Activity Log');
 @media(max-width:800px){.ics214-grid,.ics214-add{grid-template-columns:1fr}}
 </style>
 
+<?php require_once dirname(dirname(__DIR__)) . '/includes/form_lock.php';
+if ($recordId > 0) { cb_form_status_banner('ICS214', (int)$incidentId, (int)$opId, (int)$recordId, ['subtitle' => $ownerName . ' · ' . $opText, 'extra_query' => ['record_id' => $recordId]]); } ?>
 <div class="card">
   <h2>ICS 214 - Activity Log: <?= e($ownerName) ?></h2>
   <?php if (!$isOwner): ?>

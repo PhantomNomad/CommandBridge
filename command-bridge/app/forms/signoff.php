@@ -4,13 +4,15 @@ declare(strict_types=1);
  * Shared sign-off actions for ICS forms (see includes/signoff.php):
  *   request      - the form's signer / an editor names (or changes) the approver
  *   approve      - the named approver (or a SysAdmin) approves and digitally signs
- *   return       - the approver, signer or an editor returns / reopens the form for changes (reason required)
+ *   revise       - reopen a signed or approved form as a new revision (reason required; includes/form_lock.php).
+ *                  "return" (the approver sending it back) is the same action.
  *   creator_sign - sign and submit forms that have no submit button of their own (ICS 213, 214, 215A, 218)
  */
 require_once __DIR__ . '/../includes/security.php';
 require_csrf_for_post();
 require_once __DIR__ . '/../includes/layout.php';
 require_once __DIR__ . '/../includes/signoff.php';
+require_once __DIR__ . '/../includes/form_lock.php';
 require_login();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -39,6 +41,12 @@ try {
     if (!$rec) { throw new RuntimeException('That form could not be found.'); }
     $incidentId = (int)$rec['incident_id'];
     $code = signoff_normalize((string)$rec['form_type']);
+    if ($action === 'revise' || $action === 'return') {
+        // One way to change a locked form, for every form (the ICS 202 and 204 included). See includes/form_lock.php.
+        $newRev = cb_form_revise($recordId, (string)($_POST['signoff_reason'] ?? ''));
+        flash('success', ics_audit_form_label($code) . ' reopened as revision ' . $newRev . '. Make the changes, then sign it again.');
+        $back();
+    }
     if (!signoff_form_supported($code)) { throw new RuntimeException('This form does not use the shared sign-off.'); }
     $status = strtolower((string)$rec['status']);
     $perms = get_current_user_form_permissions($code, $incidentId);
@@ -121,26 +129,6 @@ try {
             $notify($creatorId, 'form_approved', $label . ' approved', $actorName . ' approved ' . $label . '.');
         }
         flash('success', $label . ' approved and signed.');
-
-    } elseif ($action === 'return') {
-        $reason = trim((string)($_POST['signoff_reason'] ?? ''));
-        if ($reason === '') { throw new RuntimeException('Enter a reason for returning the form.'); }
-        if ($status === 'submitted') {
-            if (!($isSysadmin || $me === $approverId || $canEdit || ($creatorId > 0 && $creatorId === $me))) { throw new RuntimeException('You cannot return this form.'); }
-        } elseif ($status === 'approved') {
-            if (!$canReopenApproved) { throw new RuntimeException('You cannot reopen an approved form.'); }
-        } else {
-            throw new RuntimeException('This form is already open for editing.');
-        }
-        $pdo->beginTransaction();
-        $pdo->prepare("UPDATE form_records SET status = 'draft', current_approver_user_id = NULL, approved_at = NULL, updated_at = NOW() WHERE id = ?")->execute([$recordId]);
-        $pdo->prepare("DELETE FROM form_signatures WHERE form_record_id = ? AND signature_type IN ('approved_by', 'prepared_by')")->execute([$recordId]);
-        $pdo->commit();
-        audit_log($me, 'return', $code, $recordId, 'Returned ' . $label . ' (record #' . $recordId . ') for changes: ' . mb_substr($reason, 0, 300));
-        if ($creatorId > 0 && $creatorId !== $me) {
-            $notify($creatorId, 'form_returned', $label . ' returned for changes', $actorName . ' returned ' . $label . ': ' . mb_substr($reason, 0, 300), 'high');
-        }
-        flash('success', $label . ' reopened for changes.');
 
     } else {
         throw new RuntimeException('Unknown sign-off action.');

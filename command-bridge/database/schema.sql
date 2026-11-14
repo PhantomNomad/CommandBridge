@@ -1110,6 +1110,7 @@ CREATE TABLE `form_records` (
   `reviewed_by_name` varchar(255) DEFAULT NULL,
   `reviewed_by_position_title` varchar(150) DEFAULT NULL,
   `reviewed_at` datetime DEFAULT NULL,
+  `revision` int(11) NOT NULL DEFAULT 0,
   `is_deleted` tinyint(1) NOT NULL DEFAULT 0,
   `deleted_at` datetime DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
@@ -1134,6 +1135,31 @@ CREATE TABLE `form_records` (
   CONSTRAINT `fk_form_records_operational_period` FOREIGN KEY (`operational_period_id`) REFERENCES `operational_periods` (`id`),
   CONSTRAINT `fk_form_records_prepared_by` FOREIGN KEY (`prepared_by_user_id`) REFERENCES `users` (`id`),
   CONSTRAINT `fk_form_records_submitted_by_user` FOREIGN KEY (`submitted_by_user_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE `form_revisions` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `form_record_id` int(11) NOT NULL,
+  `incident_id` int(11) NOT NULL,
+  `form_code` varchar(20) NOT NULL,
+  `revision` int(11) NOT NULL,
+  `status_before` varchar(20) NOT NULL,
+  `reason` varchar(300) NOT NULL,
+  `revised_by_user_id` int(11) DEFAULT NULL,
+  `revised_by_name` varchar(255) DEFAULT NULL,
+  `revised_at` datetime NOT NULL,
+  `prepared_by_name` varchar(255) DEFAULT NULL,
+  `prepared_by_position_title` varchar(150) DEFAULT NULL,
+  `prepared_signed_at` datetime DEFAULT NULL,
+  `approved_by_name` varchar(255) DEFAULT NULL,
+  `approved_by_position_title` varchar(150) DEFAULT NULL,
+  `approved_signed_at` datetime DEFAULT NULL,
+  `snapshot_file` varchar(255) DEFAULT NULL,
+  `snapshot_error` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_form_revisions_record_rev` (`form_record_id`,`revision`),
+  KEY `idx_form_revisions_incident` (`incident_id`),
+  CONSTRAINT `fk_form_revisions_form` FOREIGN KEY (`form_record_id`) REFERENCES `form_records` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE TABLE `form_signatures` (
   `id` int(11) NOT NULL AUTO_INCREMENT,

@@ -2,6 +2,40 @@
 
 ## Unreleased
 
+* **Signed forms are locked, and "Revise" is the only way to change them.** Before this, forms didn't follow one rule:
+  the ICS 205, 206, 208, 210, 215A and 218 could still be changed after they were signed, and the 205A, 207, 211
+  and 230 unlocked again once approved (so "Add Meeting" came back on an approved ICS 230). Now every form uses the
+  same rule (`includes/form_lock.php`):
+  - A form is locked from the moment its preparer signs it, while it waits for approval and after approval. Each form
+    page refuses any save, add or delete on a locked form, and its inputs are greyed out.
+  - **Revise** (reason required) clears both signatures and opens the form as a draft with the next revision
+    number. The approver's "Return for changes" does the same. It replaces "Return for changes" and "Reopen form"
+    on every form, including the ICS 202 and 204, which have their own approval steps.
+    - Who can revise: the preparer, the approver, anyone who can edit or sign the form, and a SysAdmin. ICS 214:
+      the owner, the approver while it waits, and a SysAdmin.
+    - Before the change, a PDF of the version being replaced is saved by the new `bin/form_snapshot.php`
+      (under `storage/uploads/incidents/<id>/form_revisions/`). A **Revision history** lists each earlier version:
+      who revised it and why, who signed and approved it, and a PDF link (`forms/revision_pdf.php`). Revisions are
+      audit logged, and the preparer and approver are notified.
+  - Still allowed on a locked form:
+    - marking an ICS 230 meeting held or cancelled
+    - new ICS 213 messages and replies
+    - Resources Unit adds to the ICS 211/218
+  - The ICS 213RR keeps its own workflow (no change).
+  - **New status banner** at the top of every form, in the ICS 213RR style:
+    - status ("Waiting for Dana Whitford", "Approved")
+    - steps (Prepare, Sign, Approval, Approved)
+    - **Next action** box with the right buttons for the person looking: approve and return for the approver;
+      change approver and revise for the preparer; just who approved it once it's approved
+    - revision history
+
+    A signed form that isn't approved yet says **Not approved yet** and names the approver. The dashboard shows
+    "Signed, waiting for approval" instead of "Submitted". The old sign-off box under the form is gone.
+  - The ICS 201 and ICS 230 had no way to sign them from their pages; they now get **Sign and submit** in the
+    banner. The ICS 204 now records who submitted it.
+  - Database: migration `0005_form_revisions.sql` adds `form_records.revision` and the `form_revisions` table.
+    Smoke test: checks the migration and that every form page has the lock check, and runs a revise on its test
+    form.
 * **Meeting reminders can be answered.** The "Was this meeting held?" reminder said to mark the meeting on the ICS 230,
   but there was no way to do it once the ICS 230 was signed, for meetings in an earlier operational period, or for a
   chair who can't edit the ICS 230. The reminder now opens a new page, `forms/ics230/meeting_status.php`, with
