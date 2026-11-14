@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* **ICS 201: clearer message when the form is locked.** A submitted or approved ICS 201 told the Incident Commander
+  "You do not have permission to edit this form". It now says the form is submitted (or approved) and locked, and shows the Preview PDF and
+  Download PDF buttons, which were hidden along with the edit form, so a locked ICS 201 can still be read.
 * **Full help for every ICS form page.** The help for the ICS 201, 202, 203, 204, 205, 205A, 206, 207, 208, 209, 210,
   211, 213, 213RR, 215A, 218 and 230, the Finance/Admin 213RR queue and the Resources Unit queue is now complete. Each
   page covers what the form is for, who prepares it, who gets it, what goes in each block, and how Command Bridge fills

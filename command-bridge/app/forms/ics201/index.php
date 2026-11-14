@@ -298,11 +298,26 @@ function datetime_local_value(?string $value): string {
 <?php if (!$isPrintView): ?>
 <div class="card">
   <h2>Edit ICS 201</h2>
-  <?php if (!$canEdit): ?>
-    <p>You do not have permission to edit this form. Only the IC, DOCL, or PSC may create or edit it.</p>
-  <?php elseif ($formStatus === 'submitted'): ?>
-    <p>This form has been submitted and is now locked.</p>
+  <?php if ($isLockedFinal): ?>
+    <p>This ICS 201 has been <?= h($formStatus === 'approved' ? 'approved' : 'submitted') ?> and is locked. Use <strong>Preview PDF</strong> to read it. Only a SysAdmin can reopen it.</p>
+  <?php elseif (!$canEdit): ?>
+    <p>You do not have permission to edit this form. By default only the IC, DOCL or PSC can create or edit it.</p>
   <?php endif; ?>
+  <?php
+  // The edit form below carries the action buttons; when it is hidden, still offer Preview/Download PDF.
+  if (!$canEdit && function_exists('render_ics_form_actions')) {
+      render_ics_form_actions([
+          'incident_id' => $incidentId,
+          'op_id' => null,
+          'form_code' => 'ICS201',
+          'form_title' => 'ICS201',
+          'permissions' => ['can_view' => $canView],   // view-only: no Save button here
+          'is_final' => $isLockedFinal,
+          'blank_download_url' => file_exists(__DIR__ . '/blank.php') ? 'blank.php' : null,
+          'show_submit' => false,
+      ]);
+  }
+  ?>
 
   <?php if ($canEdit && $formStatus !== 'submitted'): ?>
   <form method="post" enctype="multipart/form-data">
