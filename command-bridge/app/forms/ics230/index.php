@@ -346,7 +346,7 @@ if ($currentOperationalPeriod) {
     </div>
   <?php endif; ?>
 
-  <table style="margin-top:20px;">
+  <table class="cb-cards" style="margin-top:20px;">
     <tr>
       <th style="width:150px;">Scheduled</th>
       <th style="width:180px;">Meeting Type</th>

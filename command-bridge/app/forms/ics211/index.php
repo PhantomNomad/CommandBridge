@@ -301,7 +301,7 @@ if (function_exists('render_ics_form_actions')) {
 <div class="card ics211-card">
   <h2>Existing Check-In Entries</h2>
   <div class="ics211-table-wrap">
-    <table class="ics211-table">
+    <table class="ics211-table cb-cards">
       <tr>
         <th>Agency / CAT.</th><th>Kind / Type</th><th>Resource Name or ID #</th><th>Order / Request #</th><th>LDW #</th>
         <th>Date/Time Check-In</th><th>Leader</th><th>Total Personnel</th><th>Contact</th><th>Home Unit / Agency</th>

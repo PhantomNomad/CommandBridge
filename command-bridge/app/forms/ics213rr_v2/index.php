@@ -861,8 +861,12 @@ function rr_v2_step_number(string $status): int {
 @media (max-width: 800px) {
   .rr-v2-hero, .rr-v2-grid { display:block; }
   .rr-v2-hero > * + *, .rr-v2-grid > * + * { margin-top:1rem; }
-  .rr-v2-steps { grid-template-columns:1fr; }
   .rr-v2-key-value { grid-template-columns:1fr; gap:.2rem; }
+}
+@media (max-width: 599px) {
+  .rr-v2-steps { grid-template-columns:1fr 1fr; }
+  .rr-v2-table-actions, .rr-v2-legacy { white-space:normal; }
+  .rr-v2-inline-form { display:block; margin-top:.4rem; }
 }
 </style>
 <?php
@@ -1165,7 +1169,7 @@ if ($action === 'new' || ($action === 'edit' && $id>0)) {
 
           <section class="card">
             <h2>Requested resource</h2>
-            <table>
+            <table class="cb-cards">
               <thead><tr><th>Quantity</th><th>Kind</th><th>Type / unit</th><th>Estimated cost</th><th>Description</th></tr></thead>
               <tbody>
               <?php foreach ($items as $item): ?>
@@ -1341,7 +1345,7 @@ if ($action === 'new' || ($action === 'edit' && $id>0)) {
         <?php if (!$openRows): ?>
           <p>No open ICS 213RR resource requests exist for this incident.</p>
         <?php else: ?>
-          <table class="rr-v2-register-table">
+          <table class="rr-v2-register-table cb-cards">
             <thead><tr><th>Request</th><th>Priority</th><th>Current step</th><th>Requested resource</th><th>Needed by</th><th>Action</th></tr></thead>
             <tbody>
               <?php foreach ($openRows as $row): $rowStatus = (string)$row['status']; ?>
@@ -1364,7 +1368,7 @@ if ($action === 'new' || ($action === 'edit' && $id>0)) {
         <?php if (!$closedRows): ?>
           <p>No closed or cancelled requests exist for this incident.</p>
         <?php else: ?>
-          <table class="rr-v2-register-table">
+          <table class="rr-v2-register-table cb-cards">
             <thead><tr><th>Request</th><th>Status</th><th>Requested by</th><th>Updated</th><th>Action</th></tr></thead>
             <tbody>
               <?php foreach ($closedRows as $row): ?>

@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+* **Phones and tablets, part 2: lists as cards.** On phones, list tables turn into one card per row, and each value
+  is labelled with its column name, so nothing needs sideways scrolling. This covers:
+  - the dashboard lists
+  - the ICS 214 log and everyone's logs
+  - ICS 213 messages
+  - ICS 230 meetings
+  - ICS 211 check-ins
+  - the ICS 213RR request lists and item table
+
+  Tables opt in with `class="cb-cards"`; `assets/js/app_shell.js` adds the labels. Other phone fixes:
+  - pop-up notifications fit the screen
+  - the Form Actions buttons are spaced out
+  - the ICS 213RR steps show two per row with their buttons wrapping
+  - the form status steps stay in one row on upright tablets
+
+  Tablets and desktops are unchanged. No database changes.
 * **Phones and tablets, part 1: the page frame.** The app now has three layouts, chosen by screen width (a tablet
   switches as soon as it is turned):
   - **Desktop (1024 px and wider):** tablets held sideways, laptops and monitors. Same as before.
