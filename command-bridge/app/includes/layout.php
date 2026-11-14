@@ -74,8 +74,15 @@ function render_header(string $title, ?string $helpTopic = null): void {
   <link rel="stylesheet" href="<?= e(app_url('/assets/css/app.css') . '?v=' . (string)@filemtime(dirname(__DIR__) . '/assets/css/app.css')) ?>">
 </head>
 <body>
+<?php // Phones and upright tablets (under 1024 px wide): a bar with a Menu button; the side menu slides in over the page. ?>
+<div class="mobile-bar no-print">
+  <button type="button" class="nav-toggle" aria-controls="app-sidebar" aria-expanded="false"><span aria-hidden="true">&#9776;</span> Menu</button>
+  <span class="mobile-bar-title"><?= e($branding['application_name']) ?></span>
+</div>
+<div class="nav-backdrop no-print" hidden></div>
 <div class="app">
-  <aside class="sidebar">
+  <aside class="sidebar" id="app-sidebar" aria-label="Main menu">
+    <button type="button" class="nav-close no-print" aria-label="Close menu">&times;</button>
     <div class="brand brand-with-logos">
       <div class="brand-text">
         <div class="brand-title"><?= e($branding['application_name']) ?></div>
@@ -262,6 +269,7 @@ function render_footer(): void {
   <div class="help-panel-body help-doc" tabindex="-1"></div>
 </aside>
 <script src="<?= e(app_url('/assets/js/help_panel.js') . '?v=' . (string)@filemtime(dirname(__DIR__) . '/assets/js/help_panel.js')) ?>" defer></script>
+<script src="<?= e(app_url('/assets/js/app_shell.js') . '?v=' . (string)@filemtime(dirname(__DIR__) . '/assets/js/app_shell.js')) ?>" defer></script>
 <?php
     ?>
 

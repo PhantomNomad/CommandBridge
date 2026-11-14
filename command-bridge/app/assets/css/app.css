@@ -326,15 +326,6 @@ a.btn:focus {
   padding:7px 10px;
   font-size:12.5px;
 }
-@media (max-width: 900px){
-  .app{display:block}
-  .sidebar{
-    width:auto;
-    max-width:none;
-    min-width:0;
-    flex:none;
-  }
-}
 
 /* ICS 211-CAN check-in form layout */
 .ics211-card{
@@ -677,7 +668,7 @@ table input[type="button"]{
 
 /* Fixed left menu: the sidebar stays in view while long pages scroll on the right.
    If the menu itself is taller than the window it scrolls on its own. */
-@media (min-width: 901px){
+@media (min-width: 1024px){
   .app{align-items:flex-start}
   .sidebar{
     position:sticky;
@@ -771,4 +762,81 @@ body.help-open .content{margin-right:440px}
   .cb-form-hero { display:block; }
   .cb-form-hero-side { text-align:left; margin-top:1rem; }
   .cb-form-steps { grid-template-columns:1fr !important; }
+}
+
+
+/* ======================================================================================== Phones and tablets
+   Three layouts, picked by the width of the screen (a tablet switches when it is turned):
+     desktop  1024 px and wider   tablets held sideways, laptops, monitors: menu always on the left
+     tablet   600 - 1023 px       most tablets held upright: menu behind the Menu button, full-width page
+     phone    under 600 px        one column, smaller headings, tighter cards
+   The ECC display pages have their own style sheet and are not affected. Printing is not affected. */
+.mobile-bar{display:none}
+.nav-close{display:none !important}
+.table-scroll{max-width:100%}
+img,video{max-width:100%;height:auto}
+.content{min-width:0}
+
+@media (max-width: 1023px){
+  .app{display:block}
+  .mobile-bar{display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:1500;background:#12324a;color:#fff;
+    padding:8px 12px;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+  .mobile-bar .nav-toggle{background:transparent;border:1px solid rgba(255,255,255,.5) !important;color:#fff !important;
+    font-size:16px !important;font-weight:700 !important;min-height:44px !important;padding:0 14px !important;display:inline-flex;align-items:center;gap:8px}
+  .mobile-bar-title{font-weight:700;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* The menu slides in from the left, over the page. */
+  .sidebar{position:fixed;top:0;left:0;bottom:0;width:300px;max-width:85vw;z-index:1700;overflow-y:auto;overscroll-behavior:contain;
+    transform:translateX(-105%);transition:transform .2s ease;visibility:hidden}
+  body.nav-open .sidebar{transform:none;visibility:visible;box-shadow:6px 0 24px rgba(0,0,0,.35)}
+  body.nav-open{overflow:hidden}
+  .nav-backdrop{position:fixed;inset:0;background:rgba(16,42,67,.45);z-index:1600}
+  .nav-backdrop[hidden]{display:none}
+  .sidebar .nav-close{display:flex !important;margin:0 0 8px auto;background:transparent;border:1px solid rgba(255,255,255,.4) !important;
+    color:#fff !important;font-size:26px !important;line-height:1 !important;width:44px;height:44px !important;min-height:44px !important;padding:0 !important}
+  .sidebar nav a{padding:12px 4px;font-size:16px}
+  .content{padding:16px}
+  .topbar{flex-direction:column;gap:12px;margin-bottom:16px}
+  .topbar-main{width:100%}
+  .topbar-side{width:100%;flex-wrap:wrap;align-items:center}
+  .op-period-switcher{max-width:none}
+  .incident-banner-name{font-size:22px}
+  .incident-banner-number{font-size:16px}
+  /* Bigger targets for fingers. 16 px text in fields also stops phones zooming in when a field is tapped. */
+  input,select,textarea{font-size:16px}
+  input[type=checkbox],input[type=radio]{width:22px;height:22px}
+  /* The desktop button rules above fix the height at 38 px with !important; on touch screens buttons grow instead. */
+  button,.btn,a.btn,input[type=submit],input[type=button],input[type=reset]{
+    min-height:44px !important;height:auto !important;font-size:16px !important;line-height:20px !important;
+    padding:10px 16px !important;white-space:normal !important;text-align:center}
+  table button,table .btn,table a.btn,table input[type=submit],table input[type=button],
+  button.small,.btn.small,.btn-small,a.btn-small{min-height:40px !important;height:auto !important;font-size:14px !important;padding:8px 12px !important}
+  .ics202-form label{font-size:15px !important}
+  .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:12px}
+  .table-scroll > table{margin-bottom:0}
+  .dashboard-row{flex-direction:column}
+  .dashboard-main-card,.dashboard-side-card{flex:1 1 auto;min-width:0;width:100%;box-sizing:border-box}
+}
+
+@media (max-width: 599px){
+  .content{padding:10px}
+  .card{padding:14px;margin-bottom:14px}
+  h1{font-size:24px}
+  h2{font-size:20px}
+  .incident-banner-name{font-size:19px}
+  .form-grid,.grid{grid-template-columns:1fr}
+  th,td{padding:8px}
+  .userbox{padding:8px 10px}
+  /* Form status banner and its buttons */
+  .cb-form-hero{display:block}
+  .cb-form-hero-side{text-align:left;margin-top:.75rem}
+  .cb-form-steps{grid-template-columns:1fr 1fr !important}
+  .cb-form-next{padding:.85rem}
+  .cb-form-reason input[type=text]{flex-basis:100%;max-width:none}
+  .form-actions-card .d-flex{flex-direction:column;align-items:stretch !important}
+  .form-actions-card .btn,.form-actions-card button{width:100%;text-align:center;justify-content:center}
+}
+
+@media print{
+  .mobile-bar,.nav-backdrop,.nav-close{display:none !important}
+  .table-scroll{overflow:visible}
 }

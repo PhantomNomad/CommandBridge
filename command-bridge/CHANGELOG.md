@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+* **Phones and tablets, part 1: the page frame.** The app now has three layouts, chosen by screen width (a tablet
+  switches as soon as it is turned):
+  - **Desktop (1024 px and wider):** tablets held sideways, laptops and monitors. Same as before.
+  - **Tablet (600-1023 px):** most tablets held upright. The side menu hides behind a **Menu** button in a bar at
+    the top and slides in over the page; tap a link, the backdrop, the close button or Esc to close it. The page
+    gets the full width.
+  - **Phone (under 600 px):** the same menu, plus one-column forms, smaller headings, tighter cards, and the status
+    banner and Form Actions buttons stacked.
+
+  On phones and tablets, buttons are at least 44 px tall. Fields use 16 px text, so phones don't zoom in when one is
+  tapped. Wide tables scroll sideways in their own box instead of making the whole page scroll sideways. New file:
+  `assets/js/app_shell.js`. The ECC displays, printing and the PDFs are not affected. No database changes.
 * **Signed forms are locked, and "Revise" is the only way to change them.** Before this, forms didn't follow one rule:
   the ICS 205, 206, 208, 210, 215A and 218 could still be changed after they were signed, and the 205A, 207, 211
   and 230 unlocked again once approved (so "Add Meeting" came back on an approved ICS 230). Now every form uses the
